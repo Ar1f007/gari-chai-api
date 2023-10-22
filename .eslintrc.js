@@ -12,7 +12,7 @@ module.exports = {
     node: true,
   },
   rules: {
-    'no-var': 'error',
+    'no-var': ['error', { vars: 'local' }],
     semi: 'error',
     indent: ['error', 2, { SwitchCase: 1 }],
     'no-multi-spaces': 'error',

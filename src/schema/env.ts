@@ -8,6 +8,7 @@ import logger from '../utils/logger';
 const envSchema = z.object({
   PORT: z.string().default('8000'),
   DB_URI: z.string().min(1),
+  NODE_ENV: z.enum(['development', 'production']).default('development'),
 });
 
 export const parsedEnv = envSchema.safeParse(process.env);
