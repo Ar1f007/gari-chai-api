@@ -5,7 +5,7 @@ import helmet from 'helmet';
 import mongoSanitize from 'express-mongo-sanitize';
 import rateLimit from 'express-rate-limit';
 
-import routes from '../utils/routes';
+import routes from '../routes';
 import AppError from '../utils/appError';
 import { globalErrorHandler } from '../middleware';
 

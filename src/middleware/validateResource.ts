@@ -15,12 +15,14 @@ export const validateResource = (schema: AnyZodObject) => (req: Request, res: Re
     }
 
     const errors = e.errors.map((e) => ({
-      fieldName: e.path[1], // ['body/params/query', 'fieldName']
+      // TODO: Check by sending whole array / or just last part if it can correctly match the path to show error below the input field
+      fieldName: e.path.at(-1), // get the last path
       message: e.message,
     }));
 
     return res.status(422).json({
-      success: false,
+      status: 'validationError',
+      message: 'invalid inputs',
       errors,
     });
   }

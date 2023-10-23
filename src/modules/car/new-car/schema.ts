@@ -7,7 +7,7 @@ export const engineSchemaBasic = z.object({
   torque: z.number().optional(),
 });
 
-export const createNewCarSchema = z.object({
+const payload = {
   body: z.object({
     name: z.string(),
 
@@ -58,6 +58,34 @@ export const createNewCarSchema = z.object({
 
     numberOfDoors: z.number(),
   }),
+};
+
+const params = {
+  params: z.object({
+    carSlug: z.string({
+      required_error: 'car slug is required',
+    }),
+  }),
+};
+
+export const createNewCarSchema = z.object({
+  ...payload,
+});
+
+export const updateCarSchema = z.object({
+  ...payload,
+  ...params,
+});
+
+export const deleteCarSchema = z.object({
+  ...params,
+});
+
+export const getCarSchema = z.object({
+  ...params,
 });
 
 export type CreateNewCarInputs = z.infer<typeof createNewCarSchema>['body'];
+export type ReadCarInput = z.infer<typeof getCarSchema>;
+export type UpdateCarInput = z.infer<typeof updateCarSchema>;
+export type DeleteCarInput = z.infer<typeof deleteCarSchema>;

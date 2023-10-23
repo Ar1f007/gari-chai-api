@@ -5,8 +5,8 @@ import helmet from 'helmet';
 import mongoSanitize from 'express-mongo-sanitize';
 import rateLimit from 'express-rate-limit';
 
+import routes from './config/apiRoutes';
 import AppError from './utils/appError';
-import routes from './utils/routes';
 import { globalErrorHandler } from './middleware';
 
 const configureExpressApp = () => {
