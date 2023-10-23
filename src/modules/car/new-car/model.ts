@@ -1,7 +1,11 @@
 import mongoose from 'mongoose';
-import { CarInputs } from './schema';
+import { nanoid } from 'nanoid';
+import slugify from 'slugify';
 
-export interface CarDocument extends CarInputs, mongoose.Document {
+import { CreateNewCarInputs } from './schema.js';
+
+export interface CarDocument extends CreateNewCarInputs, mongoose.Document {
+  slug: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -15,11 +19,16 @@ const carSchema = new mongoose.Schema(
 
     slug: {
       type: String,
-      required: true,
+      required: false,
       unique: true,
     },
 
     year: {
+      type: Number,
+      required: true,
+    },
+
+    registrationYear: {
       type: Number,
       required: true,
     },
@@ -35,7 +44,7 @@ const carSchema = new mongoose.Schema(
     },
 
     modelNumber: {
-      type: String,
+      type: Number,
       required: true,
     },
 
@@ -59,7 +68,7 @@ const carSchema = new mongoose.Schema(
       condition: {
         type: String,
         enum: ['good', 'bad', 'medium'],
-        required: true,
+        required: false,
       },
     },
 
@@ -109,11 +118,6 @@ const carSchema = new mongoose.Schema(
 
     infotainmentSystem: {
       type: String,
-      required: false,
-    },
-
-    imageUrls: {
-      type: [String],
       required: true,
     },
 
@@ -122,33 +126,12 @@ const carSchema = new mongoose.Schema(
       required: true,
     },
 
+    imageUrls: {
+      type: [String],
+      required: true,
+    },
+
     color: {
-      type: String,
-      required: true,
-    },
-
-    scratchesOrDents: {
-      type: String,
-      required: true,
-    },
-
-    tireCondition: {
-      type: String,
-      enum: ['good', 'bad'],
-      required: true,
-    },
-
-    handsShifted: {
-      type: Number,
-      required: true,
-      default: 0,
-    },
-    acCondition: {
-      type: String,
-      required: false,
-    },
-
-    interiorCondition: {
       type: String,
       required: true,
     },
@@ -158,75 +141,6 @@ const carSchema = new mongoose.Schema(
       required: true,
     },
 
-    entertainmentSystemDefault: {
-      type: Boolean,
-      required: false,
-    },
-    soundSystemNewlyInstalled: {
-      type: Boolean,
-      required: false,
-    },
-    glass: {
-      type: String,
-      enum: ['new', 'built-in'],
-      required: false,
-    },
-
-    accidentHistory: {
-      hasAccidentHistory: {
-        type: Boolean,
-        required: false,
-      },
-      partsHit: {
-        type: String,
-        required: false,
-      },
-    },
-    originalLights: {
-      type: Boolean,
-      required: true,
-    },
-    customization: {
-      type: Boolean,
-      required: false,
-    },
-    drivenByOwner: {
-      type: Boolean,
-      required: false,
-    },
-    engineOilChangeEveryThreeMonths: {
-      type: Boolean,
-      required: false,
-    },
-    registrationYear: {
-      type: Number,
-      required: true,
-    },
-    paintHistory: {
-      type: String,
-      required: true,
-    },
-    taxToken: {
-      type: String,
-      required: true,
-    },
-    fitness: {
-      type: String,
-      required: true,
-    },
-    nameTransferPossibility: {
-      type: Boolean,
-      required: true,
-    },
-
-    smartCard: {
-      type: Boolean,
-      required: true,
-    },
-    firstPartyInsurance: {
-      type: Boolean,
-      required: true,
-    },
     numberOfDoors: {
       type: Number,
       required: true,
@@ -236,6 +150,20 @@ const carSchema = new mongoose.Schema(
     timestamps: true,
   },
 );
+
+carSchema.pre('save', async function (next) {
+  let car = this as CarDocument;
+
+  const slug = slugify(car.name, {
+    lower: true,
+  });
+
+  const suffix = nanoid(3);
+
+  car.slug = slug + '-' + suffix;
+
+  return next();
+});
 
 const Car = mongoose.model<CarDocument>('Car', carSchema);
 

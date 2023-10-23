@@ -1,4 +1,6 @@
 import mongoose from 'mongoose';
+import slugify from 'slugify';
+import { nanoid } from 'nanoid';
 import { CreateUsedCarInputs } from './schema';
 
 export interface UsedCarDocument extends CreateUsedCarInputs, mongoose.Document {
@@ -16,7 +18,7 @@ const usedCarSchema = new mongoose.Schema(
 
     slug: {
       type: String,
-      required: true,
+      required: false,
       unique: true,
     },
 
@@ -41,7 +43,7 @@ const usedCarSchema = new mongoose.Schema(
     },
 
     modelNumber: {
-      type: String,
+      type: Number,
       required: true,
     },
 
@@ -245,5 +247,19 @@ const usedCarSchema = new mongoose.Schema(
 );
 
 const UsedCar = mongoose.model<UsedCarDocument>('UsedCar', usedCarSchema);
+
+usedCarSchema.pre('save', async function (next) {
+  let car = this as UsedCarDocument;
+
+  const slug = slugify(car.name, {
+    lower: true,
+  });
+
+  const suffix = nanoid(3);
+
+  car.slug = slug + '-' + suffix;
+
+  return next();
+});
 
 export default UsedCar;

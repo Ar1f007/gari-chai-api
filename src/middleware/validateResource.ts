@@ -1,14 +1,13 @@
 import { Request, Response, NextFunction } from 'express';
 import { AnyZodObject, ZodError } from 'zod';
 
-const validate = (schema: AnyZodObject) => (req: Request, res: Response, next: NextFunction) => {
+const validateResource = (schema: AnyZodObject) => (req: Request, res: Response, next: NextFunction) => {
   try {
     schema.parse({
       body: req.body,
       query: req.query,
       params: req.params,
     });
-
     next();
   } catch (e: unknown) {
     if (!(e instanceof ZodError)) {
@@ -16,7 +15,7 @@ const validate = (schema: AnyZodObject) => (req: Request, res: Response, next: N
     }
 
     const errors = e.errors.map((e) => ({
-      fieldName: e.path,
+      fieldName: e.path[1], // ['body/params/query', 'fieldName']
       message: e.message,
     }));
 
@@ -27,4 +26,4 @@ const validate = (schema: AnyZodObject) => (req: Request, res: Response, next: N
   }
 };
 
-export default validate;
+export default validateResource;

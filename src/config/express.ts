@@ -1,11 +1,13 @@
 import compression from 'compression';
 import cookieParser from 'cookie-parser';
-import express, { NextFunction, Request } from 'express';
+import express from 'express';
 import helmet from 'helmet';
 import mongoSanitize from 'express-mongo-sanitize';
 import rateLimit from 'express-rate-limit';
+
 import AppError from '../utils/appError';
 import { globalErrorHandler } from '../controller';
+import routes from '../routes';
 
 const expressConfig = () => {
   const app = express();
@@ -31,13 +33,7 @@ const expressConfig = () => {
   app.use(compression());
 
   // ROUTES
-  app.get('/', (req, res: any) => {
-    return res.status(200).json('hello');
-  });
-
-  app.get('/s', (req, res: any) => {
-    return res.status(200).json('hello s');
-  });
+  routes(app);
 
   app.all('*', (req, res: any, next) => {
     const err = new AppError(`Can't find ${req.originalUrl} on the server!`, 404);
