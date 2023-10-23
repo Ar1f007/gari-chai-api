@@ -246,8 +246,6 @@ const usedCarSchema = new mongoose.Schema(
   },
 );
 
-const UsedCar = mongoose.model<UsedCarDocument>('UsedCar', usedCarSchema);
-
 usedCarSchema.pre('save', async function (next) {
   let car = this as UsedCarDocument;
 
@@ -261,5 +259,7 @@ usedCarSchema.pre('save', async function (next) {
 
   return next();
 });
+
+const UsedCar = mongoose.model<UsedCarDocument>('UsedCar', usedCarSchema);
 
 export default UsedCar;

@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 export const engineSchemaBasic = z.object({
   type: z.string(),
-  displacement: z.string().optional(),
+  displacement: z.number().optional(),
   horsePower: z.number().optional(),
   torque: z.number().optional(),
 });
@@ -31,8 +31,8 @@ const payload = {
       type: z.string(),
       economy: z
         .object({
-          city: z.string().optional(),
-          highway: z.string().optional(),
+          city: z.number().optional(),
+          highway: z.number().optional(),
         })
         .optional(),
     }),
@@ -40,7 +40,7 @@ const payload = {
     acceleration: z
       .object({
         zeroTo60: z.number().optional(),
-        topSpeed: z.string().optional(),
+        topSpeed: z.number().optional(),
       })
       .optional(),
 

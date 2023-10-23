@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
-import { createNewCar, findAndUpdateCar, findCar, findCars } from './service';
-import { CreateNewCarInputs, UpdateCarInput } from './schema';
+import { createNewCar, deleteCar, findAndUpdateCar, findCar, findCars } from './service';
+import { CreateNewCarInputs, DeleteCarInput, ReadCarInput, UpdateCarInput } from './schema';
 import { StatusCodes } from 'http-status-codes';
 import AppError from '../../../utils/appError';
 
@@ -26,7 +26,7 @@ export async function getCarsHandler(req: Request, res: Response) {
   });
 }
 
-export async function getCarHandler(req: Request<UpdateCarInput['params']>, res: Response) {
+export async function getCarHandler(req: Request<ReadCarInput['params']>, res: Response) {
   const carSlug = req.params.carSlug;
 
   const car = await findCar({ slug: carSlug });
@@ -67,5 +67,25 @@ export async function updateCarHandler(
   res.status(StatusCodes.OK).json({
     status: 'success',
     data: updatedCar,
+  });
+}
+
+export async function deleteCarHandler(req: Request<DeleteCarInput['params']>, res: Response) {
+  const carSlug = req.params.carSlug;
+
+  const car = await findCar({ slug: carSlug });
+
+  if (!car) {
+    return res.status(StatusCodes.NOT_FOUND).json({
+      status: 'fail',
+      message: 'No car found',
+    });
+  }
+
+  await deleteCar({ slug: carSlug });
+
+  res.status(StatusCodes.OK).json({
+    status: 'success',
+    message: 'Car was deleted',
   });
 }
