@@ -3,7 +3,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 import { z } from 'zod';
-import logger from '../utils/logger';
+import logger from './logger';
 
 const envSchema = z.object({
   PORT: z.string().default('8000'),

@@ -6,8 +6,8 @@ import mongoSanitize from 'express-mongo-sanitize';
 import rateLimit from 'express-rate-limit';
 
 import AppError from '../utils/appError';
-import { globalErrorHandler } from '../controller';
-import routes from '../routes';
+import routes from '../utils/routes';
+import { globalErrorHandler } from '../middleware';
 
 const expressConfig = () => {
   const app = express();

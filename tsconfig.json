@@ -11,6 +11,10 @@
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
 
+    "allowJs": true,
+    "resolveJsonModule": true,
+    "moduleDetection": "force",
+
     "strict": true,
     "skipLibCheck": true
   },

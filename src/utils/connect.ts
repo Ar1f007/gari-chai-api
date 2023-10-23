@@ -1,4 +1,4 @@
-import { envVariables } from '../schema/env';
+import { envVariables } from './env';
 import logger from './logger';
 import mongoose from 'mongoose';
 

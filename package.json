@@ -4,10 +4,11 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "npx tsc",
+    "build": "rimraf dist && tsc",
+    "preserve": "npm run build",
+    "serve": "nodemon src/index.ts",
+    "prestart": "npm run build",
     "start": "cross-env NODE_ENV=production node dist/index.js",
-    "start:prod": "pnpm build && pnpm start",
-    "dev": "nodemon src/index.ts",
     "lint": "eslint src/**/*.ts",
     "format": "eslint src/**/*.ts --fix"
   },
@@ -19,7 +20,7 @@
     "cookie-parser": "^1.4.6",
     "dotenv": "^16.3.1",
     "express": "^4.18.2",
-    "express-async-handler": "^1.2.0",
+    "express-async-errors": "^3.1.1",
     "express-mongo-sanitize": "^2.2.0",
     "express-rate-limit": "^7.1.1",
     "helmet": "^7.0.0",
@@ -29,6 +30,7 @@
     "nanoid": "^3.3.6",
     "pino": "^8.16.0",
     "pino-pretty": "^10.2.3",
+    "rimraf": "^5.0.5",
     "slugify": "^1.6.6",
     "typescript": "^5.2.2",
     "zod": "^3.22.4"

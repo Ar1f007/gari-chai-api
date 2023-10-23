@@ -1,10 +1,9 @@
 import express from 'express';
-import asyncHandler from 'express-async-handler';
 
 import { createCarHandler } from './controller';
-import validateResource from '../../../middleware/validateResource';
 import { createNewCarSchema } from './schema';
+import { validateResource } from '../../../middleware';
 
 export const carRouter = express.Router();
 
-carRouter.route('/').post(validateResource(createNewCarSchema), asyncHandler(createCarHandler));
+carRouter.route('/').post(validateResource(createNewCarSchema), createCarHandler);
