@@ -5,9 +5,9 @@ import helmet from 'helmet';
 import mongoSanitize from 'express-mongo-sanitize';
 import rateLimit from 'express-rate-limit';
 
-import routes from '../routes';
 import AppError from '../utils/appError';
 import { globalErrorHandler } from '../middleware';
+import routes from './apiRoutes';
 
 const configureExpressApp = () => {
   const app = express();
