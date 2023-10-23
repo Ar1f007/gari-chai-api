@@ -5,11 +5,11 @@ import helmet from 'helmet';
 import mongoSanitize from 'express-mongo-sanitize';
 import rateLimit from 'express-rate-limit';
 
-import AppError from '../utils/appError';
 import routes from '../utils/routes';
+import AppError from '../utils/appError';
 import { globalErrorHandler } from '../middleware';
 
-const expressConfig = () => {
+const configureExpressApp = () => {
   const app = express();
 
   // Set security HTTP headers
@@ -43,4 +43,4 @@ const expressConfig = () => {
   app.use(globalErrorHandler);
   return app;
 };
-export default expressConfig;
+export default configureExpressApp;

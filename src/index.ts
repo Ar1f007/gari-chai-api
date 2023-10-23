@@ -1,13 +1,13 @@
-import connect from './utils/connect';
-import expressConfig from './config/express';
-import logger from './utils/logger';
+import configureExpressApp from './express';
 
 import { envVariables } from './utils/env';
+import connect from './utils/connect';
+import logger from './utils/logger';
 import { handleSIGINT, handleSIGTERM, handleUncaughtException, handleUnhandledRejection } from './utils/eventHandlers';
 
 handleUncaughtException();
 
-const app = expressConfig();
+const app = configureExpressApp();
 
 const PORT = envVariables.PORT;
 
