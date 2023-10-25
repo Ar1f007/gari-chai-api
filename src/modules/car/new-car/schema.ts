@@ -15,7 +15,7 @@ const payload = {
 
     registrationYear: z.number(),
 
-    description: z.string(),
+    description: z.string().optional(),
 
     brandName: z.string(),
 
@@ -44,13 +44,13 @@ const payload = {
       })
       .optional(),
 
-    safetyFeatures: z.array(z.string()).optional(),
+    safetyFeatures: z.string().optional(),
 
-    infotainmentSystem: z.string(),
+    infotainmentSystem: z.string().optional(),
 
     mileage: z.number(),
 
-    imageUrls: z.array(z.string()),
+    imageUrls: z.array(z.string()).optional(),
 
     color: z.string(),
 

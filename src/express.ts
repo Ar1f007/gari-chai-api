@@ -4,6 +4,7 @@ import express from 'express';
 import helmet from 'helmet';
 import mongoSanitize from 'express-mongo-sanitize';
 import rateLimit from 'express-rate-limit';
+import cors from 'cors';
 
 import routes from './config/apiRoutes';
 import AppError from './utils/appError';
@@ -11,6 +12,8 @@ import { globalErrorHandler } from './middleware';
 
 const configureExpressApp = () => {
   const app = express();
+
+  app.use(cors());
 
   // Set security HTTP headers
   app.use(helmet());

@@ -35,7 +35,7 @@ const carSchema = new mongoose.Schema(
 
     description: {
       type: String,
-      required: true,
+      required: false,
     },
 
     brandName: {
@@ -112,7 +112,7 @@ const carSchema = new mongoose.Schema(
     },
 
     safetyFeatures: {
-      type: [String],
+      type: String,
       required: false,
     },
 
