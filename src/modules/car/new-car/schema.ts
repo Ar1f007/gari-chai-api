@@ -17,7 +17,10 @@ const payload = {
 
     description: z.string().optional(),
 
-    brandName: z.string(),
+    brand: z.object({
+      slug: z.string(),
+      name: z.string(),
+    }),
 
     modelNumber: z.number(),
 
@@ -68,6 +71,12 @@ const params = {
   }),
 };
 
+const query = {
+  query: z.object({
+    brand: z.string().optional(),
+  }),
+};
+
 export const createNewCarSchema = z.object({
   ...payload,
 });
@@ -83,6 +92,7 @@ export const deleteCarSchema = z.object({
 
 export const getCarSchema = z.object({
   ...params,
+  ...query,
 });
 
 export type CreateNewCarInputs = z.infer<typeof createNewCarSchema>['body'];

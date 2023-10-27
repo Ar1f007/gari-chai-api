@@ -37,9 +37,15 @@ const usedCarSchema = new mongoose.Schema(
       required: true,
     },
 
-    brandName: {
-      type: String,
-      required: true,
+    brand: {
+      slug: {
+        type: String,
+        required: true,
+      },
+      name: {
+        type: String,
+        required: true,
+      },
     },
 
     modelNumber: {

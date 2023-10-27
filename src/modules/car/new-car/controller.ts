@@ -17,8 +17,14 @@ export async function createCarHandler(req: Request<{}, {}, CreateNewCarInputs>,
   });
 }
 
-export async function getCarsHandler(req: Request, res: Response) {
-  const cars = await findCars();
+export async function getCarsHandler(req: Request<{}, {}, {}, ReadCarInput['query']>, res: Response) {
+  const queries: Record<string, string> = {};
+
+  if (req.query.brand) {
+    queries['brand.slug'] = req.query.brand;
+  }
+
+  const cars = await findCars(queries);
 
   res.status(StatusCodes.OK).json({
     status: 'success',
