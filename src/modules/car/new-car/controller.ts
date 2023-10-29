@@ -3,6 +3,7 @@ import { createNewCar, deleteCar, findAndUpdateCar, findCar, findCars } from './
 import { CreateNewCarInputs, DeleteCarInput, ReadCarInput, UpdateCarInput } from './schema';
 import { StatusCodes } from 'http-status-codes';
 import AppError from '../../../utils/appError';
+import { updateBrandCarCollectionCount } from '../../brand/service';
 
 export async function createCarHandler(req: Request<{}, {}, CreateNewCarInputs>, res: Response) {
   const car = await createNewCar(req.body);
@@ -10,6 +11,9 @@ export async function createCarHandler(req: Request<{}, {}, CreateNewCarInputs>,
   if (!car) {
     throw new AppError('Could not create car', StatusCodes.BAD_REQUEST);
   }
+
+  // increase the car collection count in brand model
+  await updateBrandCarCollectionCount({ type: 'inc', brandSlug: car.brand.slug });
 
   res.status(StatusCodes.CREATED).json({
     status: 'success',
@@ -88,7 +92,12 @@ export async function deleteCarHandler(req: Request<DeleteCarInput['params']>, r
     });
   }
 
-  await deleteCar({ slug: carSlug });
+  const deletedCar = await deleteCar({ slug: carSlug });
+
+  if (deletedCar.acknowledged) {
+    // decrease the car collection count in brand model
+    await updateBrandCarCollectionCount({ type: 'dec', brandSlug: carSlug });
+  }
 
   res.status(StatusCodes.OK).json({
     status: 'success',

@@ -18,8 +18,16 @@ export async function createBrandHandler(req: Request<{}, {}, CreateNewBrandInpu
   });
 }
 
-export async function getBrandsHandler(req: Request, res: Response) {
-  const brands = await findBrands();
+export async function getBrandsHandler(req: Request<{}, {}, {}, ReadBrandInput['query']>, res: Response) {
+  // if in query params, "get=all" is present then return all the brands without filtering.
+  // hence we set to filtering value "greater than or equal" to 0, if not get="all", then we are
+  // getting each brand which has at least one car into its collection
+
+  const query = {
+    carCollectionCount: { $gte: req.query.get === 'all' ? 0 : 1 },
+  };
+
+  const brands = await findBrands(query);
 
   res.status(StatusCodes.OK).json({
     status: 'success',

@@ -29,3 +29,19 @@ export async function findAndUpdateBrand(
 export async function deleteBrand(query: FilterQuery<BrandDocument>) {
   return BrandModel.deleteOne(query);
 }
+
+export async function updateBrandCarCollectionCount({ type, brandSlug }: { type: 'inc' | 'dec'; brandSlug: string }) {
+  const brand = await BrandModel.findOneAndUpdate(
+    { slug: brandSlug },
+    {
+      $inc: {
+        carCollectionCount: type === 'inc' ? 1 : -1,
+      },
+    },
+    {
+      new: true,
+    },
+  );
+
+  return brand;
+}

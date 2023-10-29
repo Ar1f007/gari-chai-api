@@ -14,6 +14,12 @@ const params = {
   }),
 };
 
+const query = {
+  query: z.object({
+    get: z.string().optional(),
+  }),
+};
+
 export const createBrandSchema = z.object({
   ...payload,
 });
@@ -29,6 +35,7 @@ export const deleteBrandSchema = z.object({
 
 export const getBrandSchema = z.object({
   ...params,
+  ...query,
 });
 
 export type CreateNewBrandInputs = z.infer<typeof createBrandSchema>['body'];

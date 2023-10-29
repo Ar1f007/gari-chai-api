@@ -5,6 +5,7 @@ import { nanoid } from 'nanoid';
 
 export interface BrandDocument extends CreateNewBrandInputs, mongoose.Document {
   slug: string;
+  carCollectionCount: number;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -27,6 +28,10 @@ const brandSchema = new mongoose.Schema(
         type: String,
         required: false,
       },
+    },
+    carCollectionCount: {
+      type: Number,
+      default: 0,
     },
   },
   {
