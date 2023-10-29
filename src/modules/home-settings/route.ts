@@ -1,7 +1,19 @@
 import express from 'express';
 import { validateResource } from '../../middleware';
-import { createNewHomeSettingsSchema, getHomeSettingSchema, getHomeSettingsQuerySchema } from './schema';
-import { createHomeSettingHandler, getHomeSettingsHandler, homeSettingBySlugHandler } from './controller';
+import {
+  createNewHomeSettingsSchema,
+  deleteHomeSettingItemSchema,
+  getHomeSettingSchema,
+  getHomeSettingsQuerySchema,
+  updateHomeSettingItemSchema,
+} from './schema';
+import {
+  createHomeSettingHandler,
+  deleteSettingItemHandler,
+  getHomeSettingsHandler,
+  homeSettingBySlugHandler,
+  homeSettingItemUpdateHandler,
+} from './controller';
 export const homeSettingRouter = express.Router();
 
 homeSettingRouter
@@ -9,4 +21,8 @@ homeSettingRouter
   .post(validateResource(createNewHomeSettingsSchema), createHomeSettingHandler)
   .get(validateResource(getHomeSettingsQuerySchema), getHomeSettingsHandler);
 
-homeSettingRouter.route('/:sectionName').get(validateResource(getHomeSettingSchema), homeSettingBySlugHandler);
+homeSettingRouter
+  .route('/:sectionName')
+  .get(validateResource(getHomeSettingSchema), homeSettingBySlugHandler)
+  .put(validateResource(updateHomeSettingItemSchema), homeSettingItemUpdateHandler)
+  .delete(validateResource(deleteHomeSettingItemSchema), deleteSettingItemHandler);

@@ -12,6 +12,15 @@ const payload = {
   }),
 };
 
+const updatePayloadBody = {
+  body: z.object({
+    contentId: z.string(),
+    sectionName: sectionNameEnum,
+    tags: z.array(z.string()).optional(),
+    sort: z.number().default(0),
+  }),
+};
+
 const params = {
   params: z.object({
     sectionName: sectionNameEnum,
@@ -39,10 +48,22 @@ export const getHomeSettingsQuerySchema = z.object({
   ...query,
 });
 
+export const updateHomeSettingItemSchema = z.object({
+  ...updatePayloadBody,
+  ...params,
+});
+
+export const deleteHomeSettingItemSchema = z.object({
+  ...params,
+  body: z.object({
+    itemId: z.string(),
+  }),
+});
+
 export type CreateHomeSettingInputs = z.infer<typeof createNewHomeSettingsSchema>['body'];
-
 export type ReadHomeSettingInput = z.infer<typeof getHomeSettingSchema>;
-
+export type UpdateHomeSettingItemInput = z.infer<typeof updateHomeSettingItemSchema>;
+export type DeleteHomeSettingItemInput = z.infer<typeof deleteHomeSettingItemSchema>;
 /**
  * Most Searched cars
  *  - SUV
