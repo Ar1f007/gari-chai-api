@@ -37,6 +37,18 @@ export async function getHomeSettingsHandler(
 
   const settingContents = await findSettingContents(query);
 
+  // const r = await HomeSetting.aggregate([
+  //   {
+  //     $sort: { sort: -1 }, // Sort the documents in descending order by the 'sort' field
+  //   },
+  //   {
+  //     $group: {
+  //       _id: '$sectionName',
+  //       items: { $push: '$$ROOT' },
+  //     },
+  //   },
+  // ]);
+
   res.status(StatusCodes.OK).json({
     status: 'success',
     data: settingContents,
@@ -44,7 +56,7 @@ export async function getHomeSettingsHandler(
 }
 
 export async function homeSettingBySlugHandler(req: Request<ReadHomeSettingInput['params']>, res: Response) {
-  const contents = await findSettingContents({ sectionName: req.params.sectionName });
+  const contents = await findSettingContents({ sectionName: req.params.sectionName }, { sort: { sort: -1 } });
 
   res.status(StatusCodes.OK).json({
     status: 'success',

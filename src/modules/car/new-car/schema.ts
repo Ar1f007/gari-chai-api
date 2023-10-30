@@ -65,6 +65,10 @@ const payload = {
       originalUrl: z.string().url(),
       thumbnailUrl: z.string().url(),
     }),
+
+    price: z.number(),
+
+    tags: z.array(z.string()).optional().default([]),
   }),
 };
 

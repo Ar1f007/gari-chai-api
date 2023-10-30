@@ -33,7 +33,6 @@
     "pino": "^8.16.0",
     "pino-pretty": "^10.2.3",
     "rimraf": "^5.0.5",
-    "sharp": "^0.32.6",
     "slugify": "^1.6.6",
     "typescript": "^5.2.2",
     "zod": "^3.22.4"

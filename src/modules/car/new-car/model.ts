@@ -159,6 +159,15 @@ const carSchema = new mongoose.Schema(
       type: Number,
       required: true,
     },
+    price: {
+      type: Number,
+      required: false,
+    },
+    tags: {
+      type: [String],
+      required: false,
+      default: [],
+    },
   },
   {
     timestamps: true,

@@ -3,26 +3,28 @@ import cookieParser from 'cookie-parser';
 import express from 'express';
 import helmet from 'helmet';
 import mongoSanitize from 'express-mongo-sanitize';
-import rateLimit from 'express-rate-limit';
-
+// import rateLimit from 'express-rate-limit';
+import cors from 'cors';
+import routes from './apiRoutes';
 import AppError from '../utils/appError';
 import { globalErrorHandler } from '../middleware';
-import routes from './apiRoutes';
 
 const configureExpressApp = () => {
   const app = express();
+
+  app.use(cors());
 
   // Set security HTTP headers
   app.use(helmet());
 
   // Limit requests from same API
-  const limiter = rateLimit({
-    max: 1100,
-    windowMs: 60 * 60 * 1000,
-    message: 'Too many requests from this IP, please try again in an hour!',
-  });
+  // const limiter = rateLimit({
+  //   max: 100,
+  //   windowMs: 60 * 60 * 1000,
+  //   message: 'Too many requests from this IP, please try again in an hour!',
+  // });
 
-  app.use('/api', limiter);
+  // app.use('/api', limiter);
 
   app.use(express.urlencoded({ extended: true }));
   app.use(express.json());

@@ -246,6 +246,10 @@ const usedCarSchema = new mongoose.Schema(
       type: Boolean,
       required: true,
     },
+    price: {
+      type: Number,
+      required: false,
+    },
   },
   {
     timestamps: true,
