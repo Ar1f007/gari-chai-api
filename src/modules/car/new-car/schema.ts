@@ -60,6 +60,11 @@ const payload = {
     baseInteriorColor: z.string(),
 
     numberOfDoors: z.number(),
+
+    posterImage: z.object({
+      originalUrl: z.string().url(),
+      thumbnailUrl: z.string().url(),
+    }),
   }),
 };
 

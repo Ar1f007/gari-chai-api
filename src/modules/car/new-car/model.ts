@@ -132,6 +132,14 @@ const carSchema = new mongoose.Schema(
       required: true,
     },
 
+    posterImage: {
+      type: {
+        originalUrl: String,
+        thumbnailUrl: String,
+      },
+      required: true,
+    },
+
     imageUrls: {
       type: [String],
       required: true,
