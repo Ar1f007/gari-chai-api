@@ -1,6 +1,15 @@
 import { z } from 'zod';
 
-const sectionNameEnum = z.enum(['most-searched', 'latest-cars', 'popular-cars', 'electric-cars', 'services']);
+// make sure it is synced with ADMIN's Home settings slug/section names
+const sectionNameEnum = z.enum([
+  'most-searched-cars',
+  'latest-cars',
+  'popular-cars',
+  'electric-cars',
+  'upcoming-cars',
+  'services',
+  'popular-brands',
+]);
 
 const payload = {
   body: z.object({

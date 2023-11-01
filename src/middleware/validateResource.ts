@@ -20,9 +20,11 @@ export const validateResource = (schema: AnyZodObject) => (req: Request, res: Re
       message: e.message,
     }));
 
+    const firstErrorMessage = e.issues[0].message;
+
     return res.status(422).json({
       status: 'validationError',
-      message: 'invalid inputs',
+      message: firstErrorMessage,
       errors,
     });
   }
