@@ -164,9 +164,18 @@ const carSchema = new mongoose.Schema(
       required: false,
     },
     tags: {
-      type: [String],
-      required: false,
+      type: [
+        {
+          value: String,
+          label: String,
+        },
+      ],
+
       default: [],
+    },
+    publishedAt: {
+      type: Date,
+      required: [true, 'A date is required'],
     },
   },
   {

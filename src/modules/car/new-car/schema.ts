@@ -1,5 +1,10 @@
 import { z } from 'zod';
 
+export const selectOption = z.object({
+  value: z.string(),
+  label: z.string(),
+});
+
 export const engineSchemaBasic = z.object({
   type: z.string(),
   displacement: z.number().optional(),
@@ -68,7 +73,17 @@ const payload = {
 
     price: z.number(),
 
-    tags: z.array(z.string()).optional().default([]),
+    tags: z.array(selectOption).optional().default([]),
+
+    publishedAt: z.preprocess(
+      (arg) => {
+        if (typeof arg === 'string' || arg instanceof Date) return new Date(arg);
+      },
+      z.date({
+        required_error: 'Please select a date and time',
+        invalid_type_error: "That's not a date!",
+      }),
+    ),
   }),
 };
 
