@@ -10,6 +10,7 @@ export const engineSchemaBasic = z.object({
   displacement: z.number().optional(),
   horsePower: z.number().optional(),
   torque: z.number().optional(),
+  condition: z.string().optional(),
 });
 
 const payload = {
@@ -58,7 +59,7 @@ const payload = {
 
     mileage: z.number(),
 
-    imageUrls: z.array(z.string()).optional(),
+    imageUrls: z.array(z.string().url()).optional(),
 
     color: z.string(),
 

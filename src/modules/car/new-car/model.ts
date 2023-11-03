@@ -124,7 +124,7 @@ const carSchema = new mongoose.Schema(
 
     infotainmentSystem: {
       type: String,
-      required: true,
+      required: false,
     },
 
     mileage: {
@@ -132,17 +132,10 @@ const carSchema = new mongoose.Schema(
       required: true,
     },
 
-    posterImage: {
-      type: {
-        originalUrl: String,
-        thumbnailUrl: String,
-      },
-      required: true,
-    },
-
     imageUrls: {
       type: [String],
-      required: true,
+      required: false,
+      default: [],
     },
 
     color: {
@@ -157,6 +150,13 @@ const carSchema = new mongoose.Schema(
 
     numberOfDoors: {
       type: Number,
+      required: true,
+    },
+    posterImage: {
+      type: {
+        originalUrl: String,
+        thumbnailUrl: String,
+      },
       required: true,
     },
     price: {

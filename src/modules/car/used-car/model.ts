@@ -34,7 +34,7 @@ const usedCarSchema = new mongoose.Schema(
 
     description: {
       type: String,
-      required: true,
+      required: false,
     },
 
     brand: {
@@ -117,13 +117,13 @@ const usedCarSchema = new mongoose.Schema(
     },
 
     safetyFeatures: {
-      type: [String],
+      type: String,
       required: false,
     },
 
     infotainmentSystem: {
       type: String,
-      required: true,
+      required: false,
     },
 
     mileage: {
@@ -133,7 +133,8 @@ const usedCarSchema = new mongoose.Schema(
 
     imageUrls: {
       type: [String],
-      required: true,
+      required: false,
+      default: [],
     },
 
     color: {
@@ -149,6 +150,33 @@ const usedCarSchema = new mongoose.Schema(
     numberOfDoors: {
       type: Number,
       required: true,
+    },
+
+    posterImage: {
+      type: {
+        originalUrl: String,
+        thumbnailUrl: String,
+      },
+      required: true,
+    },
+
+    price: {
+      type: Number,
+      required: false,
+    },
+    tags: {
+      type: [
+        {
+          value: String,
+          label: String,
+        },
+      ],
+
+      default: [],
+    },
+    publishedAt: {
+      type: Date,
+      required: [true, 'A date is required'],
     },
 
     scratchesOrDents: {
@@ -245,10 +273,6 @@ const usedCarSchema = new mongoose.Schema(
     firstPartyInsurance: {
       type: Boolean,
       required: true,
-    },
-    price: {
-      type: Number,
-      required: false,
     },
   },
   {
