@@ -8,6 +8,12 @@ export async function createNewHomeSetting(input: CreateHomeSettingInputs) {
   return res;
 }
 
+export async function createManyHomeSetting(input: any) {
+  const res = await HomeSetting.insertMany(input);
+
+  return res;
+}
+
 export async function findSettingContent(
   query: FilterQuery<HomeSettingDocument>,
   options: QueryOptions = { lean: true },

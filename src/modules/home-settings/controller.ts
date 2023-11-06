@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import {
+  createManyHomeSetting,
   createNewHomeSetting,
   deleteSettingItem,
   findAndUpdateSettingItem,
@@ -12,6 +13,19 @@ import { DeleteHomeSettingItemInput, ReadHomeSettingInput, UpdateHomeSettingItem
 
 export async function createHomeSettingHandler(req: Request, res: Response) {
   const doc = await createNewHomeSetting(req.body);
+
+  if (!doc) {
+    throw new AppError('Could not add to the settings', StatusCodes.BAD_REQUEST);
+  }
+
+  res.status(StatusCodes.CREATED).json({
+    status: 'success',
+    data: doc,
+  });
+}
+
+export async function createMultipleHomeSettingsHandler(req: Request, res: Response) {
+  const doc = await createManyHomeSetting(req.body);
 
   if (!doc) {
     throw new AppError('Could not add to the settings', StatusCodes.BAD_REQUEST);

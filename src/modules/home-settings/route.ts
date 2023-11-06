@@ -9,6 +9,7 @@ import {
 } from './schema';
 import {
   createHomeSettingHandler,
+  createMultipleHomeSettingsHandler,
   deleteSettingItemHandler,
   getHomeSettingsHandler,
   homeSettingBySlugHandler,
@@ -20,6 +21,8 @@ homeSettingRouter
   .route('/')
   .post(validateResource(createNewHomeSettingsSchema), createHomeSettingHandler)
   .get(validateResource(getHomeSettingsQuerySchema), getHomeSettingsHandler);
+
+homeSettingRouter.route('/popular-brands').post(createMultipleHomeSettingsHandler);
 
 homeSettingRouter
   .route('/:sectionName')

@@ -11,23 +11,20 @@ const sectionNameEnum = z.enum([
   'popular-brands',
 ]);
 
+const homeSettingSchema = z.object({
+  contentId: z.string(),
+  sectionName: sectionNameEnum,
+  content: z.any(),
+  tags: z.array(z.string()).optional(),
+  sort: z.number().default(0),
+});
+
 const payload = {
-  body: z.object({
-    contentId: z.string(),
-    sectionName: sectionNameEnum,
-    content: z.any(),
-    tags: z.array(z.string()).optional(),
-    sort: z.number().default(0),
-  }),
+  body: homeSettingSchema,
 };
 
 const updatePayloadBody = {
-  body: z.object({
-    contentId: z.string(),
-    sectionName: sectionNameEnum,
-    tags: z.array(z.string()).optional(),
-    sort: z.number().default(0),
-  }),
+  ...payload,
 };
 
 const params = {
@@ -73,6 +70,7 @@ export type CreateHomeSettingInputs = z.infer<typeof createNewHomeSettingsSchema
 export type ReadHomeSettingInput = z.infer<typeof getHomeSettingSchema>;
 export type UpdateHomeSettingItemInput = z.infer<typeof updateHomeSettingItemSchema>;
 export type DeleteHomeSettingItemInput = z.infer<typeof deleteHomeSettingItemSchema>;
+
 /**
  * Most Searched cars
  *  - SUV
