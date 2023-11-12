@@ -1,0 +1,1 @@
+export const GARI_CHAI_TOKEN = 'X_GARI_CHAI_TOKEN';
