@@ -1,10 +1,12 @@
 import { Response, Request } from 'express';
+import bcrypt from 'bcrypt';
+
 import { StatusCodes } from 'http-status-codes';
 import { omit } from 'lodash';
 
-import { createNewUser, findUser, removeUser } from './service';
+import { createNewUser, findUser, deleteUser, findAndUpdateUser } from './service';
 import AppError from '../../utils/appError';
-import { CreateUserInputs } from './schema';
+import { CreateUserInputs, VerifyOTPInputs } from './schema';
 import { sendOTP } from '../../utils/sendOTP';
 
 export async function createNewUserHandler(req: Request<{}, {}, CreateUserInputs>, res: Response) {
@@ -30,7 +32,7 @@ export async function createNewUserHandler(req: Request<{}, {}, CreateUserInputs
   try {
     await sendOTP(code);
   } catch (e) {
-    removeUser({ phoneNumber });
+    deleteUser({ phoneNumber });
 
     return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
       status: 'fail',
@@ -41,7 +43,7 @@ export async function createNewUserHandler(req: Request<{}, {}, CreateUserInputs
     });
   }
 
-  const userDoc = doc.toObject();
+  const userDoc = doc.toJSON();
 
   const sanitizedUserDoc = omit(userDoc, ['password', 'verificationCode', 'verificationCodeExpires']);
 
@@ -50,5 +52,58 @@ export async function createNewUserHandler(req: Request<{}, {}, CreateUserInputs
     data: sanitizedUserDoc,
     message: 'Please provide the OTP we sent to your phone',
     isOTPSentSuccessful: true,
+  });
+}
+
+export async function verifyOTPHandler(req: Request<{}, {}, VerifyOTPInputs>, res: Response) {
+  const { otp, phoneNumber } = req.body;
+
+  const user = await findUser({ phoneNumber });
+
+  if (!user) {
+    throw new AppError('No user was found', StatusCodes.BAD_REQUEST);
+  }
+
+  if (!user.verificationCode || (user.verificationCodeExpires && new Date() > user.verificationCodeExpires)) {
+    return res.status(StatusCodes.BAD_REQUEST).json({
+      success: 'fail',
+      message: 'Your verification code is invalid or has expired, please try again',
+      OTPExpiredOrNotFound: true,
+    });
+  }
+
+  const isValidOTP = await bcrypt.compare(otp.toString(), user.verificationCode);
+
+  if (isValidOTP) {
+    const doc = await findAndUpdateUser(
+      {
+        _id: user._id,
+      },
+      {
+        isVerified: true,
+        verificationCode: null,
+        verificationCodeExpires: null,
+      },
+      {
+        new: true,
+      },
+    );
+
+    if (doc) {
+      const userDoc = doc.toJSON();
+
+      const sanitizedUserDoc = omit(userDoc, ['password', 'verificationCode', 'verificationCodeExpires']);
+
+      return res.status(StatusCodes.OK).json({
+        status: 'success',
+        message: 'Account is verified',
+        data: sanitizedUserDoc,
+      });
+    }
+  }
+
+  res.status(StatusCodes.BAD_REQUEST).json({
+    status: 'error',
+    message: 'Invalid code',
   });
 }

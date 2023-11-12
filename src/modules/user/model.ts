@@ -7,9 +7,17 @@ import { CreateUserInputs } from './schema';
 export interface UserDocument extends CreateUserInputs, mongoose.Document {
   createdAt: Date;
   updatedAt: Date;
-  verificationCode: string;
+
+  verificationCode: string | undefined;
+  verificationCodeExpires: Date | undefined;
+
+  passwordChangedAt: Date;
+  passwordResetCode: string;
+  passwordResetExpires: Date | undefined;
+
   isVerified: boolean;
   isAccountActive: boolean;
+
   generateAccountVerificationCode(): Promise<number>;
   createPasswordResetCode(): Promise<string>;
   comparePassword(): Promise<boolean>;
@@ -104,6 +112,7 @@ userSchema.methods.generateAccountVerificationCode = async function () {
   const salt = await bcrypt.genSalt(SALT_ROUNDS);
 
   this.verificationCode = await bcrypt.hash(code.toString(), salt);
+
   this.verificationCodeExpires = Date.now() + TEN_MINUTES_IN_MS; // 10 min
 
   return code;

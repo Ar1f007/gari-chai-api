@@ -1,4 +1,4 @@
-import { FilterQuery, QueryOptions } from 'mongoose';
+import { FilterQuery, QueryOptions, UpdateQuery } from 'mongoose';
 import User, { UserDocument } from './model';
 import { CreateUserInputs } from './schema';
 
@@ -10,6 +10,14 @@ export async function findUser(query: FilterQuery<UserDocument>, options: QueryO
   return User.findOne(query, {}, options);
 }
 
-export async function removeUser(query: FilterQuery<UserDocument>) {
+export async function findAndUpdateUser(
+  query: FilterQuery<UserDocument>,
+  update: UpdateQuery<UserDocument>,
+  options: QueryOptions,
+) {
+  return User.findOneAndUpdate(query, update, options);
+}
+
+export async function deleteUser(query: FilterQuery<UserDocument>) {
   return User.deleteOne(query);
 }
