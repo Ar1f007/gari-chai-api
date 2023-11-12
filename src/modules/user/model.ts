@@ -8,6 +8,8 @@ export interface UserDocument extends CreateUserInputs, mongoose.Document {
   createdAt: Date;
   updatedAt: Date;
 
+  role: string[];
+
   verificationCode: string | undefined;
   verificationCodeExpires: Date | undefined;
 

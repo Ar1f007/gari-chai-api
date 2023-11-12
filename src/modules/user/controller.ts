@@ -8,6 +8,7 @@ import { createNewUser, findUser, deleteUser, findAndUpdateUser } from './servic
 import AppError from '../../utils/appError';
 import { CreateUserInputs, VerifyOTPInputs } from './schema';
 import { sendOTP } from '../../utils/sendOTP';
+import { attachCookiesToResponse } from '../../utils/attachCookiesToResponse';
 
 export async function createNewUserHandler(req: Request<{}, {}, CreateUserInputs>, res: Response) {
   const { phoneNumber } = req.body;
@@ -44,6 +45,13 @@ export async function createNewUserHandler(req: Request<{}, {}, CreateUserInputs
   }
 
   const userDoc = doc.toJSON();
+
+  attachCookiesToResponse(res, {
+    id: doc._id,
+    name: doc.name,
+    phoneNumber: doc.phoneNumber,
+    role: doc.role,
+  });
 
   const sanitizedUserDoc = omit(userDoc, ['password', 'verificationCode', 'verificationCodeExpires']);
 
