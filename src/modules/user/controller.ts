@@ -9,6 +9,7 @@ import AppError from '../../utils/appError';
 import { CreateUserInputs, VerifyOTPInputs } from './schema';
 import { sendOTP } from '../../utils/sendOTP';
 import { attachCookiesToResponse } from '../../utils/attachCookiesToResponse';
+import { AuthenticatedRequest } from '../../middleware/authenticateUser';
 
 export async function createNewUserHandler(req: Request<{}, {}, CreateUserInputs>, res: Response) {
   const { phoneNumber } = req.body;
@@ -59,6 +60,35 @@ export async function createNewUserHandler(req: Request<{}, {}, CreateUserInputs
     status: 'success',
     data: sanitizedUserDoc,
     message: 'Please provide the OTP we sent to your phone',
+  });
+}
+
+export async function getMeHandler(req: AuthenticatedRequest, res: Response) {
+  const user = await findUser({ _id: req.user?.id });
+
+  if (!user) {
+    return res.status(StatusCodes.BAD_REQUEST).json({
+      status: 'success',
+      data: null,
+    });
+  }
+
+  const userData = {
+    _id: user._id,
+    name: user.name,
+    image: user.image,
+    phoneNumber: user.phoneNumber,
+    emails: user.emails,
+    role: user.role,
+    isVerified: user.isVerified,
+    isAccountActive: user.isAccountActive,
+    createdAt: user.createdAt,
+    updatedAt: user.updatedAt,
+  };
+
+  return res.status(StatusCodes.OK).json({
+    status: 'success',
+    data: userData,
   });
 }
 

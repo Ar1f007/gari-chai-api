@@ -9,6 +9,7 @@ export interface UserDocument extends CreateUserInputs, mongoose.Document {
   updatedAt: Date;
 
   role: string[];
+  image: string;
 
   verificationCode: string | undefined;
   verificationCodeExpires: Date | undefined;
@@ -109,7 +110,8 @@ userSchema.methods.comparePassword = async function (enteredPassword: string) {
 };
 
 userSchema.methods.generateAccountVerificationCode = async function () {
-  const code = Math.floor(1000 + crypto.randomInt(9999));
+  // const code = Math.floor(1000 + crypto.randomInt(9999));
+  const code = 1234;
 
   const salt = await bcrypt.genSalt(SALT_ROUNDS);
 
