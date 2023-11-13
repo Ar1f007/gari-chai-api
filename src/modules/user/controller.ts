@@ -83,7 +83,7 @@ export async function verifyOTPHandler(req: Request<{}, {}, VerifyOTPInputs>, re
   const isValidOTP = await bcrypt.compare(otp.toString(), user.verificationCode);
 
   if (isValidOTP) {
-    const doc = await findAndUpdateUser(
+    findAndUpdateUser(
       {
         _id: user._id,
       },
@@ -97,17 +97,13 @@ export async function verifyOTPHandler(req: Request<{}, {}, VerifyOTPInputs>, re
       },
     );
 
-    if (doc) {
-      const userDoc = doc.toJSON();
+    const sanitizedUserDoc = omit(user, ['password', 'verificationCode', 'verificationCodeExpires']);
 
-      const sanitizedUserDoc = omit(userDoc, ['password', 'verificationCode', 'verificationCodeExpires']);
-
-      return res.status(StatusCodes.OK).json({
-        status: 'success',
-        message: 'Account is verified',
-        data: sanitizedUserDoc,
-      });
-    }
+    return res.status(StatusCodes.OK).json({
+      status: 'success',
+      message: 'Account is verified',
+      data: sanitizedUserDoc,
+    });
   }
 
   res.status(StatusCodes.BAD_REQUEST).json({
