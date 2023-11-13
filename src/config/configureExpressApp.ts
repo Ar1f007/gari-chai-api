@@ -12,7 +12,12 @@ import { globalErrorHandler } from '../middleware';
 const configureExpressApp = () => {
   const app = express();
 
-  app.use(cors());
+  app.use(
+    cors({
+      origin: 'http://localhost:3000',
+      credentials: true,
+    }),
+  );
 
   // Set security HTTP headers
   app.use(helmet());

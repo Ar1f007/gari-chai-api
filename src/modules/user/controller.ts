@@ -17,7 +17,10 @@ export async function createNewUserHandler(req: Request<{}, {}, CreateUserInputs
   const userExists = await findUser({ phoneNumber });
 
   if (userExists) {
-    throw new AppError('A user with this phone number already exists, please login', StatusCodes.BAD_REQUEST);
+    throw new AppError(
+      'A user with this phone number already exists, please login to continue',
+      StatusCodes.BAD_REQUEST,
+    );
   }
 
   const doc = await createNewUser(req.body);
@@ -38,9 +41,6 @@ export async function createNewUserHandler(req: Request<{}, {}, CreateUserInputs
     return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
       status: 'fail',
       message: 'Something went wrong, please try again',
-      data: {
-        isOTPSentSuccessful: false,
-      },
     });
   }
 
@@ -59,7 +59,6 @@ export async function createNewUserHandler(req: Request<{}, {}, CreateUserInputs
     status: 'success',
     data: sanitizedUserDoc,
     message: 'Please provide the OTP we sent to your phone',
-    isOTPSentSuccessful: true,
   });
 }
 
