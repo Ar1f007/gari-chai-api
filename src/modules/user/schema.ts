@@ -14,6 +14,13 @@ export const createUserSchema = z.object({
   ...payload,
 });
 
+export const loginUserSchema = z.object({
+  body: z.object({
+    phoneNumber: phoneNumberSchema,
+    password: z.string().min(1, 'Password is required'),
+  }),
+});
+
 export const verifyOTPSchema = z.object({
   body: z.object({
     phoneNumber: phoneNumberSchema,
@@ -21,5 +28,13 @@ export const verifyOTPSchema = z.object({
   }),
 });
 
+export const sendOTPSchema = z.object({
+  body: z.object({
+    phoneNumber: phoneNumberSchema,
+  }),
+});
+
 export type CreateUserInputs = z.infer<typeof createUserSchema>['body'];
+export type LoginUserInputs = z.infer<typeof loginUserSchema>['body'];
 export type VerifyOTPInputs = z.infer<typeof verifyOTPSchema>['body'];
+export type SendOTPInputs = z.infer<typeof sendOTPSchema>['body'];

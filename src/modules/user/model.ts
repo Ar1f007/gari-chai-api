@@ -23,7 +23,8 @@ export interface UserDocument extends CreateUserInputs, mongoose.Document {
 
   generateAccountVerificationCode(): Promise<number>;
   createPasswordResetCode(): Promise<string>;
-  comparePassword(): Promise<boolean>;
+  // eslint-disable-next-line no-unused-vars
+  comparePassword(enteredPassword: string): Promise<boolean>;
 }
 
 const SALT_ROUNDS = 10;

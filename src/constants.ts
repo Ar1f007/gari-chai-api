@@ -1,1 +1,1 @@
-export const GARI_CHAI_TOKEN = 'X_GARI_CHAI_TOKEN';
+export const AUTH_TOKEN_NAME = 'X_GARI_CHAI_TOKEN';

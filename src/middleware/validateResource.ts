@@ -8,6 +8,7 @@ export const validateResource = (schema: AnyZodObject) => (req: Request, res: Re
       query: req.query,
       params: req.params,
     });
+
     next();
   } catch (e: unknown) {
     if (!(e instanceof ZodError)) {
