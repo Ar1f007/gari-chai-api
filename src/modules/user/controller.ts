@@ -69,11 +69,7 @@ export async function createNewUserHandler(req: Request<{}, {}, CreateUserInputs
 export async function loginUserHandler(req: Request<{}, {}, LoginUserInputs>, res: Response) {
   const { phoneNumber, password } = req.body;
 
-  console.log(req.body.password, req.body.phoneNumber);
-
   const user = await findUser({ phoneNumber }, { lean: false });
-
-  console.log(user);
 
   if (!user) {
     throw new AppError('Invalid credentials', StatusCodes.BAD_REQUEST);
