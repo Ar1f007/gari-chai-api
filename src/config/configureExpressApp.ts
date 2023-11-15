@@ -14,7 +14,7 @@ const configureExpressApp = () => {
 
   app.use(
     cors({
-      origin: 'http://localhost:3000',
+      origin: 'https://gari-chai.vercel.app',
       credentials: true,
     }),
   );
