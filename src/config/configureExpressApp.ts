@@ -8,16 +8,12 @@ import cors from 'cors';
 import routes from './apiRoutes';
 import AppError from '../utils/appError';
 import { globalErrorHandler } from '../middleware';
+import { corsOptions } from './corsOptions';
 
 const configureExpressApp = () => {
   const app = express();
 
-  app.use(
-    cors({
-      origin: 'https://gari-chai.vercel.app',
-      credentials: true,
-    }),
-  );
+  app.use(cors(corsOptions));
 
   // Set security HTTP headers
   app.use(helmet());
