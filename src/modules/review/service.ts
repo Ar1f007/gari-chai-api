@@ -2,6 +2,7 @@ import { CreateNewReviewInputs } from './schema';
 import ReviewModel, { ReviewDocument } from './model';
 
 import mongoose, { FilterQuery, ObjectId, QueryOptions, UpdateQuery } from 'mongoose';
+import { TReviewsWithStats } from '../../types';
 
 export async function createNewReview(input: CreateNewReviewInputs) {
   return ReviewModel.create(input);
@@ -37,16 +38,42 @@ export async function deleteReview(query: FilterQuery<ReviewDocument>) {
   return ReviewModel.deleteOne(query);
 }
 
-export async function findReviewsWithStats(carId: string) {
-  console.log(carId);
-  const pipeline = [
+export async function findReviewsWithStats(carId: string): Promise<TReviewsWithStats> {
+  const pipeline: mongoose.PipelineStage[] = [
     { $match: { carId: new mongoose.Types.ObjectId(carId) } },
+    { $sort: { createdAt: -1 } },
+    {
+      $lookup: {
+        from: 'users',
+        localField: 'userId',
+        foreignField: '_id',
+        as: 'userInfo',
+      },
+    },
+    {
+      $addFields: {
+        userInfo: { $arrayElemAt: ['$userInfo', 0] },
+      },
+    },
     {
       $group: {
         _id: null,
         averageRating: { $avg: '$rating' },
         totalReviews: { $sum: 1 },
-        reviews: { $push: '$$ROOT' },
+        reviews: {
+          $push: {
+            $mergeObjects: [
+              '$$ROOT',
+              {
+                userInfo: {
+                  _id: '$userInfo._id',
+                  name: '$userInfo.name',
+                  image: '$userInfo.photo',
+                },
+              },
+            ],
+          },
+        },
       },
     },
     {
@@ -54,14 +81,12 @@ export async function findReviewsWithStats(carId: string) {
         _id: 0,
         averageRating: 1,
         totalReviews: 1,
-        reviews: {
-          $slice: ['$reviews', 10],
-        },
+        reviews: { $slice: ['$reviews', 10] },
       },
     },
   ];
 
-  const results = await ReviewModel.aggregate(pipeline).sort({ createdAt: -1 });
-  console.log(results[0].reviews!);
+  const results = await ReviewModel.aggregate(pipeline);
+
   return results[0];
 }

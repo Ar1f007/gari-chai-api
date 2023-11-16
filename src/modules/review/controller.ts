@@ -2,7 +2,6 @@ import { Request, Response } from 'express';
 import {
   createNewReview,
   //  deleteReview, findAndUpdateReview, findReview,
-  findReviews,
   findReviewsWithStats,
 } from './service';
 import {
@@ -28,12 +27,14 @@ export async function createReviewHandler(req: Request<{}, {}, CreateNewReviewIn
 }
 
 export async function getReviewsHandler(req: Request<ReadReviewsByCarInput>, res: Response) {
-  const reviews = await findReviews({ carId: req.params.carId });
+  const reviewsStats = await findReviewsWithStats(req.params.carId);
 
   await findReviewsWithStats(req.params.carId);
 
   res.status(StatusCodes.OK).json({
     status: 'success',
-    data: reviews,
+    data: {
+      ...reviewsStats,
+    },
   });
 }
