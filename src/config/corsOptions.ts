@@ -1,6 +1,6 @@
 import { CorsOptions } from 'cors';
 
-const whitelist = ['https://gari-chai.vercel.app', 'http://localhost:3000'];
+const whitelist = ['https://gari-chai.vercel.app', 'http://localhost:3000', 'http://localhost:8080'];
 
 export const corsOptions: CorsOptions = {
   origin: (origin, callback) => {

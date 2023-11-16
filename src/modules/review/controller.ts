@@ -3,6 +3,7 @@ import {
   createNewReview,
   //  deleteReview, findAndUpdateReview, findReview,
   findReviews,
+  findReviewsWithStats,
 } from './service';
 import {
   CreateNewReviewInputs,
@@ -16,7 +17,7 @@ export async function createReviewHandler(req: Request<{}, {}, CreateNewReviewIn
   const review = await createNewReview(req.body);
 
   if (!review) {
-    throw new AppError('Could not create review', StatusCodes.BAD_REQUEST);
+    throw new AppError('Could not add the review', StatusCodes.BAD_REQUEST);
   }
 
   res.status(StatusCodes.CREATED).json({
@@ -28,6 +29,8 @@ export async function createReviewHandler(req: Request<{}, {}, CreateNewReviewIn
 
 export async function getReviewsHandler(req: Request<ReadReviewsByCarInput>, res: Response) {
   const reviews = await findReviews({ carId: req.params.carId });
+
+  await findReviewsWithStats(req.params.carId);
 
   res.status(StatusCodes.OK).json({
     status: 'success',
