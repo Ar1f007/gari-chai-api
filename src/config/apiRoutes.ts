@@ -7,6 +7,7 @@ import { brandRouter } from '../modules/brand/route';
 import { homeSettingRouter } from '../modules/home-settings';
 import userRouter from '../modules/user/route';
 import reviewRouter from '../modules/review/route';
+import commentRouter from '../modules/comment/route';
 
 function routes(app: Express) {
   app.get('/health-check', (_: Request, res: Response) => {
@@ -19,6 +20,7 @@ function routes(app: Express) {
   app.use('/api/v1/brands', brandRouter);
   app.use('/api/v1/home-settings', homeSettingRouter);
   app.use('/api/v1/reviews', reviewRouter);
+  app.use('/api/v1/comments', commentRouter);
 }
 
 export default routes;

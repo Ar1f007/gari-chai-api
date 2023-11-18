@@ -103,6 +103,11 @@ userSchema.pre('save', async function (next) {
   const salt = await bcrypt.genSalt(SALT_ROUNDS);
   this.password = await bcrypt.hash(this.password, salt);
 
+  // set default image using name if one is not provided
+  if (!this.image && this.name) {
+    this.image = `https://eu.ui-avatars.com/api/?name=${encodeURIComponent(this.name)}&size=150`;
+  }
+
   next();
 });
 
