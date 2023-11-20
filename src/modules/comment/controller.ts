@@ -118,3 +118,37 @@ export async function editCommentContentHandler(
     data: updatedComment,
   });
 }
+
+export async function deleteCommentHandler(req: Request<UpdateCommentInputs['params'], {}, {}>, res: Response) {
+  if (!req?.user?.id) {
+    return res.status(StatusCodes.UNAUTHORIZED).json({
+      status: 'fail',
+      message: 'Please login to continue',
+    });
+  }
+
+  const currentUserId = req.user.id;
+
+  const comment = await findComment({ _id: req.params.id }, { lean: false });
+
+  if (!comment) {
+    return res.status(StatusCodes.BAD_REQUEST).json({
+      status: 'fail',
+      message: 'Comment was not found',
+    });
+  }
+
+  if (comment.user.toString() !== currentUserId) {
+    return res.status(StatusCodes.UNAUTHORIZED).json({
+      status: 'fail',
+      message: 'Unauthorized access: Please login to continue',
+    });
+  }
+
+  await comment.deleteOne();
+
+  res.status(StatusCodes.OK).json({
+    status: 'success',
+    message: 'Successfully deleted!',
+  });
+}

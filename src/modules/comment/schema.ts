@@ -45,6 +45,10 @@ export const updateCommentSchema = z.object({
   }),
 });
 
+export const deleteCommentSchema = z.object({
+  ...params,
+});
+
 export type CreateCommentInputs = z.infer<typeof createCommentSchema>['body'];
 
 export type CreateCommentBody = z.infer<typeof createCommentBodySchema>;
