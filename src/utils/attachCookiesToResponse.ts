@@ -14,5 +14,6 @@ export const attachCookiesToResponse = (res: Response, user: TReqUser) => {
     httpOnly: true,
     expires: new Date(Date.now() + SEVEN_DAYS),
     secure: envVariables.NODE_ENV === 'production',
+    sameSite: 'none',
   });
 };
