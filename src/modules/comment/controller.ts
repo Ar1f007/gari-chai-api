@@ -90,7 +90,6 @@ export async function editCommentContentHandler(
   req: Request<UpdateCommentInputs['params'], {}, UpdateCommentInputs['body']>,
   res: Response,
 ) {
-  // @ts-ignore
   const currentUserId = req.user?.id;
 
   const comment = await findComment({ _id: req.params.id }, { lean: false });
@@ -121,7 +120,6 @@ export async function editCommentContentHandler(
 }
 
 export async function deleteCommentHandler(req: Request<UpdateCommentInputs['params'], {}, {}>, res: Response) {
-  // @ts-ignore
   if (!req?.user?.id) {
     return res.status(StatusCodes.UNAUTHORIZED).json({
       status: 'fail',
@@ -129,7 +127,6 @@ export async function deleteCommentHandler(req: Request<UpdateCommentInputs['par
     });
   }
 
-  // @ts-ignore
   const currentUserId = req.user.id;
 
   const comment = await findComment({ _id: req.params.id }, { lean: false });
