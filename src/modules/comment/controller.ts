@@ -1,17 +1,17 @@
 import { Request, Response } from 'express';
-import { CreateCommentBody, CreateCommentInputs, GetCommentsInputs } from './schema';
+import { CreateCommentBody, CreateCommentInputs, GetCommentsInputs, UpdateCommentInputs } from './schema';
 import { StatusCodes } from 'http-status-codes';
 import { createComment, findComment, findComments } from './service';
 import AppError from '../../utils/appError';
 import { ZodError } from 'zod';
 
 export async function createCommentHandler(req: Request<{}, {}, CreateCommentInputs>, res: Response) {
-  const { isParent, carId, content, userId, parentId } = req.body;
+  const { isChild, car, content, user, parentId } = req.body;
 
-  const commentPayload: CreateCommentBody = { car: carId, user: userId, content };
+  const commentPayload: CreateCommentBody = { car, user, content };
 
   try {
-    if (isParent) {
+    if (!isChild) {
       const parentComment = await createComment(commentPayload);
       return res.status(StatusCodes.CREATED).json({ status: 'success', data: parentComment });
     }
@@ -25,20 +25,20 @@ export async function createCommentHandler(req: Request<{}, {}, CreateCommentInp
       });
     }
 
-    if (parentComment.depth > 1) {
+    if (parentComment.depth > 0) {
       return res.status(StatusCodes.BAD_REQUEST).json({
         status: 'fail',
         message: 'Cannot reply more than 1 level deep',
       });
     }
 
-    const childComment = await createComment({ ...commentPayload, parentId: parentComment._id });
+    const childComment = await createComment({ ...commentPayload, parentId: parentComment._id, depth: 1 });
 
     if (!childComment) {
       throw new Error('Failed to create child comment');
     }
 
-    parentComment.depth += 1;
+    // childComment.depth += 1;
     parentComment.children.push(childComment._id);
 
     await parentComment.save();
@@ -55,7 +55,8 @@ export async function createCommentHandler(req: Request<{}, {}, CreateCommentInp
 export async function getCommentsHandler(req: Request<GetCommentsInputs['params'], {}, {}>, res: Response) {
   const results = await findComments(
     {
-      car: req.params.carId,
+      car: req.params.id,
+      parentId: { $exists: false },
     },
     {
       sort: { createdAt: -1 },
@@ -68,6 +69,12 @@ export async function getCommentsHandler(req: Request<GetCommentsInputs['params'
         {
           path: 'children',
           model: 'comment',
+          populate: [
+            {
+              path: 'user',
+              select: 'name image',
+            },
+          ],
         },
       ],
     },
@@ -76,5 +83,38 @@ export async function getCommentsHandler(req: Request<GetCommentsInputs['params'
   return res.status(StatusCodes.OK).json({
     status: 'success',
     data: results,
+  });
+}
+
+export async function editCommentContentHandler(
+  req: Request<UpdateCommentInputs['params'], {}, UpdateCommentInputs['body']>,
+  res: Response,
+) {
+  const currentUserId = req.user?.id;
+
+  const comment = await findComment({ _id: req.params.id }, { lean: false });
+
+  if (!comment) {
+    return res.status(StatusCodes.NOT_FOUND).json({
+      status: 'fail',
+      message: 'No comment was found',
+    });
+  }
+
+  if (currentUserId !== comment.user.toString()) {
+    return res.status(StatusCodes.UNAUTHORIZED).json({
+      status: 'fail',
+      message: 'Unauthorized to update this comment',
+    });
+  }
+
+  comment.content = req.body.commentBody.content;
+
+  const updatedComment = await comment.save();
+
+  res.status(StatusCodes.OK).json({
+    status: 'success',
+    message: 'Updated successfully',
+    data: updatedComment,
   });
 }

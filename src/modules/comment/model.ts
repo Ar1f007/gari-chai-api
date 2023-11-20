@@ -1,9 +1,9 @@
 import mongoose, { Document, Schema } from 'mongoose';
 
 export interface CommentDocument extends Document {
-  text: string;
-  userId: Document['_id'];
-  carId: Document['_id'];
+  content: string;
+  user: Document['_id'];
+  car: Document['_id'];
   children: Document['_id'][];
   likes: number;
   dislikes: number;
@@ -34,6 +34,7 @@ const commentSchema = new Schema(
     parentId: {
       type: Schema.ObjectId,
       default: undefined,
+      index: true,
     },
   },
   {

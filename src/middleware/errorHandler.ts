@@ -20,6 +20,7 @@ function sendErrorProd(err: any, res: Response) {
       return res.status(err.statusCode).json({
         status: err.status,
         message: err.message,
+        statusCode: err.statusCode,
       });
     }
   }

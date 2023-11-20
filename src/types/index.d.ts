@@ -3,7 +3,7 @@ import { ReviewDocument } from '../modules/review/model';
 export type Status = 'success' | 'fail' | 'error' | 'validationError';
 
 export type TReqUser = {
-  id: any;
+  id: string;
   name: string;
   role: string[];
   phoneNumber: string;

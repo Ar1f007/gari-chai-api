@@ -13,7 +13,7 @@ export const authenticateUser = (req: AuthenticatedRequest, res: Response, next:
   const token = req.cookies[AUTH_TOKEN_NAME];
 
   if (!token) {
-    throw new AppError('Authentication invalid', StatusCodes.UNAUTHORIZED);
+    throw new AppError('Unauthorized access: You need to log in to proceed further.', StatusCodes.UNAUTHORIZED);
   }
 
   try {
@@ -22,6 +22,6 @@ export const authenticateUser = (req: AuthenticatedRequest, res: Response, next:
 
     next();
   } catch (error) {
-    throw new AppError('Authentication invalid', StatusCodes.FORBIDDEN);
+    throw new AppError('Your session has expired or is invalid. Please log in again.', StatusCodes.FORBIDDEN);
   }
 };
