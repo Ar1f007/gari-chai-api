@@ -3,8 +3,22 @@ import { createNewBrand, deleteBrand, findAndUpdateBrand, findBrand, findBrands 
 import { CreateNewBrandInputs, DeleteBrandInput, ReadBrandInput, UpdateBrandInput } from './schema';
 import { StatusCodes } from 'http-status-codes';
 import AppError from '../../utils/appError';
+import slugify from 'slugify';
 
 export async function createBrandHandler(req: Request<{}, {}, CreateNewBrandInputs>, res: Response) {
+  const slugifiedValue = slugify(req.body.name, {
+    lower: true,
+  });
+
+  const brandWithSameNameExist = await findBrand({ slug: slugifiedValue });
+
+  if (brandWithSameNameExist) {
+    return res.status(StatusCodes.BAD_REQUEST).json({
+      status: 'fail',
+      message: 'Brand with the same name already exists!',
+    });
+  }
+
   const brand = await createNewBrand(req.body);
 
   if (!brand) {
