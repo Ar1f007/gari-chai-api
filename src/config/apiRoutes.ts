@@ -9,6 +9,7 @@ import { brandModelRouter } from '../modules/brand-model/route';
 import userRouter from '../modules/user/route';
 import reviewRouter from '../modules/review/route';
 import commentRouter from '../modules/comment/route';
+import vehicleBodyTypeRouter from '../modules/car-information/route';
 
 function routes(app: Express) {
   app.get('/health-check', (_: Request, res: Response) => {
@@ -20,6 +21,8 @@ function routes(app: Express) {
   app.use('/api/v1/used-cars', usedCarRouter);
   app.use('/api/v1/brands', brandRouter);
   app.use('/api/v1/models', brandModelRouter);
+  app.use('/api/v1/car-info', vehicleBodyTypeRouter);
+
   app.use('/api/v1/home-settings', homeSettingRouter);
   app.use('/api/v1/reviews', reviewRouter);
   app.use('/api/v1/comments', commentRouter);

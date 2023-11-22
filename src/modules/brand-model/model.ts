@@ -70,6 +70,6 @@ brandModelSchema.pre('save', async function (next) {
   return next();
 });
 
-const BrandModelModel = mongoose.model<BrandModelDocument>('brandModel', brandModelSchema);
+const BrandModelModel = mongoose.model<BrandModelDocument>('Brand-Model', brandModelSchema);
 
 export default BrandModelModel;
