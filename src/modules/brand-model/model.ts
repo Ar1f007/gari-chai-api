@@ -26,11 +26,6 @@ const brandModelSchema = new mongoose.Schema(
       default: 0,
     },
 
-    brandSlug: {
-      type: String,
-      required: true,
-    },
-
     brand: {
       type: Schema.Types.ObjectId,
       ref: 'brand',

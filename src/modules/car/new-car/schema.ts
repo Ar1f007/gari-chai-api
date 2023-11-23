@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { validMongoIdSchema } from '../../../lib/zod/commonSchemas';
 
 export const selectOption = z.object({
   value: z.string(),
@@ -23,18 +24,15 @@ const payload = {
 
     description: z.string().optional(),
 
-    brand: z.object({
-      slug: z.string(),
-      name: z.string(),
-    }),
+    brand: validMongoIdSchema,
+
+    bodyStyle: validMongoIdSchema,
 
     modelNumber: z.number(),
 
     engine: engineSchemaBasic,
 
     transmission: z.string(),
-
-    bodyStyle: z.string(),
 
     fuel: z.object({
       type: z.string(),
@@ -76,7 +74,7 @@ const payload = {
 
     tags: z.array(selectOption).optional().default([]),
 
-    publishedAt: z.preprocess(
+    launchedAt: z.preprocess(
       (arg) => {
         if (typeof arg === 'string' || arg instanceof Date) return new Date(arg);
       },

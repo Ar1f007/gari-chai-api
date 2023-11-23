@@ -4,6 +4,7 @@ import { CreateNewBrandInputs, DeleteBrandInput, ReadBrandInput, UpdateBrandInpu
 import { StatusCodes } from 'http-status-codes';
 import AppError from '../../utils/appError';
 import slugify from 'slugify';
+import { findSettingContents } from '../home-settings';
 
 export async function createBrandHandler(req: Request<{}, {}, CreateNewBrandInputs>, res: Response) {
   const slugifiedValue = slugify(req.body.name, {
@@ -110,5 +111,39 @@ export async function deleteBrandHandler(req: Request<DeleteBrandInput['params']
   res.status(StatusCodes.OK).json({
     status: 'success',
     message: 'Brand was deleted',
+  });
+}
+
+/**
+ * Retrieves the popular brands and all brands with at least one car collection from the database
+ * and sends the retrieved data as a JSON response.
+ *
+ * @param req The Express request object.
+ * @param res The Express response object.
+ */
+export async function getAllAndPopularBrandsHandler(req: Request, res: Response) {
+  // Retrieve popular brands from the database
+  const popularBrands = await findSettingContents({ sectionName: 'popular-brands' }, { content: 1, _id: 0 });
+
+  // Retrieve all brands with at least one car collection from the database
+  const query = { carCollectionCount: { $gte: 0 } };
+  const fieldsToPick = { name: 1, slug: 1 };
+  const allBrands = await findBrands(query, fieldsToPick);
+
+  const brands = popularBrands.map((brand) => ({
+    name: brand.content.name,
+    slug: brand.content.slug,
+    _id: brand.content._id,
+  }));
+
+  const payload = {
+    popularBrands: brands,
+    allBrands: allBrands,
+  };
+
+  // Send the retrieved data as a JSON response
+  res.status(StatusCodes.OK).json({
+    status: 'success',
+    data: payload,
   });
 }

@@ -1,8 +1,9 @@
 import { z } from 'zod';
+import { validMongoIdSchema } from '../../lib/zod/commonSchemas';
 
 const payload = {
   body: z.object({
-    brandSlug: z.string().min(1),
+    brandId: validMongoIdSchema,
     name: z.string().min(1),
     upcoming: z.boolean(),
 

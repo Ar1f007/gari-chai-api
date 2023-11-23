@@ -1,4 +1,4 @@
-import { FilterQuery, QueryOptions, UpdateQuery } from 'mongoose';
+import { FilterQuery, ProjectionType, QueryOptions, UpdateQuery } from 'mongoose';
 import HomeSetting, { HomeSettingDocument } from './model';
 import { CreateHomeSettingInputs } from './schema';
 
@@ -25,9 +25,10 @@ export async function findSettingContent(
 
 export async function findSettingContents(
   query: FilterQuery<HomeSettingDocument> = {},
+  projections: ProjectionType<HomeSettingDocument> = {},
   options: QueryOptions = { lean: true },
 ) {
-  const res = await HomeSetting.find(query, {}, options);
+  const res = await HomeSetting.find(query, projections, options);
   return res;
 }
 

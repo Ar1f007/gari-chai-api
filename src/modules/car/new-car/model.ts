@@ -1,4 +1,4 @@
-import mongoose from 'mongoose';
+import mongoose, { Schema } from 'mongoose';
 import { nanoid } from 'nanoid';
 import slugify from 'slugify';
 
@@ -8,6 +8,8 @@ export interface CarDocument extends CreateNewCarInputs, mongoose.Document {
   slug: string;
   createdAt: Date;
   updatedAt: Date;
+  status: string;
+  soldAt: Date;
 }
 
 const carSchema = new mongoose.Schema(
@@ -39,14 +41,9 @@ const carSchema = new mongoose.Schema(
     },
 
     brand: {
-      slug: {
-        type: String,
-        required: true,
-      },
-      name: {
-        type: String,
-        required: true,
-      },
+      type: Schema.Types.ObjectId,
+      ref: 'brand',
+      required: [true, 'brand is required'],
     },
 
     modelNumber: {
@@ -84,8 +81,9 @@ const carSchema = new mongoose.Schema(
     },
 
     bodyStyle: {
-      type: String,
-      required: true,
+      type: Schema.Types.ObjectId,
+      ref: 'car-body-type',
+      required: [true, 'car body type is required'],
     },
 
     fuel: {
@@ -173,9 +171,19 @@ const carSchema = new mongoose.Schema(
 
       default: [],
     },
-    publishedAt: {
+    launchedAt: {
       type: Date,
-      required: [true, 'A date is required'],
+      required: [true, 'Launch date is required'],
+    },
+    status: {
+      type: String,
+      required: true,
+      enum: ['available', 'sold', 'reserved'],
+      default: 'available',
+    },
+    soldAt: {
+      type: Date,
+      required: false,
     },
   },
   {

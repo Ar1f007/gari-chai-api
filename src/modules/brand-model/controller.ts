@@ -13,7 +13,7 @@ import slugify from 'slugify';
 import { findBrand } from '../brand/service';
 
 export async function createBrandModelHandler(req: Request<{}, {}, CreateNewBrandModelInputs>, res: Response) {
-  const brandExists = await findBrand({ slug: req.body.brandSlug });
+  const brandExists = await findBrand({ _id: req.body.brandId });
 
   if (!brandExists) {
     return res.status(StatusCodes.BAD_REQUEST).json({

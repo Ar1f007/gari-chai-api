@@ -1,4 +1,4 @@
-import mongoose from 'mongoose';
+import mongoose, { Schema } from 'mongoose';
 import slugify from 'slugify';
 import { nanoid } from 'nanoid';
 import { CreateUsedCarInputs } from './schema';
@@ -38,14 +38,9 @@ const usedCarSchema = new mongoose.Schema(
     },
 
     brand: {
-      slug: {
-        type: String,
-        required: true,
-      },
-      name: {
-        type: String,
-        required: true,
-      },
+      type: Schema.Types.ObjectId,
+      ref: 'brand',
+      required: [true, 'Brand is required'],
     },
 
     modelNumber: {
@@ -174,7 +169,7 @@ const usedCarSchema = new mongoose.Schema(
 
       default: [],
     },
-    publishedAt: {
+    launchedAt: {
       type: Date,
       required: [true, 'A date is required'],
     },
