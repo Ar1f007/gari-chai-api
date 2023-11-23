@@ -25,7 +25,7 @@ export async function getCarsHandler(req: Request<{}, {}, {}, ReadCarInput['quer
   const queries: Record<string, string> = {};
 
   if (req.query.brand) {
-    queries['brand.slug'] = req.query.brand;
+    queries['brand'] = req.query.brand;
   }
 
   const cars = await findCars(queries);
@@ -45,6 +45,9 @@ export async function getCarHandler(req: Request<ReadCarInput['params']>, res: R
       populate: [
         {
           path: 'brand',
+        },
+        {
+          path: 'brandModel',
         },
         {
           path: 'bodyStyle',

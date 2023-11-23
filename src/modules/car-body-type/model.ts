@@ -47,6 +47,6 @@ carBodyTypeSchema.pre('save', async function (next) {
   return next();
 });
 
-const CarBodyTypeModel = mongoose.model<CarBodyTypeDocument>('car-body-type', carBodyTypeSchema);
+const CarBodyTypeModel = mongoose.model<CarBodyTypeDocument>('Car-Body-Type', carBodyTypeSchema);
 
 export default CarBodyTypeModel;

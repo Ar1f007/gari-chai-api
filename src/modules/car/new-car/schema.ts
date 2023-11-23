@@ -26,6 +26,8 @@ const payload = {
 
     brand: validMongoIdSchema,
 
+    brandModel: validMongoIdSchema,
+
     bodyStyle: validMongoIdSchema,
 
     modelNumber: z.number(),

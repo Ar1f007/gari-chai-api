@@ -12,6 +12,15 @@ export async function findBrandModel(query: FilterQuery<BrandModelDocument>, opt
   return result;
 }
 
+export async function findModelsByBrand(
+  query: FilterQuery<BrandModelDocument>,
+  options: QueryOptions = { lean: true },
+) {
+  const result = await BrandModel.find(query, {}, options);
+
+  return result;
+}
+
 export async function findBrandModels(
   query: FilterQuery<BrandModelDocument> = {},
   options: QueryOptions = { lean: true },

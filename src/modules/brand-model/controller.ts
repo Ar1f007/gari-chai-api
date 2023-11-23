@@ -5,6 +5,7 @@ import {
   findAndUpdateBrandModel,
   findBrandModel,
   findBrandModels,
+  findModelsByBrand,
 } from './service';
 import { CreateNewBrandModelInputs, DeleteBrandModelInput, ReadBrandModelInput, UpdateBrandModelInput } from './schema';
 import { StatusCodes } from 'http-status-codes';
@@ -65,21 +66,14 @@ export async function getBrandModelsHandler(req: Request<{}, {}, {}, ReadBrandMo
   });
 }
 
-export async function getBrandModelHandler(req: Request<ReadBrandModelInput['params']>, res: Response) {
-  const brandModelSlug = req.params.brandModelSlug;
+export async function getModelsByBrand(req: Request<ReadBrandModelInput['params']>, res: Response) {
+  const brandId = req.params.id;
 
-  const brandModel = await findBrandModel({ slug: brandModelSlug });
-
-  if (!brandModel) {
-    return res.status(StatusCodes.NOT_FOUND).json({
-      status: 'fail',
-      message: 'Model was not found',
-    });
-  }
+  const brandModels = await findModelsByBrand({ brand: brandId });
 
   res.status(StatusCodes.OK).json({
     status: 'success',
-    data: brandModel,
+    data: brandModels,
   });
 }
 
@@ -87,10 +81,11 @@ export async function updateBrandModelHandler(
   req: Request<UpdateBrandModelInput['params'], {}, UpdateBrandModelInput['body']>,
   res: Response,
 ) {
-  const brandModelSlug = req.params.brandModelSlug;
+  const modelId = req.params.id;
   const update = req.body;
 
-  const brandModel = await findBrandModel({ slug: brandModelSlug });
+  const query = { _id: modelId };
+  const brandModel = await findBrandModel(query);
 
   if (!brandModel) {
     return res.status(StatusCodes.NOT_FOUND).json({
@@ -99,7 +94,7 @@ export async function updateBrandModelHandler(
     });
   }
 
-  const updatedBrandModel = await findAndUpdateBrandModel({ slug: brandModelSlug }, update, {
+  const updatedBrandModel = await findAndUpdateBrandModel(query, update, {
     new: true,
   });
 
@@ -110,9 +105,11 @@ export async function updateBrandModelHandler(
 }
 
 export async function deleteBrandModelHandler(req: Request<DeleteBrandModelInput['params']>, res: Response) {
-  const brandModelSlug = req.params.brandModelSlug;
+  const modelId = req.params.id;
 
-  const brandModel = await findBrandModel({ slug: brandModelSlug });
+  const query = { _id: modelId };
+
+  const brandModel = await findBrandModel(query);
 
   if (!brandModel) {
     return res.status(StatusCodes.NOT_FOUND).json({
@@ -121,7 +118,7 @@ export async function deleteBrandModelHandler(req: Request<DeleteBrandModelInput
     });
   }
 
-  await deleteBrandModel({ slug: brandModelSlug });
+  await deleteBrandModel(query);
 
   res.status(StatusCodes.OK).json({
     status: 'success',

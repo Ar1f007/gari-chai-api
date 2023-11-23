@@ -42,8 +42,14 @@ const carSchema = new mongoose.Schema(
 
     brand: {
       type: Schema.Types.ObjectId,
-      ref: 'brand',
+      ref: 'Brand',
       required: [true, 'brand is required'],
+    },
+
+    brandModel: {
+      type: Schema.Types.ObjectId,
+      ref: 'Brand-Model',
+      required: [true, 'brand model is required'],
     },
 
     modelNumber: {
@@ -82,7 +88,7 @@ const carSchema = new mongoose.Schema(
 
     bodyStyle: {
       type: Schema.Types.ObjectId,
-      ref: 'car-body-type',
+      ref: 'Car-Body-Type',
       required: [true, 'car body type is required'],
     },
 

@@ -3,7 +3,7 @@ import express from 'express';
 import {
   createBrandModelHandler,
   deleteBrandModelHandler,
-  getBrandModelHandler,
+  getModelsByBrand,
   getBrandModelsHandler,
   updateBrandModelHandler,
 } from './controller';
@@ -20,7 +20,7 @@ brandModelRouter
   .post(validateResource(createBrandModelSchema), createBrandModelHandler);
 
 brandModelRouter
-  .route('/:brandModelSlug')
-  .get(validateResource(getBrandModelSchema), getBrandModelHandler)
+  .route('/:id')
+  .get(validateResource(getBrandModelSchema), getModelsByBrand)
   .put(validateResource(updateBrandModelSchema), updateBrandModelHandler)
   .delete(validateResource(deleteBrandModelSchema), deleteBrandModelHandler);

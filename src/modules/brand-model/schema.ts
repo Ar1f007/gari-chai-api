@@ -13,7 +13,7 @@ const payload = {
 
 const params = {
   params: z.object({
-    brandModelSlug: z.string().min(1, 'No car model slug was found'),
+    id: validMongoIdSchema,
   }),
 };
 

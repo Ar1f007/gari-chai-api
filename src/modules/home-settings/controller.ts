@@ -58,7 +58,7 @@ export async function getHomeSettingsHandler(
 }
 
 export async function homeSettingBySlugHandler(req: Request<ReadHomeSettingInput['params']>, res: Response) {
-  const contents = await findSettingContents({ sectionName: req.params.sectionName }, { sort: { sort: -1 } });
+  const contents = await findSettingContents({ sectionName: req.params.sectionName }, {}, { sort: { sort: -1 } });
 
   res.status(StatusCodes.OK).json({
     status: 'success',
