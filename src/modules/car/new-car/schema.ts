@@ -8,7 +8,7 @@ export const selectOption = z.object({
 
 export const engineSchemaBasic = z.object({
   type: z.string(),
-  displacement: z.number().optional(),
+  numOfCylinders: z.number().optional(),
   horsePower: z.number().optional(),
   torque: z.number().optional(),
   condition: z.string().optional(),
@@ -18,26 +18,40 @@ const payload = {
   body: z.object({
     name: z.string(),
 
-    year: z.number(),
+    // year: z.number(),
 
-    registrationYear: z.number(),
-
-    description: z.string().optional(),
+    // registrationYear: z.number(),
 
     brand: validMongoIdSchema,
 
     brandModel: validMongoIdSchema,
 
+    tags: z.array(selectOption).optional().default([]),
+
     bodyStyle: validMongoIdSchema,
 
-    modelNumber: z.number(),
+    // modelNumber: z.number(),
 
     engine: engineSchemaBasic,
+
+    mileage: z.number(),
+
+    seatingCapacity: z.number(),
+
+    numOfDoors: z.number(),
+
+    color: z.string(),
+
+    baseInteriorColor: z.string(),
 
     transmission: z.string(),
 
     fuel: z.object({
-      type: z.string(),
+      typeInfo: z.object({
+        type: z.string(),
+        fullForm: z.string(),
+      }),
+
       economy: z
         .object({
           city: z.number().optional(),
@@ -46,35 +60,27 @@ const payload = {
         .optional(),
     }),
 
-    acceleration: z
-      .object({
-        zeroTo60: z.number().optional(),
-        topSpeed: z.number().optional(),
-      })
-      .optional(),
-
-    safetyFeatures: z.string().optional(),
-
-    infotainmentSystem: z.string().optional(),
-
-    mileage: z.number(),
-
-    imageUrls: z.array(z.string().url()).optional(),
-
-    color: z.string(),
-
-    baseInteriorColor: z.string(),
-
-    numberOfDoors: z.number(),
-
-    posterImage: z.object({
-      originalUrl: z.string().url(),
-      thumbnailUrl: z.string().url(),
+    price: z.object({
+      min: z.number().min(1, 'required'),
+      max: z.number().min(1, 'required'),
+      isNegotiable: z.boolean(),
     }),
 
-    price: z.number(),
+    acceleration: z.object({
+      zeroTo60: z.number().optional(),
+      topSpeed: z.number().optional(),
+    }),
 
-    tags: z.array(selectOption).optional().default([]),
+    specifications: z
+      .optional(
+        z.array(
+          z.object({
+            name: z.string(),
+            value: z.string(),
+          }),
+        ),
+      )
+      .default([]),
 
     launchedAt: z.preprocess(
       (arg) => {
@@ -84,6 +90,22 @@ const payload = {
         required_error: 'Please select a date and time',
         invalid_type_error: "That's not a date!",
       }),
+    ),
+
+    posterImage: z.object({
+      originalUrl: z.string().url(),
+      thumbnailUrl: z.string().url(),
+    }),
+
+    imageUrls: z.array(z.string().url()).optional(),
+
+    description: z.optional(
+      z.string().refine((val) => {
+        if (val) {
+          return val.length >= 200;
+        }
+        return true;
+      }, 'Description is optional, but if you want add one, then make sure it is at least 200 characters long'),
     ),
   }),
 };

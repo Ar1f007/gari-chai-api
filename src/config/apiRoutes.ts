@@ -2,7 +2,7 @@ import 'express-async-errors';
 
 import { Express, Request, Response } from 'express';
 import { carRouter } from '../modules/car/new-car';
-import { usedCarRouter } from '../modules/car/used-car';
+// import { usedCarRouter } from '../modules/car/used-car';
 import { brandRouter } from '../modules/brand/route';
 import { homeSettingRouter } from '../modules/home-settings';
 import { brandModelRouter } from '../modules/brand-model/route';
@@ -18,7 +18,7 @@ function routes(app: Express) {
 
   app.use('/api/v1/users', userRouter);
   app.use('/api/v1/cars', carRouter);
-  app.use('/api/v1/used-cars', usedCarRouter);
+  // app.use('/api/v1/used-cars', usedCarRouter);
   app.use('/api/v1/brands', brandRouter);
   app.use('/api/v1/models', brandModelRouter);
   app.use('/api/v1/car-body-types', carBodyTypeRouter);

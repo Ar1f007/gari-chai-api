@@ -1,294 +1,294 @@
-import mongoose, { Schema } from 'mongoose';
-import slugify from 'slugify';
-import { nanoid } from 'nanoid';
-import { CreateUsedCarInputs } from './schema';
+// import mongoose, { Schema } from 'mongoose';
+// import slugify from 'slugify';
+// import { nanoid } from 'nanoid';
+// import { CreateUsedCarInputs } from './schema';
 
-export interface UsedCarDocument extends CreateUsedCarInputs, mongoose.Document {
-  slug: string;
-  createdAt: Date;
-  updatedAt: Date;
-}
+// export interface UsedCarDocument extends CreateUsedCarInputs, mongoose.Document {
+//   slug: string;
+//   createdAt: Date;
+//   updatedAt: Date;
+// }
 
-const usedCarSchema = new mongoose.Schema(
-  {
-    name: {
-      type: String,
-      required: true,
-    },
+// const usedCarSchema = new mongoose.Schema(
+//   {
+//     name: {
+//       type: String,
+//       required: true,
+//     },
 
-    slug: {
-      type: String,
-      required: false,
-      unique: true,
-    },
+//     slug: {
+//       type: String,
+//       required: false,
+//       unique: true,
+//     },
 
-    year: {
-      type: Number,
-      required: true,
-    },
+//     // year: {
+//     //   type: Number,
+//     //   required: true,
+//     // },
 
-    registrationYear: {
-      type: Number,
-      required: true,
-    },
+//     registrationYear: {
+//       type: Number,
+//       required: true,
+//     },
 
-    description: {
-      type: String,
-      required: false,
-    },
+//     description: {
+//       type: String,
+//       required: false,
+//     },
 
-    brand: {
-      type: Schema.Types.ObjectId,
-      ref: 'brand',
-      required: [true, 'Brand is required'],
-    },
+//     brand: {
+//       type: Schema.Types.ObjectId,
+//       ref: 'brand',
+//       required: [true, 'Brand is required'],
+//     },
 
-    modelNumber: {
-      type: Number,
-      required: true,
-    },
+//     modelNumber: {
+//       type: Number,
+//       required: true,
+//     },
 
-    engine: {
-      type: {
-        type: String,
-        required: true,
-      },
-      displacement: {
-        type: Number,
-        required: false,
-      },
-      horsePower: {
-        type: Number,
-        required: false,
-      },
-      torque: {
-        type: Number,
-        required: false,
-      },
-      condition: {
-        type: String,
-        enum: ['good', 'bad', 'medium'],
-        required: false,
-      },
-    },
+//     engine: {
+//       type: {
+//         type: String,
+//         required: true,
+//       },
+//       numOfCylinders: {
+//         type: Number,
+//         required: false,
+//       },
+//       horsePower: {
+//         type: Number,
+//         required: false,
+//       },
+//       torque: {
+//         type: Number,
+//         required: false,
+//       },
+//       condition: {
+//         type: String,
+//         enum: ['good', 'bad', 'medium'],
+//         required: false,
+//       },
+//     },
 
-    transmission: {
-      type: String,
-      required: true,
-    },
+//     transmission: {
+//       type: String,
+//       required: true,
+//     },
 
-    bodyStyle: {
-      type: String,
-      required: true,
-    },
+//     bodyStyle: {
+//       type: String,
+//       required: true,
+//     },
 
-    fuel: {
-      type: {
-        type: String,
-        required: true,
-      },
-      economy: {
-        city: {
-          type: Number,
-          required: false,
-        },
-        highway: {
-          type: Number,
-          required: false,
-        },
-      },
-    },
+//     fuel: {
+//       type: {
+//         type: String,
+//         required: true,
+//       },
+//       economy: {
+//         city: {
+//           type: Number,
+//           required: false,
+//         },
+//         highway: {
+//           type: Number,
+//           required: false,
+//         },
+//       },
+//     },
 
-    acceleration: {
-      zeroTo60: {
-        type: Number,
-        required: false,
-      },
+//     acceleration: {
+//       zeroTo60: {
+//         type: Number,
+//         required: false,
+//       },
 
-      topSpeed: {
-        type: Number,
-        required: false,
-      },
-    },
+//       topSpeed: {
+//         type: Number,
+//         required: false,
+//       },
+//     },
 
-    safetyFeatures: {
-      type: String,
-      required: false,
-    },
+//     safetyFeatures: {
+//       type: String,
+//       required: false,
+//     },
 
-    infotainmentSystem: {
-      type: String,
-      required: false,
-    },
+//     infotainmentSystem: {
+//       type: String,
+//       required: false,
+//     },
 
-    mileage: {
-      type: Number,
-      required: true,
-    },
+//     mileage: {
+//       type: Number,
+//       required: true,
+//     },
 
-    imageUrls: {
-      type: [String],
-      required: false,
-      default: [],
-    },
+//     imageUrls: {
+//       type: [String],
+//       required: false,
+//       default: [],
+//     },
 
-    color: {
-      type: String,
-      required: true,
-    },
+//     color: {
+//       type: String,
+//       required: true,
+//     },
 
-    baseInteriorColor: {
-      type: String,
-      required: true,
-    },
+//     baseInteriorColor: {
+//       type: String,
+//       required: true,
+//     },
 
-    numberOfDoors: {
-      type: Number,
-      required: true,
-    },
+//     numberOfDoors: {
+//       type: Number,
+//       required: true,
+//     },
 
-    posterImage: {
-      type: {
-        originalUrl: String,
-        thumbnailUrl: String,
-      },
-      required: true,
-    },
+//     posterImage: {
+//       type: {
+//         originalUrl: String,
+//         thumbnailUrl: String,
+//       },
+//       required: true,
+//     },
 
-    price: {
-      type: Number,
-      required: false,
-    },
-    tags: {
-      type: [
-        {
-          value: String,
-          label: String,
-        },
-      ],
+//     price: {
+//       type: Number,
+//       required: false,
+//     },
+//     tags: {
+//       type: [
+//         {
+//           value: String,
+//           label: String,
+//         },
+//       ],
 
-      default: [],
-    },
-    launchedAt: {
-      type: Date,
-      required: [true, 'A date is required'],
-    },
+//       default: [],
+//     },
+//     launchedAt: {
+//       type: Date,
+//       required: [true, 'A date is required'],
+//     },
 
-    scratchesOrDents: {
-      type: String,
-      required: true,
-    },
+//     scratchesOrDents: {
+//       type: String,
+//       required: true,
+//     },
 
-    tireCondition: {
-      type: String,
-      enum: ['good', 'bad', 'medium'],
-      required: true,
-    },
+//     tireCondition: {
+//       type: String,
+//       enum: ['good', 'bad', 'medium'],
+//       required: true,
+//     },
 
-    handsShifted: {
-      type: Number,
-      required: true,
-    },
-    acCondition: {
-      type: String,
-      required: true,
-    },
+//     handsShifted: {
+//       type: Number,
+//       required: true,
+//     },
+//     acCondition: {
+//       type: String,
+//       required: true,
+//     },
 
-    interiorCondition: {
-      type: String,
-      required: true,
-    },
+//     interiorCondition: {
+//       type: String,
+//       required: true,
+//     },
 
-    // entertainmentSystemDefault: {
-    //   type: Boolean,
-    //   required: true,
-    // },
-    // soundSystemNewlyInstalled: {
-    //   type: Boolean,
-    //   required: true,
-    // },
-    glass: {
-      type: String,
-      enum: ['new', 'built-in'],
-      required: true,
-    },
+//     // entertainmentSystemDefault: {
+//     //   type: Boolean,
+//     //   required: true,
+//     // },
+//     // soundSystemNewlyInstalled: {
+//     //   type: Boolean,
+//     //   required: true,
+//     // },
+//     glass: {
+//       type: String,
+//       enum: ['new', 'built-in'],
+//       required: true,
+//     },
 
-    accidentHistory: {
-      hasAccidentHistory: {
-        type: Boolean,
-        required: true,
-      },
-      partsHit: {
-        type: String,
-        required: true,
-      },
-    },
-    originalLights: {
-      type: Boolean,
-      required: true,
-    },
-    customization: {
-      type: Boolean,
-      required: true,
-    },
-    drivenByOwner: {
-      type: Boolean,
-      required: true,
-    },
-    engineOilChangeEveryThreeMonths: {
-      type: Boolean,
-      required: true,
-    },
+//     accidentHistory: {
+//       hasAccidentHistory: {
+//         type: Boolean,
+//         required: true,
+//       },
+//       partsHit: {
+//         type: String,
+//         required: true,
+//       },
+//     },
+//     originalLights: {
+//       type: Boolean,
+//       required: true,
+//     },
+//     customization: {
+//       type: Boolean,
+//       required: true,
+//     },
+//     drivenByOwner: {
+//       type: Boolean,
+//       required: true,
+//     },
+//     engineOilChangeEveryThreeMonths: {
+//       type: Boolean,
+//       required: true,
+//     },
 
-    paintHistory: {
-      type: String,
-      required: true,
-    },
+//     paintHistory: {
+//       type: String,
+//       required: true,
+//     },
 
-    taxToken: {
-      type: String,
-      required: true,
-    },
+//     taxToken: {
+//       type: String,
+//       required: true,
+//     },
 
-    fitness: {
-      type: String,
-      required: true,
-    },
+//     fitness: {
+//       type: String,
+//       required: true,
+//     },
 
-    nameTransferPossibility: {
-      type: Boolean,
-      required: true,
-    },
+//     nameTransferPossibility: {
+//       type: Boolean,
+//       required: true,
+//     },
 
-    smartCard: {
-      type: Boolean,
-      required: true,
-    },
+//     smartCard: {
+//       type: Boolean,
+//       required: true,
+//     },
 
-    firstPartyInsurance: {
-      type: Boolean,
-      required: true,
-    },
-  },
-  {
-    timestamps: true,
-  },
-);
+//     firstPartyInsurance: {
+//       type: Boolean,
+//       required: true,
+//     },
+//   },
+//   {
+//     timestamps: true,
+//   },
+// );
 
-usedCarSchema.pre('save', async function (next) {
-  let car = this as UsedCarDocument;
+// usedCarSchema.pre('save', async function (next) {
+//   let car = this as UsedCarDocument;
 
-  const slug = slugify(car.name, {
-    lower: true,
-  });
+//   const slug = slugify(car.name, {
+//     lower: true,
+//   });
 
-  const suffix = nanoid(3);
+//   const suffix = nanoid(3);
 
-  car.slug = slug + '-' + suffix;
+//   car.slug = slug + '-' + suffix;
 
-  return next();
-});
+//   return next();
+// });
 
-const UsedCar = mongoose.model<UsedCarDocument>('Used-Car', usedCarSchema);
+// const UsedCar = mongoose.model<UsedCarDocument>('Used-Car', usedCarSchema);
 
-export default UsedCar;
+// export default UsedCar;

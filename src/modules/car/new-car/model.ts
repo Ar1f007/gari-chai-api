@@ -25,15 +25,15 @@ const carSchema = new mongoose.Schema(
       unique: true,
     },
 
-    year: {
-      type: Number,
-      required: true,
-    },
+    // year: {
+    //   type: Number,
+    //   required: true,
+    // },
 
-    registrationYear: {
-      type: Number,
-      required: true,
-    },
+    // registrationYear: {
+    //   type: Number,
+    //   required: true,
+    // },
 
     description: {
       type: String,
@@ -52,17 +52,17 @@ const carSchema = new mongoose.Schema(
       required: [true, 'brand model is required'],
     },
 
-    modelNumber: {
-      type: Number,
-      required: true,
-    },
+    // modelNumber: {
+    //   type: Number,
+    //   required: true,
+    // },
 
     engine: {
       type: {
         type: String,
         required: true,
       },
-      displacement: {
+      numOfCylinders: {
         type: Number,
         required: false,
       },
@@ -93,9 +93,13 @@ const carSchema = new mongoose.Schema(
     },
 
     fuel: {
-      type: {
-        type: String,
-        required: true,
+      typeInfo: {
+        type: {
+          type: String,
+        },
+        fullForm: {
+          type: String,
+        },
       },
       economy: {
         city: {
@@ -121,15 +125,15 @@ const carSchema = new mongoose.Schema(
       },
     },
 
-    safetyFeatures: {
-      type: String,
-      required: false,
-    },
+    // safetyFeatures: {
+    //   type: String,
+    //   required: false,
+    // },
 
-    infotainmentSystem: {
-      type: String,
-      required: false,
-    },
+    // infotainmentSystem: {
+    //   type: String,
+    //   required: false,
+    // },
 
     mileage: {
       type: Number,
@@ -152,7 +156,7 @@ const carSchema = new mongoose.Schema(
       required: true,
     },
 
-    numberOfDoors: {
+    numOfDoors: {
       type: Number,
       required: true,
     },
@@ -164,8 +168,20 @@ const carSchema = new mongoose.Schema(
       required: true,
     },
     price: {
-      type: Number,
-      required: false,
+      type: {
+        min: {
+          type: Number,
+          required: true,
+        },
+        max: {
+          type: Number,
+          required: true,
+        },
+        isNegotiable: {
+          type: Boolean,
+          required: true,
+        },
+      },
     },
     tags: {
       type: [
@@ -179,7 +195,7 @@ const carSchema = new mongoose.Schema(
     },
     launchedAt: {
       type: Date,
-      required: [true, 'Launch date is required'],
+      required: [false, 'Launch date is required'],
     },
     status: {
       type: String,
@@ -190,6 +206,19 @@ const carSchema = new mongoose.Schema(
     soldAt: {
       type: Date,
       required: false,
+    },
+    seatingCapacity: {
+      type: Number,
+      required: true,
+    },
+
+    specifications: {
+      type: [
+        {
+          name: String,
+          value: String,
+        },
+      ],
     },
   },
   {
