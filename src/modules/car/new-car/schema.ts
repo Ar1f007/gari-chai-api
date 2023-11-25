@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { validMongoIdSchema } from '../../../lib/zod/commonSchemas';
+import { numberOrNull } from '../../../utils/helperSchema';
 
 export const selectOption = z.object({
   value: z.string(),
@@ -8,9 +9,9 @@ export const selectOption = z.object({
 
 export const engineSchemaBasic = z.object({
   type: z.string(),
-  numOfCylinders: z.number().optional(),
-  horsePower: z.number().optional(),
-  torque: z.number().optional(),
+  numOfCylinders: numberOrNull,
+  horsePower: numberOrNull,
+  torque: numberOrNull,
   condition: z.string().optional(),
 });
 
@@ -54,8 +55,8 @@ const payload = {
 
       economy: z
         .object({
-          city: z.number().optional(),
-          highway: z.number().optional(),
+          city: numberOrNull,
+          highway: numberOrNull,
         })
         .optional(),
     }),
@@ -67,8 +68,8 @@ const payload = {
     }),
 
     acceleration: z.object({
-      zeroTo60: z.number().optional(),
-      topSpeed: z.number().optional(),
+      zeroTo60: numberOrNull,
+      topSpeed: numberOrNull,
     }),
 
     specifications: z
