@@ -220,7 +220,8 @@ const carSchema = new mongoose.Schema(
             type: [
               {
                 name: String,
-                value: String,
+                value: mongoose.Schema.Types.Mixed,
+                valueType: String,
               },
             ],
           },
@@ -232,7 +233,8 @@ const carSchema = new mongoose.Schema(
       type: [
         {
           name: String,
-          value: String,
+          value: mongoose.Schema.Types.Mixed,
+          valueType: String,
         },
       ],
     },

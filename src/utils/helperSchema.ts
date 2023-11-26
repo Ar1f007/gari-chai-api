@@ -18,5 +18,6 @@ export const numberOrNull = z.union([z.number(), z.null()]);
 
 export const singleSpecificationSchema = z.object({
   name: z.string().min(1, 'name is required'),
-  value: z.string().min(1, 'value is required'),
+  value: z.union([z.string().min(1, 'value is required'), z.boolean()]),
+  valueType: z.enum(['boolean', 'text']),
 });
