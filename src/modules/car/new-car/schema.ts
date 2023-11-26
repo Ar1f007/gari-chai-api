@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { validMongoIdSchema } from '../../../lib/zod/commonSchemas';
-import { numberOrNull } from '../../../utils/helperSchema';
+import { numberOrNull, singleSpecificationSchema, xCharacterLong } from '../../../utils/helperSchema';
 
 export const selectOption = z.object({
   value: z.string(),
@@ -72,16 +72,18 @@ const payload = {
       topSpeed: numberOrNull,
     }),
 
-    specifications: z
+    specificationsByGroup: z
       .optional(
         z.array(
           z.object({
-            name: z.string(),
-            value: z.string(),
+            groupName: z.string().min(3, xCharacterLong('Group name', 3)),
+            values: z.array(singleSpecificationSchema),
           }),
         ),
       )
       .default([]),
+
+    additionalSpecifications: z.optional(z.array(singleSpecificationSchema)).default([]),
 
     launchedAt: z.preprocess(
       (arg) => {

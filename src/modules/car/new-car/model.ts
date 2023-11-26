@@ -212,7 +212,23 @@ const carSchema = new mongoose.Schema(
       required: true,
     },
 
-    specifications: {
+    specificationsByGroup: {
+      type: [
+        {
+          groupName: String,
+          values: {
+            type: [
+              {
+                name: String,
+                value: String,
+              },
+            ],
+          },
+        },
+      ],
+    },
+
+    additionalSpecifications: {
       type: [
         {
           name: String,
