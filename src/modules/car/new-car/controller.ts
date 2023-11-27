@@ -25,7 +25,7 @@ export async function getCarsHandler(req: Request<{}, {}, {}, ReadCarInput['quer
   const queries: Record<string, string> = {};
 
   if (req.query.brand) {
-    queries['brand'] = req.query.brand;
+    queries['brand.id'] = req.query.brand;
   }
 
   const cars = await findCars(queries);
