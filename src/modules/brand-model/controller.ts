@@ -12,6 +12,7 @@ import { StatusCodes } from 'http-status-codes';
 import AppError from '../../utils/appError';
 import slugify from 'slugify';
 import { findBrand } from '../brand/service';
+import { findAndUpdateManyCar } from '../car/new-car';
 
 export async function createBrandModelHandler(req: Request<{}, {}, CreateNewBrandModelInputs>, res: Response) {
   const brandExists = await findBrand({ _id: req.body.brandId });
@@ -97,6 +98,11 @@ export async function updateBrandModelHandler(
   const updatedBrandModel = await findAndUpdateBrandModel(query, update, {
     new: true,
   });
+
+  // update the brand name of car
+  if (updatedBrandModel) {
+    findAndUpdateManyCar({ 'brandModel.id': updatedBrandModel.id }, { 'brandModel.name': updatedBrandModel.name });
+  }
 
   res.status(StatusCodes.OK).json({
     status: 'success',

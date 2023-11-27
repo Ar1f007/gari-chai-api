@@ -25,37 +25,38 @@ const carSchema = new mongoose.Schema(
       unique: true,
     },
 
-    // year: {
-    //   type: Number,
-    //   required: true,
-    // },
-
-    // registrationYear: {
-    //   type: Number,
-    //   required: true,
-    // },
-
     description: {
       type: String,
       required: false,
     },
 
     brand: {
-      type: Schema.Types.ObjectId,
-      ref: 'Brand',
-      required: [true, 'brand is required'],
+      type: {
+        id: {
+          type: Schema.Types.ObjectId,
+          ref: 'Brand',
+          required: [true, 'brand id is required'],
+        },
+        name: {
+          type: String,
+          required: [true, 'brand name is required'],
+        },
+      },
     },
 
     brandModel: {
-      type: Schema.Types.ObjectId,
-      ref: 'Brand-Model',
-      required: [true, 'brand model is required'],
+      type: {
+        id: {
+          type: Schema.Types.ObjectId,
+          ref: 'Brand-Model',
+          required: [true, 'brand model id required'],
+        },
+        name: {
+          type: String,
+          required: [true, 'brand model is required'],
+        },
+      },
     },
-
-    // modelNumber: {
-    //   type: Number,
-    //   required: true,
-    // },
 
     engine: {
       type: {
@@ -125,41 +126,33 @@ const carSchema = new mongoose.Schema(
       },
     },
 
-    // safetyFeatures: {
-    //   type: String,
-    //   required: false,
-    // },
-
-    // infotainmentSystem: {
-    //   type: String,
-    //   required: false,
-    // },
-
-    mileage: {
-      type: Number,
-      required: true,
-    },
-
     imageUrls: {
       type: [String],
       required: false,
       default: [],
     },
 
-    color: {
-      type: String,
-      required: true,
-    },
-
-    baseInteriorColor: {
-      type: String,
-      required: true,
+    colors: {
+      type: [
+        {
+          name: {
+            type: String,
+            required: [true, 'Color name is required'],
+          },
+          imageUrls: {
+            type: [String],
+            required: false,
+            default: [],
+          },
+        },
+      ],
     },
 
     numOfDoors: {
       type: Number,
       required: true,
     },
+
     posterImage: {
       type: {
         originalUrl: String,
@@ -167,6 +160,7 @@ const carSchema = new mongoose.Schema(
       },
       required: true,
     },
+
     price: {
       type: {
         min: {
@@ -183,6 +177,7 @@ const carSchema = new mongoose.Schema(
         },
       },
     },
+
     tags: {
       type: [
         {
@@ -193,20 +188,24 @@ const carSchema = new mongoose.Schema(
 
       default: [],
     },
+
     launchedAt: {
       type: Date,
       required: [false, 'Launch date is required'],
     },
+
     status: {
       type: String,
       required: true,
       enum: ['available', 'sold', 'reserved'],
       default: 'available',
     },
+
     soldAt: {
       type: Date,
       required: false,
     },
+
     seatingCapacity: {
       type: Number,
       required: true,

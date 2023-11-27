@@ -1,10 +1,14 @@
 import { Request, Response } from 'express';
+import slugify from 'slugify';
+import { StatusCodes } from 'http-status-codes';
+
 import { createNewBrand, deleteBrand, findAndUpdateBrand, findBrand, findBrands } from './service';
 import { CreateNewBrandInputs, DeleteBrandInput, ReadBrandInput, UpdateBrandInput } from './schema';
-import { StatusCodes } from 'http-status-codes';
+
 import AppError from '../../utils/appError';
-import slugify from 'slugify';
+
 import { findSettingContents } from '../home-settings';
+import { findAndUpdateManyCar } from '../car/new-car';
 
 export async function createBrandHandler(req: Request<{}, {}, CreateNewBrandInputs>, res: Response) {
   const slugifiedValue = slugify(req.body.name, {
@@ -87,6 +91,11 @@ export async function updateBrandHandler(
   const updatedBrand = await findAndUpdateBrand({ slug: brandSlug }, update, {
     new: true,
   });
+
+  // update the brand name of in car documents
+  if (updatedBrand) {
+    findAndUpdateManyCar({ 'brand.id': updatedBrand.id }, { 'brand.name': updatedBrand.name });
+  }
 
   res.status(StatusCodes.OK).json({
     status: 'success',

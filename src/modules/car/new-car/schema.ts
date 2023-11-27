@@ -19,32 +19,32 @@ const payload = {
   body: z.object({
     name: z.string(),
 
-    // year: z.number(),
+    brand: z.object({
+      id: validMongoIdSchema,
+      name: z.string().min(1),
+    }),
 
-    // registrationYear: z.number(),
-
-    brand: validMongoIdSchema,
-
-    brandModel: validMongoIdSchema,
+    brandModel: z.object({
+      id: validMongoIdSchema,
+      name: z.string().min(1),
+    }),
 
     tags: z.array(selectOption).optional().default([]),
 
     bodyStyle: validMongoIdSchema,
 
-    // modelNumber: z.number(),
-
     engine: engineSchemaBasic,
-
-    mileage: z.number(),
 
     seatingCapacity: z.number(),
 
     numOfDoors: z.number(),
 
-    color: z.string(),
-
-    baseInteriorColor: z.string(),
-
+    colors: z.array(
+      z.object({
+        name: z.string(),
+        imageUrls: z.optional(z.array(z.string().url())),
+      }),
+    ),
     transmission: z.string(),
 
     fuel: z.object({

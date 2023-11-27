@@ -16,8 +16,7 @@ export const validateResource = (schema: AnyZodObject) => (req: Request, res: Re
     }
 
     const errors = e.errors.map((e) => ({
-      // TODO: Check by sending whole array / or just last part if it can correctly match the path to show error below the input field
-      fieldName: e.path.at(-1), // get the last path
+      fieldName: e.path.slice(1), // remove first element "body" from path array
       message: e.message,
     }));
 
