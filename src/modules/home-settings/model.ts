@@ -36,6 +36,6 @@ const homeSettingSchema = new mongoose.Schema(
   },
 );
 
-const HomeSetting = mongoose.model<HomeSettingDocument>('HomeSetting', homeSettingSchema);
+const HomeSetting = mongoose.model<HomeSettingDocument>('Home-Setting', homeSettingSchema);
 
 export default HomeSetting;

@@ -3,6 +3,7 @@ import express from 'express';
 import {
   createBrandHandler,
   deleteBrandHandler,
+  getAllAndPopularBrandsHandler,
   getBrandHandler,
   getBrandsHandler,
   updateBrandHandler,
@@ -15,6 +16,8 @@ import { validateResource } from '../../middleware';
 export const brandRouter = express.Router();
 
 brandRouter.route('/').get(getBrandsHandler).post(validateResource(createBrandSchema), createBrandHandler);
+
+brandRouter.get('/overview', getAllAndPopularBrandsHandler);
 
 brandRouter
   .route('/:brandSlug')

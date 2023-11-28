@@ -1,4 +1,6 @@
 import { z } from 'zod';
+import { validMongoIdSchema } from '../../../lib/zod/commonSchemas';
+import { numberOrNull, singleSpecificationSchema, xCharacterLong } from '../../../utils/helperSchema';
 
 export const selectOption = z.object({
   value: z.string(),
@@ -7,9 +9,9 @@ export const selectOption = z.object({
 
 export const engineSchemaBasic = z.object({
   type: z.string(),
-  displacement: z.number().optional(),
-  horsePower: z.number().optional(),
-  torque: z.number().optional(),
+  numOfCylinders: numberOrNull,
+  horsePower: numberOrNull,
+  torque: numberOrNull,
   condition: z.string().optional(),
 });
 
@@ -17,66 +19,73 @@ const payload = {
   body: z.object({
     name: z.string(),
 
-    year: z.number(),
-
-    registrationYear: z.number(),
-
-    description: z.string().optional(),
-
     brand: z.object({
-      slug: z.string(),
-      name: z.string(),
+      id: validMongoIdSchema,
+      name: z.string().min(1),
     }),
 
-    modelNumber: z.number(),
+    brandModel: z.object({
+      id: validMongoIdSchema,
+      name: z.string().min(1),
+    }),
+
+    tags: z.array(selectOption).optional().default([]),
+
+    bodyStyle: validMongoIdSchema,
 
     engine: engineSchemaBasic,
 
+    seatingCapacity: z.number(),
+
+    numOfDoors: z.number(),
+
+    colors: z.array(
+      z.object({
+        name: z.string(),
+        imageUrls: z.optional(z.array(z.string().url())),
+      }),
+    ),
     transmission: z.string(),
 
-    bodyStyle: z.string(),
-
     fuel: z.object({
-      type: z.string(),
+      typeInfo: z.object({
+        type: z.string(),
+        fullForm: z.string(),
+      }),
+
       economy: z
         .object({
-          city: z.number().optional(),
-          highway: z.number().optional(),
+          city: numberOrNull,
+          highway: numberOrNull,
         })
         .optional(),
     }),
 
-    acceleration: z
-      .object({
-        zeroTo60: z.number().optional(),
-        topSpeed: z.number().optional(),
-      })
-      .optional(),
-
-    safetyFeatures: z.string().optional(),
-
-    infotainmentSystem: z.string().optional(),
-
-    mileage: z.number(),
-
-    imageUrls: z.array(z.string().url()).optional(),
-
-    color: z.string(),
-
-    baseInteriorColor: z.string(),
-
-    numberOfDoors: z.number(),
-
-    posterImage: z.object({
-      originalUrl: z.string().url(),
-      thumbnailUrl: z.string().url(),
+    price: z.object({
+      min: z.number().min(1, 'required'),
+      max: z.number().min(1, 'required'),
+      isNegotiable: z.boolean(),
     }),
 
-    price: z.number(),
+    acceleration: z.object({
+      zeroTo60: numberOrNull,
+      topSpeed: numberOrNull,
+    }),
 
-    tags: z.array(selectOption).optional().default([]),
+    specificationsByGroup: z
+      .optional(
+        z.array(
+          z.object({
+            groupName: z.string().min(3, xCharacterLong('Group name', 3)),
+            values: z.array(singleSpecificationSchema),
+          }),
+        ),
+      )
+      .default([]),
 
-    publishedAt: z.preprocess(
+    additionalSpecifications: z.optional(z.array(singleSpecificationSchema)).default([]),
+
+    launchedAt: z.preprocess(
       (arg) => {
         if (typeof arg === 'string' || arg instanceof Date) return new Date(arg);
       },
@@ -84,6 +93,22 @@ const payload = {
         required_error: 'Please select a date and time',
         invalid_type_error: "That's not a date!",
       }),
+    ),
+
+    posterImage: z.object({
+      originalUrl: z.string().url(),
+      thumbnailUrl: z.string().url(),
+    }),
+
+    imageUrls: z.array(z.string().url()).optional(),
+
+    description: z.optional(
+      z.string().refine((val) => {
+        if (val) {
+          return val.length >= 200;
+        }
+        return true;
+      }, 'Description is optional, but if you want add one, then make sure it is at least 200 characters long'),
     ),
   }),
 };

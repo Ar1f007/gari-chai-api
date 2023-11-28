@@ -1,7 +1,6 @@
 import mongoose from 'mongoose';
 import { CreateNewBrandInputs } from './schema';
 import slugify from 'slugify';
-import { nanoid } from 'nanoid';
 
 export interface BrandDocument extends CreateNewBrandInputs, mongoose.Document {
   slug: string;
@@ -46,13 +45,11 @@ brandSchema.pre('save', async function (next) {
     lower: true,
   });
 
-  const suffix = nanoid(3);
-
-  brand.slug = slug + '-' + suffix;
+  brand.slug = slug;
 
   return next();
 });
 
-const BrandModel = mongoose.model<BrandDocument>('brand', brandSchema);
+const BrandModel = mongoose.model<BrandDocument>('Brand', brandSchema);
 
 export default BrandModel;

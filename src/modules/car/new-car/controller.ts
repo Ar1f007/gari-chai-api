@@ -13,7 +13,7 @@ export async function createCarHandler(req: Request<{}, {}, CreateNewCarInputs>,
   }
 
   // increase the car collection count in brand model
-  await updateBrandCarCollectionCount({ type: 'inc', brandSlug: car.brand.slug });
+  await updateBrandCarCollectionCount({ type: 'inc', brandId: req.body.brand.id });
 
   res.status(StatusCodes.CREATED).json({
     status: 'success',
@@ -25,7 +25,7 @@ export async function getCarsHandler(req: Request<{}, {}, {}, ReadCarInput['quer
   const queries: Record<string, string> = {};
 
   if (req.query.brand) {
-    queries['brand.slug'] = req.query.brand;
+    queries['brand.id'] = req.query.brand;
   }
 
   const cars = await findCars(queries);
@@ -39,7 +39,22 @@ export async function getCarsHandler(req: Request<{}, {}, {}, ReadCarInput['quer
 export async function getCarHandler(req: Request<ReadCarInput['params']>, res: Response) {
   const carSlug = req.params.carSlug;
 
-  const car = await findCar({ slug: carSlug });
+  const car = await findCar(
+    { slug: carSlug },
+    {
+      populate: [
+        {
+          path: 'brand.id',
+        },
+        {
+          path: 'brandModel.id',
+        },
+        {
+          path: 'bodyStyle',
+        },
+      ],
+    },
+  );
 
   if (!car) {
     return res.status(StatusCodes.NOT_FOUND).json({
@@ -96,7 +111,7 @@ export async function deleteCarHandler(req: Request<DeleteCarInput['params']>, r
 
   if (deletedCar.acknowledged) {
     // decrease the car collection count in brand model
-    await updateBrandCarCollectionCount({ type: 'dec', brandSlug: carSlug });
+    await updateBrandCarCollectionCount({ type: 'dec', brandId: car.brand.id });
   }
 
   res.status(StatusCodes.OK).json({

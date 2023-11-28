@@ -1,4 +1,4 @@
-import mongoose from 'mongoose';
+import mongoose, { Schema } from 'mongoose';
 import { nanoid } from 'nanoid';
 import slugify from 'slugify';
 
@@ -8,6 +8,8 @@ export interface CarDocument extends CreateNewCarInputs, mongoose.Document {
   slug: string;
   createdAt: Date;
   updatedAt: Date;
+  status: string;
+  soldAt: Date;
 }
 
 const carSchema = new mongoose.Schema(
@@ -23,35 +25,37 @@ const carSchema = new mongoose.Schema(
       unique: true,
     },
 
-    year: {
-      type: Number,
-      required: true,
-    },
-
-    registrationYear: {
-      type: Number,
-      required: true,
-    },
-
     description: {
       type: String,
       required: false,
     },
 
     brand: {
-      slug: {
-        type: String,
-        required: true,
-      },
-      name: {
-        type: String,
-        required: true,
+      type: {
+        id: {
+          type: Schema.Types.ObjectId,
+          ref: 'Brand',
+          required: [true, 'brand id is required'],
+        },
+        name: {
+          type: String,
+          required: [true, 'brand name is required'],
+        },
       },
     },
 
-    modelNumber: {
-      type: Number,
-      required: true,
+    brandModel: {
+      type: {
+        id: {
+          type: Schema.Types.ObjectId,
+          ref: 'Brand-Model',
+          required: [true, 'brand model id required'],
+        },
+        name: {
+          type: String,
+          required: [true, 'brand model is required'],
+        },
+      },
     },
 
     engine: {
@@ -59,7 +63,7 @@ const carSchema = new mongoose.Schema(
         type: String,
         required: true,
       },
-      displacement: {
+      numOfCylinders: {
         type: Number,
         required: false,
       },
@@ -84,14 +88,19 @@ const carSchema = new mongoose.Schema(
     },
 
     bodyStyle: {
-      type: String,
-      required: true,
+      type: Schema.Types.ObjectId,
+      ref: 'Car-Body-Type',
+      required: [true, 'car body type is required'],
     },
 
     fuel: {
-      type: {
-        type: String,
-        required: true,
+      typeInfo: {
+        type: {
+          type: String,
+        },
+        fullForm: {
+          type: String,
+        },
       },
       economy: {
         city: {
@@ -117,41 +126,33 @@ const carSchema = new mongoose.Schema(
       },
     },
 
-    safetyFeatures: {
-      type: String,
-      required: false,
-    },
-
-    infotainmentSystem: {
-      type: String,
-      required: false,
-    },
-
-    mileage: {
-      type: Number,
-      required: true,
-    },
-
     imageUrls: {
       type: [String],
       required: false,
       default: [],
     },
 
-    color: {
-      type: String,
-      required: true,
+    colors: {
+      type: [
+        {
+          name: {
+            type: String,
+            required: [true, 'Color name is required'],
+          },
+          imageUrls: {
+            type: [String],
+            required: false,
+            default: [],
+          },
+        },
+      ],
     },
 
-    baseInteriorColor: {
-      type: String,
-      required: true,
-    },
-
-    numberOfDoors: {
+    numOfDoors: {
       type: Number,
       required: true,
     },
+
     posterImage: {
       type: {
         originalUrl: String,
@@ -159,10 +160,24 @@ const carSchema = new mongoose.Schema(
       },
       required: true,
     },
+
     price: {
-      type: Number,
-      required: false,
+      type: {
+        min: {
+          type: Number,
+          required: true,
+        },
+        max: {
+          type: Number,
+          required: true,
+        },
+        isNegotiable: {
+          type: Boolean,
+          required: true,
+        },
+      },
     },
+
     tags: {
       type: [
         {
@@ -173,9 +188,54 @@ const carSchema = new mongoose.Schema(
 
       default: [],
     },
-    publishedAt: {
+
+    launchedAt: {
       type: Date,
-      required: [true, 'A date is required'],
+      required: [false, 'Launch date is required'],
+    },
+
+    status: {
+      type: String,
+      required: true,
+      enum: ['available', 'sold', 'reserved'],
+      default: 'available',
+    },
+
+    soldAt: {
+      type: Date,
+      required: false,
+    },
+
+    seatingCapacity: {
+      type: Number,
+      required: true,
+    },
+
+    specificationsByGroup: {
+      type: [
+        {
+          groupName: String,
+          values: {
+            type: [
+              {
+                name: String,
+                value: mongoose.Schema.Types.Mixed,
+                valueType: String,
+              },
+            ],
+          },
+        },
+      ],
+    },
+
+    additionalSpecifications: {
+      type: [
+        {
+          name: String,
+          value: mongoose.Schema.Types.Mixed,
+          valueType: String,
+        },
+      ],
     },
   },
   {

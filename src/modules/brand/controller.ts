@@ -1,10 +1,29 @@
 import { Request, Response } from 'express';
+import slugify from 'slugify';
+import { StatusCodes } from 'http-status-codes';
+
 import { createNewBrand, deleteBrand, findAndUpdateBrand, findBrand, findBrands } from './service';
 import { CreateNewBrandInputs, DeleteBrandInput, ReadBrandInput, UpdateBrandInput } from './schema';
-import { StatusCodes } from 'http-status-codes';
+
 import AppError from '../../utils/appError';
 
+import { findSettingContents } from '../home-settings';
+import { findAndUpdateManyCar } from '../car/new-car';
+
 export async function createBrandHandler(req: Request<{}, {}, CreateNewBrandInputs>, res: Response) {
+  const slugifiedValue = slugify(req.body.name, {
+    lower: true,
+  });
+
+  const brandWithSameNameExist = await findBrand({ slug: slugifiedValue });
+
+  if (brandWithSameNameExist) {
+    return res.status(StatusCodes.BAD_REQUEST).json({
+      status: 'fail',
+      message: 'Brand with the same name already exists!',
+    });
+  }
+
   const brand = await createNewBrand(req.body);
 
   if (!brand) {
@@ -73,6 +92,11 @@ export async function updateBrandHandler(
     new: true,
   });
 
+  // update the brand name of in car documents
+  if (updatedBrand) {
+    findAndUpdateManyCar({ 'brand.id': updatedBrand.id }, { 'brand.name': updatedBrand.name });
+  }
+
   res.status(StatusCodes.OK).json({
     status: 'success',
     data: updatedBrand,
@@ -96,5 +120,39 @@ export async function deleteBrandHandler(req: Request<DeleteBrandInput['params']
   res.status(StatusCodes.OK).json({
     status: 'success',
     message: 'Brand was deleted',
+  });
+}
+
+/**
+ * Retrieves the popular brands and all brands with at least one car collection from the database
+ * and sends the retrieved data as a JSON response.
+ *
+ * @param req The Express request object.
+ * @param res The Express response object.
+ */
+export async function getAllAndPopularBrandsHandler(req: Request, res: Response) {
+  // Retrieve popular brands from the database
+  const popularBrands = await findSettingContents({ sectionName: 'popular-brands' }, { content: 1, _id: 0 });
+
+  // Retrieve all brands with at least one car collection from the database
+  const query = { carCollectionCount: { $gte: 0 } };
+  const fieldsToPick = { name: 1, slug: 1 };
+  const allBrands = await findBrands(query, fieldsToPick);
+
+  const brands = popularBrands.map((brand) => ({
+    name: brand.content.name,
+    slug: brand.content.slug,
+    _id: brand.content._id,
+  }));
+
+  const payload = {
+    popularBrands: brands,
+    allBrands: allBrands,
+  };
+
+  // Send the retrieved data as a JSON response
+  res.status(StatusCodes.OK).json({
+    status: 'success',
+    data: payload,
   });
 }
