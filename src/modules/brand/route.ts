@@ -17,7 +17,7 @@ export const brandRouter = express.Router();
 
 brandRouter.route('/').get(getBrandsHandler).post(validateResource(createBrandSchema), createBrandHandler);
 
-brandRouter.get('/overview', getAllAndPopularBrandsHandler);
+brandRouter.get('/all-with-popular', getAllAndPopularBrandsHandler); // used in search box
 
 brandRouter
   .route('/:brandSlug')
