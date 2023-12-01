@@ -58,6 +58,20 @@ const carSchema = new mongoose.Schema(
       },
     },
 
+    bodyStyle: {
+      type: {
+        id: {
+          type: Schema.Types.ObjectId,
+          ref: 'Car-Body-Type',
+          required: [true, 'car body type is required'],
+        },
+        name: {
+          type: String,
+          required: [true, 'body style name is required'],
+        },
+      },
+    },
+
     engine: {
       type: {
         type: String,
@@ -85,12 +99,6 @@ const carSchema = new mongoose.Schema(
     transmission: {
       type: String,
       required: true,
-    },
-
-    bodyStyle: {
-      type: Schema.Types.ObjectId,
-      ref: 'Car-Body-Type',
-      required: [true, 'car body type is required'],
     },
 
     fuel: {
@@ -236,6 +244,10 @@ const carSchema = new mongoose.Schema(
           valueType: String,
         },
       ],
+    },
+    cities: {
+      type: [String],
+      default: ['all'],
     },
   },
   {
