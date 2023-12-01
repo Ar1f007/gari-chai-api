@@ -31,7 +31,10 @@ const payload = {
 
     tags: z.array(selectOption).optional().default([]),
 
-    bodyStyle: validMongoIdSchema,
+    bodyStyle: z.object({
+      id: validMongoIdSchema,
+      name: z.string().min(1),
+    }),
 
     engine: engineSchemaBasic,
 
@@ -110,6 +113,8 @@ const payload = {
         return true;
       }, 'Description is optional, but if you want add one, then make sure it is at least 200 characters long'),
     ),
+
+    cities: z.array(z.string()).optional(),
   }),
 };
 

@@ -2,19 +2,22 @@ import express, { Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import Car from '../car/new-car/model';
 
-type ReadSearchQuery = {
+type QueryParams = {
   car: 'new' | 'used';
-  q: string;
-  brand: string;
-  model: string;
-  name: string;
   budget: string;
   bodyType: string;
+  brand: string;
+  model: string;
+  city: string;
+  query: string;
+  page: string;
+  limit: string;
+  scope: 'new-car' | 'used-car' | 'global';
 };
 
 const searchRouter = express.Router();
 
-searchRouter.get('/', async (req: Request<{}, {}, {}, ReadSearchQuery>, res: Response) => {
+searchRouter.get('/', async (req: Request<{}, {}, {}, QueryParams>, res: Response) => {
   let query: any = {};
 
   // let page = parseInt(req.query.page as string) || 1;
@@ -26,7 +29,7 @@ searchRouter.get('/', async (req: Request<{}, {}, {}, ReadSearchQuery>, res: Res
   }
 
   if (req.query.model) {
-    query['model.name'] = { $regex: new RegExp(req.query.model, 'i') };
+    query['brandModel.name'] = { $regex: new RegExp(req.query.model, 'i') };
   }
 
   if (req.query.bodyType) {
@@ -46,7 +49,7 @@ searchRouter.get('/', async (req: Request<{}, {}, {}, ReadSearchQuery>, res: Res
   }
 
   // separate the search query based on car type
-  // if car type is `new` then search in Car model
+  // if car type is `new` then search in Car collection
   // if the type is `used` then search in the Used car collection
   if (req.query.car && req.query.car === 'new') {
     const results = await Car.find({
@@ -58,6 +61,19 @@ searchRouter.get('/', async (req: Request<{}, {}, {}, ReadSearchQuery>, res: Res
       data: results,
       message: '',
     });
+  }
+
+  if (req.query.car && req.query.car === 'used') {
+    //  const results = await UsedCar.find({
+    //    $or: [query],
+    //  });
+
+    //  return res.status(StatusCodes.OK).json({
+    //    status: 'success',
+    //    data: results,
+    //    message: '',
+    //  });
+    return res.send('TO BE REPLACED SOON');
   }
 
   res.status(StatusCodes.OK).json({
