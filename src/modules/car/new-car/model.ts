@@ -249,6 +249,10 @@ const carSchema = new mongoose.Schema(
       type: [String],
       default: ['all'],
     },
+    carType: {
+      type: String,
+      default: 'new',
+    },
   },
   {
     timestamps: true,

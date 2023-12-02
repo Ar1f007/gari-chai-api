@@ -115,6 +115,8 @@ const payload = {
     ),
 
     cities: z.array(z.string()).optional(),
+
+    carType: z.string().optional(),
   }),
 };
 
