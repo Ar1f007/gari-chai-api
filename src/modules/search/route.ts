@@ -18,23 +18,7 @@ type QueryParams = {
 const searchRouter = express.Router();
 
 searchRouter.get('/', async (req: Request<{}, {}, {}, QueryParams>, res: Response) => {
-  //   const {
-  //     query = '',
-  //     page = '1',
-  //     limit = '20',
-  //     car = '',
-  //     budget = '',
-  //     bodyType = '',
-  //     brand = '',
-  //     model = '',
-  //     city = 'all',
-  //     scope = 'global',
-  //   } = searchParams || {};
-
   let query: any = {};
-
-  // let page = parseInt(req.query.page as string) || 1;
-  // let pageSize = parseInt(req.query.pageSize as string) || 20;
 
   // Handle specific brand, model and body-style queries
   if (req.query.brand) {
@@ -61,18 +45,39 @@ searchRouter.get('/', async (req: Request<{}, {}, {}, QueryParams>, res: Respons
     };
   }
 
+  // Pagination
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 10;
+  const skip = (page - 1) * limit;
+
   // separate the search query based on car type
   // if car type is `new` then search in Car collection
   // if the type is `used` then search in the Used car collection
   if (req.query.car && req.query.car === 'new') {
-    const results = await Car.find({
-      $or: [query],
-    }).lean();
+    const [totalResults, results] = await Promise.all([
+      Car.countDocuments({ $or: [query] }),
+      Car.find({ $or: [query] })
+        .skip(skip)
+        .limit(limit),
+    ]);
+
+    const totalPages = Math.ceil(totalResults / limit);
+
+    const hasNextPage = page < totalPages;
+    const nextPage = hasNextPage ? page + 1 : null;
 
     return res.status(StatusCodes.OK).json({
       status: 'success',
-      data: results,
-      message: '',
+      data: {
+        results,
+        pagination: {
+          totalResults,
+          totalPages,
+          currentPage: page,
+          hasNextPage,
+          nextPage,
+        },
+      },
     });
   }
 
@@ -81,28 +86,44 @@ searchRouter.get('/', async (req: Request<{}, {}, {}, QueryParams>, res: Respons
   }
 
   if (req.query.query && req.query.scope === 'global') {
-    const query = { $regex: new RegExp(req.query.query, 'i') };
-    const results = await Car.find({
-      $or: [
-        {
-          name: query,
-        },
-        {
-          'brand.name': query,
-        },
-        {
-          'brandModel.name': query,
-        },
-        {
-          'bodyStyle.name': query,
-        },
-      ],
-    }).lean();
+    const term = { $regex: new RegExp(req.query.query, 'i') };
+
+    const query = [
+      {
+        name: term,
+      },
+      {
+        'brand.name': term,
+      },
+      {
+        'brandModel.name': term,
+      },
+      {
+        'bodyStyle.name': term,
+      },
+    ];
+
+    const [totalResults, results] = await Promise.all([
+      Car.countDocuments({ $or: query }),
+      Car.find({ $or: query }).skip(skip).limit(limit),
+    ]);
+
+    const totalPages = Math.ceil(totalResults / limit);
+
+    const hasNextPage = page < totalPages;
+    const nextPage = hasNextPage ? page + 1 : null;
 
     return res.status(StatusCodes.OK).json({
       status: 'success',
       data: {
         results,
+        pagination: {
+          totalResults,
+          totalPages,
+          currentPage: page,
+          hasNextPage,
+          nextPage,
+        },
       },
     });
   }
