@@ -18,6 +18,19 @@ type QueryParams = {
 const searchRouter = express.Router();
 
 searchRouter.get('/', async (req: Request<{}, {}, {}, QueryParams>, res: Response) => {
+  //   const {
+  //     query = '',
+  //     page = '1',
+  //     limit = '20',
+  //     car = '',
+  //     budget = '',
+  //     bodyType = '',
+  //     brand = '',
+  //     model = '',
+  //     city = 'all',
+  //     scope = 'global',
+  //   } = searchParams || {};
+
   let query: any = {};
 
   // let page = parseInt(req.query.page as string) || 1;
@@ -54,7 +67,7 @@ searchRouter.get('/', async (req: Request<{}, {}, {}, QueryParams>, res: Respons
   if (req.query.car && req.query.car === 'new') {
     const results = await Car.find({
       $or: [query],
-    });
+    }).lean();
 
     return res.status(StatusCodes.OK).json({
       status: 'success',
@@ -64,21 +77,41 @@ searchRouter.get('/', async (req: Request<{}, {}, {}, QueryParams>, res: Respons
   }
 
   if (req.query.car && req.query.car === 'used') {
-    //  const results = await UsedCar.find({
-    //    $or: [query],
-    //  });
-
-    //  return res.status(StatusCodes.OK).json({
-    //    status: 'success',
-    //    data: results,
-    //    message: '',
-    //  });
     return res.send('TO BE REPLACED SOON');
+  }
+
+  if (req.query.query && req.query.scope === 'global') {
+    const query = { $regex: new RegExp(req.query.query, 'i') };
+    const results = await Car.find({
+      $or: [
+        {
+          name: query,
+        },
+        {
+          'brand.name': query,
+        },
+        {
+          'brandModel.name': query,
+        },
+        {
+          'bodyStyle.name': query,
+        },
+      ],
+    }).lean();
+
+    return res.status(StatusCodes.OK).json({
+      status: 'success',
+      data: {
+        results,
+      },
+    });
   }
 
   res.status(StatusCodes.OK).json({
     status: 'success',
-    data: [],
+    data: {
+      results: [],
+    },
     message: '',
   });
 });
