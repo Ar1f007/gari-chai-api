@@ -117,6 +117,16 @@ const payload = {
     cities: z.array(z.string()).optional(),
 
     carType: z.string().optional(),
+
+    videoUrls: z
+      .array(
+        z.object({
+          thumbnailUrl: z.string().url().optional(),
+          url: z.string().url(),
+        }),
+      )
+      .optional()
+      .default([]),
   }),
 };
 

@@ -2,11 +2,11 @@ import { Request, Response } from 'express';
 import NodeCache from 'node-cache';
 import { StatusCodes } from 'http-status-codes';
 
+import { CarDocument } from './model';
 import { countCars, createNewCar, deleteCar, findAndUpdateCar, findCar, findCars } from './service';
 import { CreateNewCarInputs, DeleteCarInput, ReadCarInput, UpdateCarInput } from './schema';
 import AppError from '../../../utils/appError';
 import { updateBrandCarCollectionCount } from '../../brand/service';
-import { CarDocument } from './model';
 import { GET_CARS_CACHE_EXPIRATION_TIME_IN_SECONDS } from '../../../constants';
 
 const cache = new NodeCache();
@@ -76,6 +76,7 @@ export async function getCarsHandler(req: Request<{}, {}, {}, ReadCarInput['quer
 
   // Determine if there is a next page
   const hasNextPage = currentPage < totalPages;
+  const nextPage = hasNextPage ? currentPage + 1 : null;
 
   res.status(StatusCodes.OK).json({
     status: 'success',
@@ -85,7 +86,7 @@ export async function getCarsHandler(req: Request<{}, {}, {}, ReadCarInput['quer
         totalItems: totalCarCount,
         totalPages: totalPages,
         currentPage: currentPage,
-        itemsPerPage: itemsPerPage,
+        nextPage: nextPage,
         hasNextPage: hasNextPage,
       },
     },

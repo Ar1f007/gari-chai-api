@@ -253,6 +253,21 @@ const carSchema = new mongoose.Schema(
       type: String,
       default: 'new',
     },
+    videoUrls: {
+      type: [
+        {
+          thumbnailUrl: {
+            type: String,
+            required: false,
+          },
+          url: {
+            type: String,
+          },
+        },
+      ],
+      required: false,
+      default: [],
+    },
   },
   {
     timestamps: true,

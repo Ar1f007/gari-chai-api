@@ -118,7 +118,7 @@ searchRouter.get('/', async (req: Request<{}, {}, {}, QueryParams>, res: Respons
       data: {
         results,
         pagination: {
-          totalResults,
+          totalItems: totalResults,
           totalPages,
           currentPage: page,
           hasNextPage,
