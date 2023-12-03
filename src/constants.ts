@@ -1,1 +1,2 @@
 export const AUTH_TOKEN_NAME = 'X_GARI_CHAI_TOKEN';
+export const GET_CARS_CACHE_EXPIRATION_TIME_IN_SECONDS = 60 * 10; // 10 min

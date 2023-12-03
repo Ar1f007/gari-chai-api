@@ -131,6 +131,9 @@ const params = {
 const query = {
   query: z.object({
     brand: z.string().optional(),
+    tags: z.string().optional(),
+    page: z.string().optional(),
+    pageSize: z.string().optional(),
   }),
 };
 
