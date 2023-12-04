@@ -9,7 +9,9 @@ import AppError from '../../../utils/appError';
 import { updateBrandCarCollectionCount } from '../../brand/service';
 import { GET_CARS_CACHE_EXPIRATION_TIME_IN_SECONDS } from '../../../constants';
 
-const cache = new NodeCache();
+const cache = new NodeCache({
+  useClones: false,
+});
 
 //************************************************************************ */
 // Helpers
@@ -67,21 +69,41 @@ export async function getCarsHandler(req: Request<{}, {}, {}, ReadCarInput['quer
   const currentPage = Number(req.query.page) || 1;
   const itemsPerPage = Number(req.query.pageSize) || 10;
 
-  // Check if the count is in the cache
+  // Check if the count and cars are in the cache
   const cacheKey = generateCacheKey(queryFilters, currentPage, itemsPerPage);
-  let totalCarCount: number | undefined = cache.get(cacheKey);
 
-  if (totalCarCount === undefined) {
-    // Count not found in the cache, query the database
-    totalCarCount = await countCars(queryFilters);
+  let cacheResult: { totalCarCount?: number; foundCars?: CarDocument[] } | undefined = cache.get(cacheKey);
 
-    // Cache the result for future requests
-    cache.set(cacheKey, totalCarCount, GET_CARS_CACHE_EXPIRATION_TIME_IN_SECONDS);
+  if (cacheResult === undefined) {
+    try {
+      // Use Promise.all to parallelize countCars and findCars
+      const [totalCarCount, foundCars] = await Promise.all([
+        countCars(queryFilters),
+        findCars(queryFilters, { skip: (currentPage - 1) * itemsPerPage, limit: itemsPerPage }),
+      ]);
+
+      // Cache the results for future requests
+      cacheResult = { totalCarCount, foundCars };
+
+      cache.set(cacheKey, cacheResult, GET_CARS_CACHE_EXPIRATION_TIME_IN_SECONDS);
+    } catch (error) {
+      // Handle errors from countCars or findCars
+      return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+        status: 'error',
+        message: 'Error retrieving car data from the database.',
+      });
+    }
   }
 
-  // Fetch the cars based on pagination
-  const itemsToSkip = (currentPage - 1) * itemsPerPage;
-  const foundCars: CarDocument[] = await findCars(queryFilters, { skip: itemsToSkip, limit: itemsPerPage });
+  if (!cacheResult || cacheResult.totalCarCount === undefined) {
+    // Handle the case where totalCarCount is still undefined
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      status: 'error',
+      message: 'Error retrieving total car count from cache.',
+    });
+  }
+
+  const { totalCarCount, foundCars } = cacheResult;
 
   // Calculate total pages
   const totalPages = Math.ceil(totalCarCount / itemsPerPage);
