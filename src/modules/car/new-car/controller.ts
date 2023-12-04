@@ -11,6 +11,9 @@ import { GET_CARS_CACHE_EXPIRATION_TIME_IN_SECONDS } from '../../../constants';
 
 const cache = new NodeCache();
 
+//************************************************************************ */
+// Helpers
+//************************************************************************ */
 function getQueryFilters(query: ReadCarInput['query']): Record<string, any> {
   const filters: Record<string, any> = {};
 
@@ -32,6 +35,15 @@ function getQueryFilters(query: ReadCarInput['query']): Record<string, any> {
 
   return filters;
 }
+
+function generateCacheKey(queryFilters: Record<string, any>, currentPage: number, itemsPerPage: number): string {
+  // Generate a unique cache key based on query filters and pagination parameters
+  return JSON.stringify({ filters: queryFilters, page: currentPage, pageSize: itemsPerPage });
+}
+
+//************************************************************************ */
+// Controller Functions
+//************************************************************************ */
 
 export async function createCarHandler(req: Request<{}, {}, CreateNewCarInputs>, res: Response) {
   const car = await createNewCar(req.body);
@@ -91,11 +103,6 @@ export async function getCarsHandler(req: Request<{}, {}, {}, ReadCarInput['quer
       },
     },
   });
-}
-
-function generateCacheKey(queryFilters: Record<string, any>, currentPage: number, itemsPerPage: number): string {
-  // Generate a unique cache key based on query filters and pagination parameters
-  return JSON.stringify({ filters: queryFilters, page: currentPage, pageSize: itemsPerPage });
 }
 
 export async function getCarHandler(req: Request<ReadCarInput['params']>, res: Response) {
