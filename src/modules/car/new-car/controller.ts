@@ -1,9 +1,44 @@
 import { Request, Response } from 'express';
-import { createNewCar, deleteCar, findAndUpdateCar, findCar, findCars } from './service';
-import { CreateNewCarInputs, DeleteCarInput, ReadCarInput, UpdateCarInput } from './schema';
+import NodeCache from 'node-cache';
 import { StatusCodes } from 'http-status-codes';
+
+import { countCars, createNewCar, deleteCar, findAndUpdateCar, findCar, findCars } from './service';
+import { CreateNewCarInputs, DeleteCarInput, ReadCarInput, UpdateCarInput } from './schema';
 import AppError from '../../../utils/appError';
 import { updateBrandCarCollectionCount } from '../../brand/service';
+
+const cache = new NodeCache({
+  useClones: false,
+});
+
+//************************************************************************ */
+// Helpers
+//************************************************************************ */
+function getQueryFilters(query: ReadCarInput['query']): Record<string, any> {
+  const filters: Record<string, any> = {};
+
+  if (query.tags) {
+    let tagValues: string[] = [];
+
+    if (query.tags.includes(',')) {
+      tagValues = query.tags.split(',');
+    } else {
+      tagValues = [query.tags];
+    }
+
+    filters['tags.value'] = { $in: tagValues };
+  }
+
+  if (query.brand) {
+    filters['brand.id'] = query.brand;
+  }
+
+  return filters;
+}
+
+//************************************************************************ */
+// Controller Functions
+//************************************************************************ */
 
 export async function createCarHandler(req: Request<{}, {}, CreateNewCarInputs>, res: Response) {
   const car = await createNewCar(req.body);
@@ -15,6 +50,9 @@ export async function createCarHandler(req: Request<{}, {}, CreateNewCarInputs>,
   // increase the car collection count in brand model
   await updateBrandCarCollectionCount({ type: 'inc', brandId: req.body.brand.id });
 
+  // clear the cache
+  cache.flushAll();
+
   res.status(StatusCodes.CREATED).json({
     status: 'success',
     data: car,
@@ -22,17 +60,35 @@ export async function createCarHandler(req: Request<{}, {}, CreateNewCarInputs>,
 }
 
 export async function getCarsHandler(req: Request<{}, {}, {}, ReadCarInput['query']>, res: Response) {
-  const queries: Record<string, string> = {};
+  const queryFilters = getQueryFilters(req.query);
 
-  if (req.query.brand) {
-    queries['brand.id'] = req.query.brand;
-  }
+  const currentPage = Number(req.query.page) || 1;
+  const itemsPerPage = Number(req.query.pageSize) || 10;
 
-  const cars = await findCars(queries);
+  const [totalCarCount, foundCars] = await Promise.all([
+    countCars(queryFilters),
+    findCars(queryFilters, { skip: (currentPage - 1) * itemsPerPage, limit: itemsPerPage }),
+  ]);
+
+  // Calculate total pages
+  const totalPages = Math.ceil(totalCarCount / itemsPerPage);
+
+  // Determine if there is a next page
+  const hasNextPage = currentPage < totalPages;
+  const nextPage = hasNextPage ? currentPage + 1 : null;
 
   res.status(StatusCodes.OK).json({
     status: 'success',
-    data: cars,
+    data: {
+      results: foundCars,
+      pagination: {
+        totalItems: totalCarCount,
+        totalPages: totalPages,
+        currentPage: currentPage,
+        nextPage: nextPage,
+        hasNextPage: hasNextPage,
+      },
+    },
   });
 }
 
@@ -117,5 +173,14 @@ export async function deleteCarHandler(req: Request<DeleteCarInput['params']>, r
   res.status(StatusCodes.OK).json({
     status: 'success',
     message: 'Car was deleted',
+  });
+}
+
+export async function flushCacheHandler(_: Request, res: Response) {
+  cache.flushAll();
+
+  res.status(StatusCodes.OK).json({
+    status: 'success',
+    message: 'Cache is cleared',
   });
 }

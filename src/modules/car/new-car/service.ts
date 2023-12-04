@@ -39,3 +39,8 @@ export async function findAndUpdateManyCar(
 export async function deleteCar(query: FilterQuery<CarDocument>) {
   return Car.deleteOne(query);
 }
+
+// New method for counting documents
+export async function countCars(query: FilterQuery<CarDocument>) {
+  return Car.countDocuments(query);
+}

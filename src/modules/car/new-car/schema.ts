@@ -115,6 +115,18 @@ const payload = {
     ),
 
     cities: z.array(z.string()).optional(),
+
+    carType: z.string().optional(),
+
+    videoUrls: z
+      .array(
+        z.object({
+          thumbnailUrl: z.string().url().optional(),
+          url: z.string().url(),
+        }),
+      )
+      .optional()
+      .default([]),
   }),
 };
 
@@ -129,6 +141,9 @@ const params = {
 const query = {
   query: z.object({
     brand: z.string().optional(),
+    tags: z.string().optional(),
+    page: z.string().optional(),
+    pageSize: z.string().optional(),
   }),
 };
 
