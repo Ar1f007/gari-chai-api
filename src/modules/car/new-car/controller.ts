@@ -2,12 +2,10 @@ import { Request, Response } from 'express';
 import NodeCache from 'node-cache';
 import { StatusCodes } from 'http-status-codes';
 
-import { CarDocument } from './model';
 import { countCars, createNewCar, deleteCar, findAndUpdateCar, findCar, findCars } from './service';
 import { CreateNewCarInputs, DeleteCarInput, ReadCarInput, UpdateCarInput } from './schema';
 import AppError from '../../../utils/appError';
 import { updateBrandCarCollectionCount } from '../../brand/service';
-import { GET_CARS_CACHE_EXPIRATION_TIME_IN_SECONDS } from '../../../constants';
 
 const cache = new NodeCache({
   useClones: false,
@@ -38,11 +36,6 @@ function getQueryFilters(query: ReadCarInput['query']): Record<string, any> {
   return filters;
 }
 
-function generateCacheKey(queryFilters: Record<string, any>, currentPage: number, itemsPerPage: number): string {
-  // Generate a unique cache key based on query filters and pagination parameters
-  return JSON.stringify({ filters: queryFilters, page: currentPage, pageSize: itemsPerPage });
-}
-
 //************************************************************************ */
 // Controller Functions
 //************************************************************************ */
@@ -57,6 +50,9 @@ export async function createCarHandler(req: Request<{}, {}, CreateNewCarInputs>,
   // increase the car collection count in brand model
   await updateBrandCarCollectionCount({ type: 'inc', brandId: req.body.brand.id });
 
+  // clear the cache
+  cache.flushAll();
+
   res.status(StatusCodes.CREATED).json({
     status: 'success',
     data: car,
@@ -69,41 +65,10 @@ export async function getCarsHandler(req: Request<{}, {}, {}, ReadCarInput['quer
   const currentPage = Number(req.query.page) || 1;
   const itemsPerPage = Number(req.query.pageSize) || 10;
 
-  // Check if the count and cars are in the cache
-  const cacheKey = generateCacheKey(queryFilters, currentPage, itemsPerPage);
-
-  let cacheResult: { totalCarCount?: number; foundCars?: CarDocument[] } | undefined = cache.get(cacheKey);
-
-  if (cacheResult === undefined) {
-    try {
-      // Use Promise.all to parallelize countCars and findCars
-      const [totalCarCount, foundCars] = await Promise.all([
-        countCars(queryFilters),
-        findCars(queryFilters, { skip: (currentPage - 1) * itemsPerPage, limit: itemsPerPage }),
-      ]);
-
-      // Cache the results for future requests
-      cacheResult = { totalCarCount, foundCars };
-
-      cache.set(cacheKey, cacheResult, GET_CARS_CACHE_EXPIRATION_TIME_IN_SECONDS);
-    } catch (error) {
-      // Handle errors from countCars or findCars
-      return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-        status: 'error',
-        message: 'Error retrieving car data from the database.',
-      });
-    }
-  }
-
-  if (!cacheResult || cacheResult.totalCarCount === undefined) {
-    // Handle the case where totalCarCount is still undefined
-    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-      status: 'error',
-      message: 'Error retrieving total car count from cache.',
-    });
-  }
-
-  const { totalCarCount, foundCars } = cacheResult;
+  const [totalCarCount, foundCars] = await Promise.all([
+    countCars(queryFilters),
+    findCars(queryFilters, { skip: (currentPage - 1) * itemsPerPage, limit: itemsPerPage }),
+  ]);
 
   // Calculate total pages
   const totalPages = Math.ceil(totalCarCount / itemsPerPage);
@@ -208,5 +173,14 @@ export async function deleteCarHandler(req: Request<DeleteCarInput['params']>, r
   res.status(StatusCodes.OK).json({
     status: 'success',
     message: 'Car was deleted',
+  });
+}
+
+export async function flushCacheHandler(_: Request, res: Response) {
+  cache.flushAll();
+
+  res.status(StatusCodes.OK).json({
+    status: 'success',
+    message: 'Cache is cleared',
   });
 }
