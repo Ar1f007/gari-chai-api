@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
-import { createSlider } from './service';
+import { createSlider, getSliders } from './service';
 
 export async function createSliderHandler(req: Request, res: Response) {
   const doc = await createSlider(req.body);
@@ -16,5 +16,14 @@ export async function createSliderHandler(req: Request, res: Response) {
     status: 'success',
     data: doc,
     message: 'Slider added successfully',
+  });
+}
+
+export async function getSlidersHandler(req: Request, res: Response) {
+  const sliders = await getSliders();
+
+  res.status(StatusCodes.OK).json({
+    status: 'success',
+    data: sliders,
   });
 }

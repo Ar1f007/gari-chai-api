@@ -2,6 +2,7 @@ import mongoose from 'mongoose';
 import { CreateSliderInputs } from './schema';
 
 export interface SliderDocument extends CreateSliderInputs, mongoose.Document {
+  sort: number;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -13,13 +14,13 @@ const sliderSchema = new mongoose.Schema(
       required: false,
     },
 
-    sliderLink: {
+    link: {
       type: String,
       required: false,
       default: '/',
     },
 
-    sliderImg: {
+    imgUrl: {
       type: String,
       required: [true, 'Slider image is required'],
     },
@@ -32,8 +33,19 @@ const sliderSchema = new mongoose.Schema(
 
     status: {
       type: String,
-      enum: ['show', 'hide'],
-      default: 'show',
+      enum: ['active', 'hidden'],
+      default: 'active',
+    },
+
+    sort: {
+      type: Number,
+      required: false,
+      default: 0,
+    },
+
+    type: {
+      type: String,
+      enum: ['mobile', 'desktop'],
     },
   },
   {
