@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
-import { createSlider, findSlider, getSliders, updateSlider } from './service';
+import { createSlider, deleteSlider, findSlider, getSliders, updateSlider } from './service';
 import { SliderId, UpdateSliderInputs } from './schema';
 
 export async function createSliderHandler(req: Request, res: Response) {
@@ -63,5 +63,21 @@ export async function updateSliderHandler(req: Request<SliderId, {}, UpdateSlide
   res.status(StatusCodes.OK).json({
     status: 'success',
     data: updatedSlider,
+  });
+}
+
+export async function deleteSliderHandler(req: Request<SliderId>, res: Response) {
+  const slider = await deleteSlider(req.params.id);
+
+  if (!slider) {
+    return res.status(StatusCodes.BAD_REQUEST).json({
+      status: 'fail',
+      message: 'No slider was found',
+    });
+  }
+
+  return res.status(StatusCodes.BAD_REQUEST).json({
+    status: 'success',
+    message: 'Slider deleted successfully',
   });
 }

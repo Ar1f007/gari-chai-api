@@ -18,3 +18,7 @@ export async function updateSlider(id: SliderId['id'], input: UpdateSliderInputs
     new: true,
   });
 }
+
+export async function deleteSlider(id: SliderId['id']) {
+  return SliderModel.findByIdAndDelete(id);
+}

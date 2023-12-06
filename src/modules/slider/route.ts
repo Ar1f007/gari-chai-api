@@ -1,14 +1,15 @@
 import express from 'express';
-import { createSliderHandler, getSlidersHandler, updateSliderHandler } from './controller';
+import { createSliderHandler, deleteSliderHandler, getSlidersHandler, updateSliderHandler } from './controller';
 import { validateResource } from '../../middleware';
 import { updateSliderIdSchema } from './schema';
 
 const sliderRouter = express.Router();
 
-sliderRouter.post('/', createSliderHandler);
+sliderRouter.route('/').post(createSliderHandler).get(getSlidersHandler);
 
-sliderRouter.get('/', getSlidersHandler);
-
-sliderRouter.put('/:id', validateResource(updateSliderIdSchema), updateSliderHandler);
+sliderRouter
+  .route('/:id')
+  .put(validateResource(updateSliderIdSchema), updateSliderHandler)
+  .delete(validateResource(updateSliderIdSchema), deleteSliderHandler);
 
 export default sliderRouter;
