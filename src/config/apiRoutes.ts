@@ -11,6 +11,7 @@ import reviewRouter from '../modules/review/route';
 import commentRouter from '../modules/comment/route';
 import carBodyTypeRouter from '../modules/car-body-type/route';
 import searchRouter from '../modules/search/route';
+import sliderRouter from '../modules/slider/route';
 
 function routes(app: Express) {
   app.get('/health-check', (_: Request, res: Response) => {
@@ -26,6 +27,7 @@ function routes(app: Express) {
   app.use('/api/v1/car-body-types', carBodyTypeRouter);
 
   app.use('/api/v1/home-settings', homeSettingRouter);
+  app.use('/api/v1/sliders', sliderRouter);
   app.use('/api/v1/reviews', reviewRouter);
   app.use('/api/v1/comments', commentRouter);
 }
