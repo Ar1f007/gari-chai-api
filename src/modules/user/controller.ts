@@ -211,7 +211,7 @@ export async function verifyOTPHandler(req: Request<{}, {}, VerifyOTPInputs>, re
 
 export async function logoutUserHandler(req: Request, res: Response) {
   const { cookieName } = req.body;
-  console.log(cookieName);
+
   removeCookie(cookieName, res);
 
   res.status(StatusCodes.OK).json({
