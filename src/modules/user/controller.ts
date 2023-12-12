@@ -10,6 +10,7 @@ import { CreateUserInputs, LoginUserInputs, SendOTPInputs, VerifyOTPInputs } fro
 import { sendOTP } from '../../utils/sendOTP';
 import { attachCookiesToResponse } from '../../utils/attachCookiesToResponse';
 import { AuthenticatedRequest } from '../../middleware/authenticateUser';
+import { removeCookie } from '../../utils/removeCookie';
 
 export async function createNewUserHandler(req: Request<{}, {}, CreateUserInputs>, res: Response) {
   const { phoneNumber } = req.body;
@@ -205,5 +206,16 @@ export async function verifyOTPHandler(req: Request<{}, {}, VerifyOTPInputs>, re
   res.status(StatusCodes.BAD_REQUEST).json({
     status: 'error',
     message: 'Invalid code',
+  });
+}
+
+export async function logoutUserHandler(req: Request, res: Response) {
+  const { cookieName } = req.body;
+  console.log(cookieName);
+  removeCookie(cookieName, res);
+
+  res.status(StatusCodes.OK).json({
+    status: 'success',
+    message: 'Logout successful',
   });
 }
