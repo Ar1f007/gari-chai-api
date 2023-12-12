@@ -1,10 +1,10 @@
 import { Response } from 'express';
-import { envVariables } from './env';
-import { API_DOMAIN } from '../constants';
 
 export const removeCookie = (cookieName: string, res: Response) => {
+  const oneDay = 24 * 60 * 60 * 1000;
+
   res.clearCookie(cookieName, {
-    domain: envVariables.NODE_ENV === 'development' ? 'localhost' : API_DOMAIN,
     path: '/',
+    expires: new Date(Date.now() - oneDay),
   });
 };
