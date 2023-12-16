@@ -20,6 +20,7 @@ const params = {
 const query = {
   query: z.object({
     get: z.string().optional(),
+    transform: z.string().optional(),
   }),
 };
 

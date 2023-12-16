@@ -13,6 +13,7 @@ import AppError from '../../utils/appError';
 import slugify from 'slugify';
 import { findBrand } from '../brand/service';
 import { findAndUpdateManyCar } from '../car/new-car';
+import { BrandModelDocument } from './model';
 
 export async function createBrandModelHandler(req: Request<{}, {}, CreateNewBrandModelInputs>, res: Response) {
   const brandExists = await findBrand({ _id: req.body.brandId });
@@ -50,6 +51,22 @@ export async function createBrandModelHandler(req: Request<{}, {}, CreateNewBran
   });
 }
 
+function transformBrandModelBySection(models: BrandModelDocument[]) {
+  const data = models.reduce(
+    (acc, cur) => {
+      cur.upcoming ? acc.upcomingModels.push(cur) : acc.existingModels.push(cur);
+
+      return acc;
+    },
+    { existingModels: [], upcomingModels: [] } as {
+      existingModels: BrandModelDocument[];
+      upcomingModels: BrandModelDocument[];
+    },
+  );
+
+  return data;
+}
+
 export async function getBrandModelsHandler(req: Request<{}, {}, {}, ReadBrandModelInput['query']>, res: Response) {
   // if in query params, "get=all" is present then return all the brandModels without filtering.
   // hence we set to filtering value "greater than or equal" to 0, if not get="all", then we are
@@ -59,7 +76,16 @@ export async function getBrandModelsHandler(req: Request<{}, {}, {}, ReadBrandMo
     carCollectionCount: { $gte: req.query.get === 'all' ? 0 : 1 },
   };
 
-  const brandModels = await findBrandModels(query);
+  const brandModels: BrandModelDocument[] = await findBrandModels(query);
+
+  if (req.query.transform === '1') {
+    const data = transformBrandModelBySection(brandModels);
+
+    return res.status(StatusCodes.OK).json({
+      status: 'success',
+      data: data,
+    });
+  }
 
   res.status(StatusCodes.OK).json({
     status: 'success',
@@ -67,10 +93,24 @@ export async function getBrandModelsHandler(req: Request<{}, {}, {}, ReadBrandMo
   });
 }
 
-export async function getModelsByBrand(req: Request<ReadBrandModelInput['params']>, res: Response) {
+export async function getModelsByBrand(
+  req: Request<ReadBrandModelInput['params'], {}, {}, ReadBrandModelInput['query']>,
+  res: Response,
+) {
   const brandId = req.params.id;
 
+  const transform = req.query.transform;
+
   const brandModels = await findModelsByBrand({ brand: brandId });
+
+  if (transform === '1') {
+    const data = transformBrandModelBySection(brandModels);
+
+    return res.status(StatusCodes.OK).json({
+      status: 'success',
+      data: data,
+    });
+  }
 
   res.status(StatusCodes.OK).json({
     status: 'success',

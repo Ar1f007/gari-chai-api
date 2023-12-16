@@ -1,15 +1,11 @@
 import { Request, Response } from 'express';
-import NodeCache from 'node-cache';
 import { StatusCodes } from 'http-status-codes';
 
 import { countCars, createNewCar, deleteCar, findAndUpdateCar, findCar, findCars } from './service';
 import { CreateNewCarInputs, DeleteCarInput, ReadCarInput, UpdateCarInput } from './schema';
 import AppError from '../../../utils/appError';
 import { updateBrandCarCollectionCount } from '../../brand/service';
-
-const cache = new NodeCache({
-  useClones: false,
-});
+import { updateBrandModelCarCollectionCount } from '../../brand-model/service';
 
 //************************************************************************ */
 // Helpers
@@ -47,11 +43,9 @@ export async function createCarHandler(req: Request<{}, {}, CreateNewCarInputs>,
     throw new AppError('Could not create car', StatusCodes.BAD_REQUEST);
   }
 
-  // increase the car collection count in brand model
-  await updateBrandCarCollectionCount({ type: 'inc', brandId: req.body.brand.id });
-
-  // clear the cache
-  cache.flushAll();
+  // increase the car collection count in brand and model
+  updateBrandCarCollectionCount({ type: 'inc', brandId: req.body.brand.id });
+  updateBrandModelCarCollectionCount({ type: 'inc', brandModelId: req.body.brandModel.id });
 
   res.status(StatusCodes.CREATED).json({
     status: 'success',
@@ -166,8 +160,9 @@ export async function deleteCarHandler(req: Request<DeleteCarInput['params']>, r
   const deletedCar = await deleteCar({ slug: carSlug });
 
   if (deletedCar.acknowledged) {
-    // decrease the car collection count in brand model
-    await updateBrandCarCollectionCount({ type: 'dec', brandId: car.brand.id });
+    // decrease the car collection count in brand and model
+    updateBrandCarCollectionCount({ type: 'dec', brandId: car.brand.id });
+    updateBrandModelCarCollectionCount({ type: 'dec', brandModelId: req.body.brandModel.id });
   }
 
   res.status(StatusCodes.OK).json({
@@ -176,11 +171,11 @@ export async function deleteCarHandler(req: Request<DeleteCarInput['params']>, r
   });
 }
 
-export async function flushCacheHandler(_: Request, res: Response) {
-  cache.flushAll();
+// export async function flushCacheHandler(_: Request, res: Response) {
+//   cache.flushAll();
 
-  res.status(StatusCodes.OK).json({
-    status: 'success',
-    message: 'Cache is cleared',
-  });
-}
+//   res.status(StatusCodes.OK).json({
+//     status: 'success',
+//     message: 'Cache is cleared',
+//   });
+// }
