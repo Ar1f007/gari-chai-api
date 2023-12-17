@@ -3,7 +3,8 @@ import { StatusCodes } from 'http-status-codes';
 import slugify from 'slugify';
 
 import { CarBodyTypeCreateInputs } from './schema';
-import { createBodyType, findBodyType, findAllBodyTypes } from './service';
+import { createBodyType, findBodyType, findAllBodyTypes, deleteBodyType } from './service';
+import { findCar } from '../car/new-car';
 
 export async function createCarBodyTypeHandler(req: Request<{}, {}, CarBodyTypeCreateInputs>, res: Response) {
   const slugifiedValue = slugify(req.body.name, { lower: true });
@@ -38,5 +39,25 @@ export async function getAllBodyTypesHandler(req: Request, res: Response) {
   return res.status(StatusCodes.OK).json({
     status: 'success',
     data: bodyTypes,
+  });
+}
+
+export async function deleteBodyTypeHandler(req: Request, res: Response) {
+  const { id } = req.body;
+
+  const carExist = await findCar({ 'bodyStyle.id': id });
+
+  if (carExist) {
+    return res.status(StatusCodes.BAD_REQUEST).json({
+      status: 'fail',
+      message: 'Can not delete this body type, it is associated with a car',
+    });
+  }
+
+  await deleteBodyType(id);
+
+  return res.status(StatusCodes.OK).json({
+    status: 'success',
+    data: null,
   });
 }

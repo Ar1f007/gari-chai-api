@@ -13,3 +13,7 @@ export function findBodyType(query: FilterQuery<CarBodyTypeDocument>, options: Q
 export function findAllBodyTypes(query: FilterQuery<CarBodyTypeDocument> = {}, options: QueryOptions = { lean: true }) {
   return CarBodyTypeModel.find(query, {}, options);
 }
+
+export function deleteBodyType(id: string) {
+  return CarBodyTypeModel.findByIdAndDelete(id);
+}

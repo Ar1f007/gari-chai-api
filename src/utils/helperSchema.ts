@@ -6,8 +6,8 @@ export function xCharacterLong(fieldName: string, length: number) {
 }
 
 export const imageSchema = z.object({
-  thumbnailUrl: z.string().optional(),
-  originalUrl: z.string().optional(),
+  thumbnailUrl: z.string().url().optional(),
+  originalUrl: z.string().url(),
 });
 
 export const phoneNumberSchema = z
