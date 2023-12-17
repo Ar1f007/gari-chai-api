@@ -17,7 +17,8 @@ export const brandModelRouter = express.Router();
 brandModelRouter
   .route('/')
   .get(getBrandModelsHandler)
-  .post(validateResource(createBrandModelSchema), createBrandModelHandler);
+  .post(validateResource(createBrandModelSchema), createBrandModelHandler)
+  .delete(deleteBrandModelHandler);
 
 brandModelRouter
   .route('/:id')

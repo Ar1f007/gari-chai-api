@@ -151,9 +151,13 @@ export async function updateBrandModelHandler(
 }
 
 export async function deleteBrandModelHandler(req: Request<DeleteBrandModelInput['params']>, res: Response) {
-  const modelId = req.params.id;
+  const { id } = req.body;
 
-  const query = { _id: modelId };
+  if (!id) {
+    throw new AppError('ID is required', StatusCodes.BAD_REQUEST);
+  }
+
+  const query = { _id: id };
 
   const brandModel = await findBrandModel(query);
 
@@ -161,6 +165,13 @@ export async function deleteBrandModelHandler(req: Request<DeleteBrandModelInput
     return res.status(StatusCodes.NOT_FOUND).json({
       status: 'fail',
       message: 'No brand model was found',
+    });
+  }
+
+  if (brandModel.carCollectionCount > 0) {
+    return res.status(StatusCodes.BAD_REQUEST).json({
+      status: 'fail',
+      message: 'Can not delete this model. It is associated with a car',
     });
   }
 

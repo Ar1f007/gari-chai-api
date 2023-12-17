@@ -5,6 +5,7 @@ import slugify from 'slugify';
 import { CarBodyTypeCreateInputs } from './schema';
 import { createBodyType, findBodyType, findAllBodyTypes, deleteBodyType } from './service';
 import { findCar } from '../car/new-car';
+import AppError from '../../utils/appError';
 
 export async function createCarBodyTypeHandler(req: Request<{}, {}, CarBodyTypeCreateInputs>, res: Response) {
   const slugifiedValue = slugify(req.body.name, { lower: true });
@@ -44,6 +45,10 @@ export async function getAllBodyTypesHandler(req: Request, res: Response) {
 
 export async function deleteBodyTypeHandler(req: Request, res: Response) {
   const { id } = req.body;
+
+  if (!id) {
+    throw new AppError('ID is required', StatusCodes.BAD_REQUEST);
+  }
 
   const carExist = await findCar({ 'bodyStyle.id': id });
 
