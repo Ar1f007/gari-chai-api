@@ -36,8 +36,6 @@ const payload = {
       name: z.string().min(1),
     }),
 
-    engine: engineSchemaBasic,
-
     seatingCapacity: z.number(),
 
     numOfDoors: z.number(),
@@ -55,24 +53,12 @@ const payload = {
         type: z.string(),
         fullForm: z.string(),
       }),
-
-      economy: z
-        .object({
-          city: numberOrNull,
-          highway: numberOrNull,
-        })
-        .optional(),
     }),
 
     price: z.object({
       min: z.number().min(1, 'required'),
       max: z.number().min(1, 'required'),
       isNegotiable: z.boolean(),
-    }),
-
-    acceleration: z.object({
-      zeroTo60: numberOrNull,
-      topSpeed: numberOrNull,
     }),
 
     specificationsByGroup: z

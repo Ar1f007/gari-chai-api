@@ -72,30 +72,6 @@ const carSchema = new mongoose.Schema(
       },
     },
 
-    engine: {
-      type: {
-        type: String,
-        required: true,
-      },
-      numOfCylinders: {
-        type: Number,
-        required: false,
-      },
-      horsePower: {
-        type: Number,
-        required: false,
-      },
-      torque: {
-        type: Number,
-        required: false,
-      },
-      condition: {
-        type: String,
-        enum: ['good', 'bad', 'medium'],
-        required: false,
-      },
-    },
-
     transmission: {
       type: String,
       required: true,
@@ -109,28 +85,6 @@ const carSchema = new mongoose.Schema(
         fullForm: {
           type: String,
         },
-      },
-      economy: {
-        city: {
-          type: Number,
-          required: false,
-        },
-        highway: {
-          type: Number,
-          required: false,
-        },
-      },
-    },
-
-    acceleration: {
-      zeroTo60: {
-        type: Number,
-        required: false,
-      },
-
-      topSpeed: {
-        type: Number,
-        required: false,
       },
     },
 

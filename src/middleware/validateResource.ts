@@ -3,8 +3,6 @@ import { AnyZodObject, ZodError } from 'zod';
 
 export const validateResource = (schema: AnyZodObject) => (req: Request, res: Response, next: NextFunction) => {
   try {
-    console.log('parsing', req.body);
-
     schema.parse({
       body: req.body,
       query: req.query,
