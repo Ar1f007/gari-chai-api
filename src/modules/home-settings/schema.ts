@@ -70,16 +70,3 @@ export type CreateHomeSettingInputs = z.infer<typeof createNewHomeSettingsSchema
 export type ReadHomeSettingInput = z.infer<typeof getHomeSettingSchema>;
 export type UpdateHomeSettingItemInput = z.infer<typeof updateHomeSettingItemSchema>;
 export type DeleteHomeSettingItemInput = z.infer<typeof deleteHomeSettingItemSchema>;
-
-/**
- * Most Searched cars
- *  - SUV
- *  - Sedan
- *  - Hatchback
- * Latest
- * Electric cars
- *  - Popular
- *  - Upcoming
- *  - Latest
- * Services
- */
