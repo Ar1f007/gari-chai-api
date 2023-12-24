@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
 
+import dayjs from '../../../lib/dayjs';
 import { countCars, createNewCar, deleteCar, findAndUpdateCar, findCar, findCars } from './service';
 import { CreateNewCarInputs, DeleteCarInput, ReadCarInput, UpdateCarInput } from './schema';
 import AppError from '../../../utils/appError';
@@ -27,6 +28,18 @@ function getQueryFilters(query: ReadCarInput['query']): Record<string, any> {
 
   if (query.brand) {
     filters['brand.id'] = query.brand;
+  }
+
+  // determine which cars to show
+  // is it "past" or cars which is not launched yet
+  const launchStatus = query.launchStatus || 'past';
+
+  const launchedDate = dayjs(query.launchedDate).toDate() || new Date();
+
+  if (launchStatus === 'past') {
+    filters['launchedAt'] = { $lte: launchedDate };
+  } else {
+    filters['launchedAt'] = { $gte: launchedDate };
   }
 
   return filters;

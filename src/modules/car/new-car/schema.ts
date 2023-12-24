@@ -130,6 +130,12 @@ const query = {
     tags: z.string().optional(),
     page: z.string().optional(),
     pageSize: z.string().optional(),
+    launchedDate: z.coerce
+      .date({
+        invalid_type_error: 'launchedBeforeOrEqual Requires a date string',
+      })
+      .optional(),
+    launchStatus: z.enum(['past', 'future']).optional().default('past'),
   }),
 };
 
