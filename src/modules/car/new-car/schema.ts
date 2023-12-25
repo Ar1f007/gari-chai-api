@@ -129,7 +129,7 @@ const query = {
     brand: z.string().optional(),
     tags: z.string().optional(),
     page: z.string().optional(),
-    pageSize: z.string().optional(),
+    limit: z.string().optional(),
     launchedDate: z.coerce
       .date({
         invalid_type_error: 'launchedBeforeOrEqual Requires a date string',

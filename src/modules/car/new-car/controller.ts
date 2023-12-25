@@ -70,7 +70,7 @@ export async function getCarsHandler(req: Request<{}, {}, {}, ReadCarInput['quer
   const queryFilters = getQueryFilters(req.query);
 
   const currentPage = Number(req.query.page) || 1;
-  const itemsPerPage = Number(req.query.pageSize) || 10;
+  const itemsPerPage = Number(req.query.limit) || 10;
 
   const [totalCarCount, foundCars] = await Promise.all([
     countCars(queryFilters),
