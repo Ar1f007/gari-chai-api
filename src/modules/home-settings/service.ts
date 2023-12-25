@@ -41,5 +41,5 @@ export async function findAndUpdateSettingItem(
 }
 
 export async function deleteSettingItem(query: FilterQuery<HomeSettingDocument>) {
-  return HomeSetting.deleteOne(query);
+  return HomeSetting.deleteMany(query);
 }

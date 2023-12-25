@@ -152,6 +152,13 @@ export const deleteCarSchema = z.object({
   ...params,
 });
 
+export const deleteCarByIdSchema = z.object({
+  body: z.object({
+    _id: validMongoIdSchema,
+    name: z.string(),
+  }),
+});
+
 export const getCarSchema = z.object({
   ...params,
   ...query,
@@ -161,3 +168,4 @@ export type CreateNewCarInputs = z.infer<typeof createNewCarSchema>['body'];
 export type ReadCarInput = z.infer<typeof getCarSchema>;
 export type UpdateCarInput = z.infer<typeof updateCarSchema>;
 export type DeleteCarInput = z.infer<typeof deleteCarSchema>;
+export type DeleteCarById = z.infer<typeof deleteCarByIdSchema>;

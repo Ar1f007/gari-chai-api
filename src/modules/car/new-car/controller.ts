@@ -3,10 +3,11 @@ import { StatusCodes } from 'http-status-codes';
 
 import dayjs from '../../../lib/dayjs';
 import { countCars, createNewCar, deleteCar, findAndUpdateCar, findCar, findCars } from './service';
-import { CreateNewCarInputs, DeleteCarInput, ReadCarInput, UpdateCarInput } from './schema';
+import { CreateNewCarInputs, DeleteCarById, DeleteCarInput, ReadCarInput, UpdateCarInput } from './schema';
 import AppError from '../../../utils/appError';
 import { updateBrandCarCollectionCount } from '../../brand/service';
 import { updateBrandModelCarCollectionCount } from '../../brand-model/service';
+import { deleteSettingItem } from '../../home-settings';
 
 //************************************************************************ */
 // Helpers
@@ -158,6 +159,37 @@ export async function updateCarHandler(
   });
 }
 
+export async function deleteCarByIdHandler(req: Request<{}, {}, DeleteCarById['body']>, res: Response) {
+  const car = await findCar({ _id: req.body._id });
+
+  if (!car) {
+    return res.status(StatusCodes.NOT_FOUND).json({
+      status: 'fail',
+      message: req.body.name + ' was not found',
+    });
+  }
+
+  const deletedCar = await deleteCar({ _id: car._id });
+
+  if (!deletedCar.acknowledged) {
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      status: 'error',
+      message: 'Could not delete ' + car.name,
+    });
+  }
+
+  // decrease the car collection count in brand and model
+  updateBrandCarCollectionCount({ type: 'dec', brandId: car.brand.id });
+  updateBrandModelCarCollectionCount({ type: 'dec', brandModelId: car.brandModel.id });
+
+  deleteSettingItem({ contentId: car._id });
+
+  res.status(StatusCodes.OK).json({
+    status: 'success',
+    message: 'Car was deleted',
+  });
+}
+
 export async function deleteCarHandler(req: Request<DeleteCarInput['params']>, res: Response) {
   const carSlug = req.params.carSlug;
 
@@ -166,7 +198,7 @@ export async function deleteCarHandler(req: Request<DeleteCarInput['params']>, r
   if (!car) {
     return res.status(StatusCodes.NOT_FOUND).json({
       status: 'fail',
-      message: 'No car found',
+      message: 'No car was found',
     });
   }
 
@@ -176,6 +208,7 @@ export async function deleteCarHandler(req: Request<DeleteCarInput['params']>, r
     // decrease the car collection count in brand and model
     updateBrandCarCollectionCount({ type: 'dec', brandId: car.brand.id });
     updateBrandModelCarCollectionCount({ type: 'dec', brandModelId: req.body.brandModel.id });
+    deleteSettingItem({ contentId: car._id });
   }
 
   res.status(StatusCodes.OK).json({
