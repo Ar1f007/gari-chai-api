@@ -165,30 +165,26 @@ function generateData() {
 
   return data;
 }
-export async function seedCars() {
+async function seedCars() {
   console.log('⏳ Running seed...');
 
   const start = Date.now();
-  const data = faker.helpers.multiple(generateData, {
-    count: 100,
-  });
+  const data = faker.helpers.multiple(generateData);
 
-  data.map(async (item) => {
-    await Car.create(item);
-  });
+  for (let i = 0; i < data.length; i++) {
+    await Car.create(data);
+  }
 
   const end = Date.now();
   console.log(`✅ Seed completed in ${end - start}ms`);
 }
 
 (async function runSeed() {
-  // connect to db
-  await connect();
+  const connected = await connect();
 
-  await seedCars();
+  if (connected) {
+    await seedCars();
+  }
 
   process.exit(0);
-})().catch(() => {
-  console.log('❌ ERR: Running Seed ');
-  process.exit(1);
-});
+})();
