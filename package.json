@@ -10,7 +10,8 @@
     "prestart": "npm run build",
     "start": "cross-env NODE_ENV=production node dist/index.js",
     "lint": "eslint src/**/*.ts",
-    "format": "eslint src/**/*.ts --fix"
+    "format": "eslint src/**/*.ts --fix",
+    "db:seed": "ts-node src/seed/seedCars.ts"
   },
   "keywords": [],
   "author": "Ariful Hoque Al Amin",
@@ -43,6 +44,7 @@
     "zod": "^3.22.4"
   },
   "devDependencies": {
+    "@faker-js/faker": "^8.3.1",
     "@types/bcrypt": "^5.0.2",
     "@types/compression": "^1.7.4",
     "@types/cookie-parser": "^1.4.5",
