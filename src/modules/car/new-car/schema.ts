@@ -126,6 +126,7 @@ const params = {
 
 const query = {
   query: z.object({
+    name: z.string().optional(),
     brand: z.string().optional(),
     tags: z.string().optional(),
     page: z.string().optional(),
@@ -136,6 +137,7 @@ const query = {
       })
       .optional(),
     launchStatus: z.enum(['past', 'future']).optional().default('past'),
+    sort: z.string().optional(),
   }),
 };
 

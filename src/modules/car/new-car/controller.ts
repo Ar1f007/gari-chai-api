@@ -15,6 +15,10 @@ import { deleteSettingItem } from '../../home-settings';
 function getQueryFilters(query: ReadCarInput['query']): Record<string, any> {
   const filters: Record<string, any> = {};
 
+  if (query.name) {
+    filters['name'] = { $regex: new RegExp(query.name, 'i') };
+  }
+
   if (query.tags) {
     let tagValues: string[] = [];
 
@@ -72,6 +76,19 @@ export async function getCarsHandler(req: Request<{}, {}, {}, ReadCarInput['quer
 
   const currentPage = Number(req.query.page) || 1;
   const itemsPerPage = req.query.limit && Number(req.query.limit) > 1000 ? 500 : 10; // to ensure memory does not go out of space
+
+  // fix it
+  // type SortOrder = 'asc' | 'desc';
+
+  // let sortOptions: { [key: string]: SortOrder | { $meta: any } } | [string, SortOrder][] | null = {};
+
+  // if (req.query.sort) {
+  //   const [fieldName, order] = req.query.sort.split('.');
+
+  //   sortOptions[fieldName] = order;
+  // }
+
+  // console.log('asdasd', sortOptions);
 
   const [totalCarCount, foundCars] = await Promise.all([
     countCars(queryFilters),
