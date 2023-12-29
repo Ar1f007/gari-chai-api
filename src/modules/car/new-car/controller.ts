@@ -117,8 +117,6 @@ export async function getCarsHandler(req: Request<{}, {}, {}, GetCarQueryInput['
 
   const sortFields = getSortFields(req.query.sort);
 
-  console.log(sortFields);
-
   const [totalCarCount, foundCars] = await Promise.all([
     countCars(queryFilters),
     findCars(queryFilters, { skip: (currentPage - 1) * itemsPerPage, limit: itemsPerPage }, sortFields),
