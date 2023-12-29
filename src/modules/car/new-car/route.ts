@@ -8,14 +8,21 @@ import {
   getCarsHandler,
   updateCarHandler,
 } from './controller';
-import { createNewCarSchema, deleteCarByIdSchema, deleteCarSchema, getCarSchema, updateCarSchema } from './schema';
+import {
+  createNewCarSchema,
+  deleteCarByIdSchema,
+  deleteCarSchema,
+  getCarQuerySchema,
+  getCarSchema,
+  updateCarSchema,
+} from './schema';
 import { validateResource } from '../../../middleware';
 
 export const carRouter = express.Router();
 
 carRouter
   .route('/')
-  .get(getCarsHandler)
+  .get(validateResource(getCarQuerySchema), getCarsHandler)
   .post(validateResource(createNewCarSchema), createCarHandler)
   .delete(validateResource(deleteCarByIdSchema), deleteCarByIdHandler);
 

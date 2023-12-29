@@ -116,6 +116,12 @@ const payload = {
   }),
 };
 
+const refinedSort = z.string().refine((str) => str.includes(':'), {
+  message: "Sort query must contain a colon (':')",
+});
+
+export const sortSchema = z.union([refinedSort, z.array(refinedSort)]);
+
 const params = {
   params: z.object({
     carSlug: z.string({
@@ -136,8 +142,8 @@ const query = {
         invalid_type_error: 'launchedBeforeOrEqual Requires a date string',
       })
       .optional(),
-    launchStatus: z.enum(['past', 'future']).optional().default('past'),
-    sort: z.string().optional(),
+    launchStatus: z.enum(['past', 'future']).default('past').optional(),
+    sort: sortSchema.optional(),
   }),
 };
 
@@ -165,6 +171,12 @@ export const getCarSchema = z.object({
   ...params,
   ...query,
 });
+
+export const getCarQuerySchema = z.object({
+  ...query,
+});
+
+export type GetCarQueryInput = z.infer<typeof getCarQuerySchema>;
 
 export type CreateNewCarInputs = z.infer<typeof createNewCarSchema>['body'];
 export type ReadCarInput = z.infer<typeof getCarSchema>;

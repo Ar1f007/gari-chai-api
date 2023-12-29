@@ -3,7 +3,14 @@ import { StatusCodes } from 'http-status-codes';
 
 import dayjs from '../../../lib/dayjs';
 import { countCars, createNewCar, deleteCar, findAndUpdateCar, findCar, findCars } from './service';
-import { CreateNewCarInputs, DeleteCarById, DeleteCarInput, ReadCarInput, UpdateCarInput } from './schema';
+import {
+  CreateNewCarInputs,
+  DeleteCarById,
+  DeleteCarInput,
+  GetCarQueryInput,
+  ReadCarInput,
+  UpdateCarInput,
+} from './schema';
 import AppError from '../../../utils/appError';
 import { updateBrandCarCollectionCount } from '../../brand/service';
 import { updateBrandModelCarCollectionCount } from '../../brand-model/service';
@@ -12,7 +19,7 @@ import { deleteSettingItem } from '../../home-settings';
 //************************************************************************ */
 // Helpers
 //************************************************************************ */
-function getQueryFilters(query: ReadCarInput['query']): Record<string, any> {
+function getQueryFilters(query: GetCarQueryInput['query']): Record<string, any> {
   const filters: Record<string, any> = {};
 
   if (query.name) {
@@ -50,6 +57,37 @@ function getQueryFilters(query: ReadCarInput['query']): Record<string, any> {
   return filters;
 }
 
+function formatSortOption(str: string): string {
+  const [column, order] = str.split(':');
+
+  return order === 'asc' ? column : `-${column}`;
+}
+
+function getSortFields(sortQuery: GetCarQueryInput['query']['sort']): string {
+  let defaultSortStr = '-launchedAt'; // by default latest "launched at" first
+
+  if (!sortQuery) return defaultSortStr;
+
+  if (typeof sortQuery === 'string') {
+    const formattedStr = formatSortOption(sortQuery);
+
+    return formattedStr;
+  }
+
+  if (Array.isArray(sortQuery)) {
+    const options: string[] = [];
+
+    for (let i = 0; i < sortQuery.length; i++) {
+      const formattedStr = formatSortOption(sortQuery[i]);
+
+      options.push(formattedStr);
+    }
+
+    return options.join(' ');
+  }
+
+  return defaultSortStr;
+}
 //************************************************************************ */
 // Controller Functions
 //************************************************************************ */
@@ -71,28 +109,19 @@ export async function createCarHandler(req: Request<{}, {}, CreateNewCarInputs>,
   });
 }
 
-export async function getCarsHandler(req: Request<{}, {}, {}, ReadCarInput['query']>, res: Response) {
+export async function getCarsHandler(req: Request<{}, {}, {}, GetCarQueryInput['query']>, res: Response) {
   const queryFilters = getQueryFilters(req.query);
 
   const currentPage = Number(req.query.page) || 1;
   const itemsPerPage = req.query.limit && Number(req.query.limit) > 1000 ? 500 : 10; // to ensure memory does not go out of space
 
-  // fix it
-  // type SortOrder = 'asc' | 'desc';
+  const sortFields = getSortFields(req.query.sort);
 
-  // let sortOptions: { [key: string]: SortOrder | { $meta: any } } | [string, SortOrder][] | null = {};
-
-  // if (req.query.sort) {
-  //   const [fieldName, order] = req.query.sort.split('.');
-
-  //   sortOptions[fieldName] = order;
-  // }
-
-  // console.log('asdasd', sortOptions);
+  console.log(sortFields);
 
   const [totalCarCount, foundCars] = await Promise.all([
     countCars(queryFilters),
-    findCars(queryFilters, { skip: (currentPage - 1) * itemsPerPage, limit: itemsPerPage }),
+    findCars(queryFilters, { skip: (currentPage - 1) * itemsPerPage, limit: itemsPerPage }, sortFields),
   ]);
 
   // Calculate total pages

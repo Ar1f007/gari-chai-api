@@ -14,16 +14,12 @@ export async function findCar(query: FilterQuery<CarDocument>, options: QueryOpt
   return result;
 }
 
-type SortOrder = 'asc' | 'desc';
 export async function findCars(
   query: FilterQuery<CarDocument> = {},
   options: QueryOptions = { lean: true },
-  sortOptions: { [key: string]: SortOrder | { $meta: any } } | [string, SortOrder][] | null = {},
+  sortOptions: string = '-launchedAt',
 ) {
-  console.log(sortOptions);
-  const results = await Car.find(query, {}, options).sort({
-    name: 'desc',
-  });
+  const results = await Car.find(query, {}, options).sort(sortOptions);
 
   return results;
 }
