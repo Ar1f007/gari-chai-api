@@ -14,8 +14,12 @@ export async function findCar(query: FilterQuery<CarDocument>, options: QueryOpt
   return result;
 }
 
-export async function findCars(query: FilterQuery<CarDocument> = {}, options: QueryOptions = { lean: true }) {
-  const results = await Car.find(query, {}, options);
+export async function findCars(
+  query: FilterQuery<CarDocument> = {},
+  options: QueryOptions = { lean: true },
+  sortOptions: string = '-launchedAt',
+) {
+  const results = await Car.find(query, {}, options).sort(sortOptions);
 
   return results;
 }

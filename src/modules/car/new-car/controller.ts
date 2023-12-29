@@ -1,21 +1,30 @@
 import { Request, Response } from 'express';
-import NodeCache from 'node-cache';
 import { StatusCodes } from 'http-status-codes';
 
+import dayjs from '../../../lib/dayjs';
 import { countCars, createNewCar, deleteCar, findAndUpdateCar, findCar, findCars } from './service';
-import { CreateNewCarInputs, DeleteCarInput, ReadCarInput, UpdateCarInput } from './schema';
+import {
+  CreateNewCarInputs,
+  DeleteCarById,
+  DeleteCarInput,
+  GetCarQueryInput,
+  ReadCarInput,
+  UpdateCarInput,
+} from './schema';
 import AppError from '../../../utils/appError';
 import { updateBrandCarCollectionCount } from '../../brand/service';
-
-const cache = new NodeCache({
-  useClones: false,
-});
+import { updateBrandModelCarCollectionCount } from '../../brand-model/service';
+import { deleteSettingItem } from '../../home-settings';
 
 //************************************************************************ */
 // Helpers
 //************************************************************************ */
-function getQueryFilters(query: ReadCarInput['query']): Record<string, any> {
+function getQueryFilters(query: GetCarQueryInput['query']): Record<string, any> {
   const filters: Record<string, any> = {};
+
+  if (query.name) {
+    filters['name'] = { $regex: new RegExp(query.name, 'i') };
+  }
 
   if (query.tags) {
     let tagValues: string[] = [];
@@ -33,9 +42,52 @@ function getQueryFilters(query: ReadCarInput['query']): Record<string, any> {
     filters['brand.id'] = query.brand;
   }
 
+  // determine which cars to show
+  // is it "past" or cars which is not launched yet
+  const launchStatus = query.launchStatus || 'past';
+
+  const launchedDate = dayjs(query.launchedDate).toDate() || new Date();
+
+  if (launchStatus === 'past') {
+    filters['launchedAt'] = { $lte: launchedDate };
+  } else {
+    filters['launchedAt'] = { $gte: launchedDate };
+  }
+
   return filters;
 }
 
+function formatSortOption(str: string): string {
+  const [column, order] = str.split(':');
+
+  return order === 'asc' ? column : `-${column}`;
+}
+
+function getSortFields(sortQuery: GetCarQueryInput['query']['sort']): string {
+  let defaultSortStr = '-launchedAt'; // by default latest "launched at" first
+
+  if (!sortQuery) return defaultSortStr;
+
+  if (typeof sortQuery === 'string') {
+    const formattedStr = formatSortOption(sortQuery);
+
+    return formattedStr;
+  }
+
+  if (Array.isArray(sortQuery)) {
+    const options: string[] = [];
+
+    for (let i = 0; i < sortQuery.length; i++) {
+      const formattedStr = formatSortOption(sortQuery[i]);
+
+      options.push(formattedStr);
+    }
+
+    return options.join(' ');
+  }
+
+  return defaultSortStr;
+}
 //************************************************************************ */
 // Controller Functions
 //************************************************************************ */
@@ -47,11 +99,9 @@ export async function createCarHandler(req: Request<{}, {}, CreateNewCarInputs>,
     throw new AppError('Could not create car', StatusCodes.BAD_REQUEST);
   }
 
-  // increase the car collection count in brand model
-  await updateBrandCarCollectionCount({ type: 'inc', brandId: req.body.brand.id });
-
-  // clear the cache
-  cache.flushAll();
+  // increase the car collection count in brand and model
+  updateBrandCarCollectionCount({ type: 'inc', brandId: req.body.brand.id });
+  updateBrandModelCarCollectionCount({ type: 'inc', brandModelId: req.body.brandModel.id });
 
   res.status(StatusCodes.CREATED).json({
     status: 'success',
@@ -59,15 +109,17 @@ export async function createCarHandler(req: Request<{}, {}, CreateNewCarInputs>,
   });
 }
 
-export async function getCarsHandler(req: Request<{}, {}, {}, ReadCarInput['query']>, res: Response) {
+export async function getCarsHandler(req: Request<{}, {}, {}, GetCarQueryInput['query']>, res: Response) {
   const queryFilters = getQueryFilters(req.query);
 
   const currentPage = Number(req.query.page) || 1;
-  const itemsPerPage = Number(req.query.pageSize) || 10;
+  const itemsPerPage = req.query.limit && Number(req.query.limit) > 1000 ? 500 : 10; // to ensure memory does not go out of space
+
+  const sortFields = getSortFields(req.query.sort);
 
   const [totalCarCount, foundCars] = await Promise.all([
     countCars(queryFilters),
-    findCars(queryFilters, { skip: (currentPage - 1) * itemsPerPage, limit: itemsPerPage }),
+    findCars(queryFilters, { skip: (currentPage - 1) * itemsPerPage, limit: itemsPerPage }, sortFields),
   ]);
 
   // Calculate total pages
@@ -151,6 +203,37 @@ export async function updateCarHandler(
   });
 }
 
+export async function deleteCarByIdHandler(req: Request<{}, {}, DeleteCarById['body']>, res: Response) {
+  const car = await findCar({ _id: req.body._id });
+
+  if (!car) {
+    return res.status(StatusCodes.NOT_FOUND).json({
+      status: 'fail',
+      message: req.body.name + ' was not found',
+    });
+  }
+
+  const deletedCar = await deleteCar({ _id: car._id });
+
+  if (!deletedCar.acknowledged) {
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      status: 'error',
+      message: 'Could not delete ' + car.name,
+    });
+  }
+
+  // decrease the car collection count in brand and model
+  updateBrandCarCollectionCount({ type: 'dec', brandId: car.brand.id });
+  updateBrandModelCarCollectionCount({ type: 'dec', brandModelId: car.brandModel.id });
+
+  deleteSettingItem({ contentId: car._id });
+
+  res.status(StatusCodes.OK).json({
+    status: 'success',
+    message: 'Car was deleted',
+  });
+}
+
 export async function deleteCarHandler(req: Request<DeleteCarInput['params']>, res: Response) {
   const carSlug = req.params.carSlug;
 
@@ -159,15 +242,17 @@ export async function deleteCarHandler(req: Request<DeleteCarInput['params']>, r
   if (!car) {
     return res.status(StatusCodes.NOT_FOUND).json({
       status: 'fail',
-      message: 'No car found',
+      message: 'No car was found',
     });
   }
 
   const deletedCar = await deleteCar({ slug: carSlug });
 
   if (deletedCar.acknowledged) {
-    // decrease the car collection count in brand model
-    await updateBrandCarCollectionCount({ type: 'dec', brandId: car.brand.id });
+    // decrease the car collection count in brand and model
+    updateBrandCarCollectionCount({ type: 'dec', brandId: car.brand.id });
+    updateBrandModelCarCollectionCount({ type: 'dec', brandModelId: req.body.brandModel.id });
+    deleteSettingItem({ contentId: car._id });
   }
 
   res.status(StatusCodes.OK).json({
@@ -176,11 +261,11 @@ export async function deleteCarHandler(req: Request<DeleteCarInput['params']>, r
   });
 }
 
-export async function flushCacheHandler(_: Request, res: Response) {
-  cache.flushAll();
+// export async function flushCacheHandler(_: Request, res: Response) {
+//   cache.flushAll();
 
-  res.status(StatusCodes.OK).json({
-    status: 'success',
-    message: 'Cache is cleared',
-  });
-}
+//   res.status(StatusCodes.OK).json({
+//     status: 'success',
+//     message: 'Cache is cleared',
+//   });
+// }

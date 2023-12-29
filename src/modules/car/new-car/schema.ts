@@ -36,8 +36,6 @@ const payload = {
       name: z.string().min(1),
     }),
 
-    engine: engineSchemaBasic,
-
     seatingCapacity: z.number(),
 
     numOfDoors: z.number(),
@@ -55,24 +53,12 @@ const payload = {
         type: z.string(),
         fullForm: z.string(),
       }),
-
-      economy: z
-        .object({
-          city: numberOrNull,
-          highway: numberOrNull,
-        })
-        .optional(),
     }),
 
     price: z.object({
       min: z.number().min(1, 'required'),
       max: z.number().min(1, 'required'),
       isNegotiable: z.boolean(),
-    }),
-
-    acceleration: z.object({
-      zeroTo60: numberOrNull,
-      topSpeed: numberOrNull,
     }),
 
     specificationsByGroup: z
@@ -130,6 +116,12 @@ const payload = {
   }),
 };
 
+const refinedSort = z.string().refine((str) => str.includes(':'), {
+  message: "Sort query must contain a colon (':')",
+});
+
+export const sortSchema = z.union([refinedSort, z.array(refinedSort)]);
+
 const params = {
   params: z.object({
     carSlug: z.string({
@@ -140,10 +132,18 @@ const params = {
 
 const query = {
   query: z.object({
+    name: z.string().optional(),
     brand: z.string().optional(),
     tags: z.string().optional(),
     page: z.string().optional(),
-    pageSize: z.string().optional(),
+    limit: z.string().optional(),
+    launchedDate: z.coerce
+      .date({
+        invalid_type_error: 'launchedBeforeOrEqual Requires a date string',
+      })
+      .optional(),
+    launchStatus: z.enum(['past', 'future']).default('past').optional(),
+    sort: sortSchema.optional(),
   }),
 };
 
@@ -160,12 +160,26 @@ export const deleteCarSchema = z.object({
   ...params,
 });
 
+export const deleteCarByIdSchema = z.object({
+  body: z.object({
+    _id: validMongoIdSchema,
+    name: z.string(),
+  }),
+});
+
 export const getCarSchema = z.object({
   ...params,
   ...query,
 });
 
+export const getCarQuerySchema = z.object({
+  ...query,
+});
+
+export type GetCarQueryInput = z.infer<typeof getCarQuerySchema>;
+
 export type CreateNewCarInputs = z.infer<typeof createNewCarSchema>['body'];
 export type ReadCarInput = z.infer<typeof getCarSchema>;
 export type UpdateCarInput = z.infer<typeof updateCarSchema>;
 export type DeleteCarInput = z.infer<typeof deleteCarSchema>;
+export type DeleteCarById = z.infer<typeof deleteCarByIdSchema>;

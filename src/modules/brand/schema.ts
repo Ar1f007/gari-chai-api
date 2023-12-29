@@ -3,8 +3,8 @@ import { imageSchema } from '../../utils/helperSchema';
 
 const payload = {
   body: z.object({
-    name: z.string(),
-    image: imageSchema.optional(),
+    name: z.string().min(3),
+    image: imageSchema,
   }),
 };
 

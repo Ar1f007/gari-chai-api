@@ -104,18 +104,25 @@ export async function updateBrandHandler(
 }
 
 export async function deleteBrandHandler(req: Request<DeleteBrandInput['params']>, res: Response) {
-  const brandSlug = req.params.brandSlug;
+  const { id } = req.body;
 
-  const brand = await findBrand({ slug: brandSlug });
+  const brand = await findBrand({ _id: id });
 
   if (!brand) {
     return res.status(StatusCodes.NOT_FOUND).json({
       status: 'fail',
-      message: 'No brand was found',
+      message: 'No Brand was found',
     });
   }
 
-  await deleteBrand({ slug: brandSlug });
+  if (brand.carCollectionCount > 0) {
+    return res.status(StatusCodes.BAD_REQUEST).json({
+      status: 'fail',
+      message: 'Can not delete this brand. It has a car attached to it.',
+    });
+  }
+
+  await deleteBrand({ _id: brand._id });
 
   res.status(StatusCodes.OK).json({
     status: 'success',

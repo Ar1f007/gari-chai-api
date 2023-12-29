@@ -1,6 +1,7 @@
 import { FilterQuery, QueryOptions, UpdateQuery } from 'mongoose';
 import BrandModel, { BrandModelDocument } from './model';
 import { CreateNewBrandModelInputs } from './schema';
+import mongoose from 'mongoose';
 
 export async function createNewBrandModel(input: CreateNewBrandModelInputs) {
   return BrandModel.create(input);
@@ -44,13 +45,13 @@ export async function deleteBrandModel(query: FilterQuery<BrandModelDocument>) {
 
 export async function updateBrandModelCarCollectionCount({
   type,
-  brandModelSlug,
+  brandModelId,
 }: {
   type: 'inc' | 'dec';
-  brandModelSlug: string;
+  brandModelId: mongoose.Types.ObjectId | string;
 }) {
   const brandModel = await BrandModel.findOneAndUpdate(
-    { slug: brandModelSlug },
+    { _id: brandModelId },
     {
       $inc: {
         carCollectionCount: type === 'inc' ? 1 : -1,
