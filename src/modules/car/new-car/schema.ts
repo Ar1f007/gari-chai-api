@@ -20,20 +20,20 @@ const payload = {
     name: z.string(),
 
     brand: z.object({
-      id: validMongoIdSchema,
-      name: z.string().min(1),
+      value: validMongoIdSchema,
+      label: z.string().min(1),
     }),
 
     brandModel: z.object({
-      id: validMongoIdSchema,
-      name: z.string().min(1),
+      value: validMongoIdSchema,
+      label: z.string().min(1),
     }),
 
     tags: z.array(selectOption).optional().default([]),
 
     bodyStyle: z.object({
-      id: validMongoIdSchema,
-      name: z.string().min(1),
+      value: validMongoIdSchema,
+      label: z.string().min(1),
     }),
 
     seatingCapacity: z.number(),
@@ -50,8 +50,11 @@ const payload = {
 
     fuel: z.object({
       typeInfo: z.object({
-        type: z.string(),
-        fullForm: z.string(),
+        label: z.string(),
+        value: z.object({
+          type: z.string(),
+          fullForm: z.string(),
+        }),
       }),
     }),
 
@@ -100,7 +103,15 @@ const payload = {
       }, 'Description is optional, but if you want add one, then make sure it is at least 200 characters long'),
     ),
 
-    cities: z.array(z.string()).optional(),
+    cities: z
+      .array(
+        z.object({
+          value: z.string(),
+          label: z.string(),
+        }),
+      )
+      .optional()
+      .default([]),
 
     carType: z.string().optional(),
 

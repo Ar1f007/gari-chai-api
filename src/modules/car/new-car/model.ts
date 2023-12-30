@@ -33,12 +33,12 @@ const carSchema = new mongoose.Schema(
 
     brand: {
       type: {
-        id: {
+        value: {
           type: Schema.Types.ObjectId,
           ref: 'Brand',
           required: [true, 'brand id is required'],
         },
-        name: {
+        label: {
           type: String,
           required: [true, 'brand name is required'],
         },
@@ -47,12 +47,12 @@ const carSchema = new mongoose.Schema(
 
     brandModel: {
       type: {
-        id: {
+        value: {
           type: Schema.Types.ObjectId,
           ref: 'Brand-Model',
           required: [true, 'brand model id required'],
         },
-        name: {
+        label: {
           type: String,
           required: [true, 'brand model is required'],
         },
@@ -61,12 +61,12 @@ const carSchema = new mongoose.Schema(
 
     bodyStyle: {
       type: {
-        id: {
+        value: {
           type: Schema.Types.ObjectId,
           ref: 'Car-Body-Type',
           required: [true, 'car body type is required'],
         },
-        name: {
+        label: {
           type: String,
           required: [true, 'body style name is required'],
         },
@@ -80,11 +80,14 @@ const carSchema = new mongoose.Schema(
 
     fuel: {
       typeInfo: {
-        type: {
-          type: String,
-        },
-        fullForm: {
-          type: String,
+        label: String,
+        value: {
+          type: {
+            type: String,
+          },
+          fullForm: {
+            type: String,
+          },
         },
       },
     },
@@ -185,7 +188,7 @@ const carSchema = new mongoose.Schema(
               {
                 name: String,
                 value: mongoose.Schema.Types.Mixed,
-                valueType: String,
+                valueType: { value: String, label: String },
               },
             ],
           },
@@ -199,14 +202,27 @@ const carSchema = new mongoose.Schema(
         {
           name: String,
           value: mongoose.Schema.Types.Mixed,
-          valueType: String,
+          valueType: {
+            value: String,
+            label: String,
+          },
         },
       ],
       default: [],
     },
     cities: {
-      type: [String],
-      default: ['all'],
+      type: [
+        {
+          value: String,
+          label: String,
+        },
+      ],
+      default: [
+        {
+          value: 'all',
+          label: 'All',
+        },
+      ],
     },
     carType: {
       type: String,
