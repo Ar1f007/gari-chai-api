@@ -110,10 +110,21 @@ export async function createCarHandler(req: Request<{}, {}, CreateNewCarInputs>,
 }
 
 export async function getCarsHandler(req: Request<{}, {}, {}, GetCarQueryInput['query']>, res: Response) {
+  const DEFAULT_PAGE_NUMBER = 1;
+  const MAX_ITEMS_LIMIT = 1000;
+  const MAX_SAFE_LIMIT = 500;
+  const DEFAULT_LIMIT = 10;
+
   const queryFilters = getQueryFilters(req.query);
 
-  const currentPage = Number(req.query.page) || 1;
-  const itemsPerPage = req.query.limit && Number(req.query.limit) > 1000 ? 500 : 10; // to ensure memory does not go out of space
+  const currentPage = (req.query.page && !isNaN(+req.query.page) && +req.query.page) || DEFAULT_PAGE_NUMBER;
+
+  const itemsPerPage =
+    req.query.limit && !isNaN(+req.query.limit)
+      ? +req.query.limit > MAX_ITEMS_LIMIT
+        ? MAX_SAFE_LIMIT // to ensure memory does not go out of space
+        : +req.query.limit
+      : DEFAULT_LIMIT;
 
   const sortFields = getSortFields(req.query.sort);
 
@@ -158,7 +169,7 @@ export async function getCarHandler(req: Request<ReadCarInput['params']>, res: R
           path: 'brandModel.id',
         },
         {
-          path: 'bodyStyle',
+          path: 'bodyStyle.id',
         },
       ],
     },

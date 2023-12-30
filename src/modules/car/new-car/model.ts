@@ -28,6 +28,7 @@ const carSchema = new mongoose.Schema(
     description: {
       type: String,
       required: false,
+      default: '',
     },
 
     brand: {
@@ -108,6 +109,7 @@ const carSchema = new mongoose.Schema(
           },
         },
       ],
+      default: [],
     },
 
     numOfDoors: {
@@ -154,6 +156,7 @@ const carSchema = new mongoose.Schema(
     launchedAt: {
       type: Date,
       required: [false, 'Launch date is required'],
+      default: new Date(),
     },
 
     status: {
@@ -188,6 +191,7 @@ const carSchema = new mongoose.Schema(
           },
         },
       ],
+      default: [],
     },
 
     additionalSpecifications: {
@@ -198,6 +202,7 @@ const carSchema = new mongoose.Schema(
           valueType: String,
         },
       ],
+      default: [],
     },
     cities: {
       type: [String],
