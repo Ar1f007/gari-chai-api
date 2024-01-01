@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { validMongoIdSchema } from '../../../lib/zod/commonSchemas';
-import { numberOrNull, singleSpecificationSchema, xCharacterLong } from '../../../utils/helperSchema';
+import { imageSchema, numberOrNull, singleSpecificationSchema, xCharacterLong } from '../../../utils/helperSchema';
 
 export const selectOption = z.object({
   value: z.string(),
@@ -43,9 +43,17 @@ const payload = {
     colors: z.array(
       z.object({
         name: z.string(),
-        imageUrls: z.optional(z.array(z.string().url())),
+        imageUrls: z.optional(
+          z.array(
+            z.object({
+              key: z.string(),
+              url: imageSchema,
+            }),
+          ),
+        ),
       }),
     ),
+
     transmission: z.string(),
 
     fuel: z.object({
@@ -115,11 +123,11 @@ const payload = {
 
     carType: z.string().optional(),
 
-    videoUrls: z
+    videos: z
       .array(
         z.object({
-          thumbnailUrl: z.string().url().optional(),
-          url: z.string().url(),
+          link: z.string().url(),
+          thumbnailImage: imageSchema.optional(),
         }),
       )
       .optional()

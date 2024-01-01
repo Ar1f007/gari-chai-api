@@ -106,7 +106,17 @@ const carSchema = new mongoose.Schema(
             required: [true, 'Color name is required'],
           },
           imageUrls: {
-            type: [String],
+            type: [
+              {
+                key: String,
+                url: {
+                  type: {
+                    originalUrl: String,
+                    thumbnailUrl: String,
+                  },
+                },
+              },
+            ],
             required: false,
             default: [],
           },
@@ -228,19 +238,22 @@ const carSchema = new mongoose.Schema(
       type: String,
       default: 'new',
     },
-    videoUrls: {
+    videos: {
       type: [
         {
-          thumbnailUrl: {
-            type: String,
+          link: String,
+          thumbnailImage: {
+            type: {
+              originalUrl: String,
+              thumbnailUrl: {
+                type: String,
+                required: false,
+              },
+            },
             required: false,
-          },
-          url: {
-            type: String,
           },
         },
       ],
-      required: false,
       default: [],
     },
   },
