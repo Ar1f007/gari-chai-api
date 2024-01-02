@@ -11,7 +11,8 @@
     "start": "cross-env NODE_ENV=production node dist/index.js",
     "lint": "eslint src/**/*.ts",
     "format": "eslint src/**/*.ts --fix",
-    "db:seed": "ts-node src/seed/seedCars.ts"
+    "db:seed": "ts-node src/seed/seedCars.ts",
+    "typecheck": "tsc --noEmit"
   },
   "keywords": [],
   "author": "Ariful Hoque Al Amin",

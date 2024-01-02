@@ -1,14 +1,10 @@
 // Schemas which is used on web/admin
 
 import { z } from 'zod';
+import { imageSchema } from './helperSchema';
 
 // when a new car is created or doc is created, then we can
 // parse it using this schema
-
-export const imageSchema = z.object({
-  thumbnailUrl: z.string().url().optional(),
-  originalUrl: z.string().url(),
-});
 
 export const brandSchema = z.object({
   _id: z.string(),

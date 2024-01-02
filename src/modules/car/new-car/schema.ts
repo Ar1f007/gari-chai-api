@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { validMongoIdSchema } from '../../../lib/zod/commonSchemas';
-import { numberOrNull, singleSpecificationSchema, xCharacterLong } from '../../../utils/helperSchema';
+import { imageSchema, numberOrNull, singleSpecificationSchema, xCharacterLong } from '../../../utils/helperSchema';
 
 export const selectOption = z.object({
   value: z.string(),
@@ -20,20 +20,20 @@ const payload = {
     name: z.string(),
 
     brand: z.object({
-      id: validMongoIdSchema,
-      name: z.string().min(1),
+      value: validMongoIdSchema,
+      label: z.string().min(1),
     }),
 
     brandModel: z.object({
-      id: validMongoIdSchema,
-      name: z.string().min(1),
+      value: validMongoIdSchema,
+      label: z.string().min(1),
     }),
 
     tags: z.array(selectOption).optional().default([]),
 
     bodyStyle: z.object({
-      id: validMongoIdSchema,
-      name: z.string().min(1),
+      value: validMongoIdSchema,
+      label: z.string().min(1),
     }),
 
     seatingCapacity: z.number(),
@@ -43,15 +43,26 @@ const payload = {
     colors: z.array(
       z.object({
         name: z.string(),
-        imageUrls: z.optional(z.array(z.string().url())),
+        imageUrls: z.optional(
+          z.array(
+            z.object({
+              key: z.string(),
+              url: imageSchema,
+            }),
+          ),
+        ),
       }),
     ),
+
     transmission: z.string(),
 
     fuel: z.object({
       typeInfo: z.object({
-        type: z.string(),
-        fullForm: z.string(),
+        label: z.string(),
+        value: z.object({
+          type: z.string(),
+          fullForm: z.string(),
+        }),
       }),
     }),
 
@@ -100,15 +111,23 @@ const payload = {
       }, 'Description is optional, but if you want add one, then make sure it is at least 200 characters long'),
     ),
 
-    cities: z.array(z.string()).optional(),
+    cities: z
+      .array(
+        z.object({
+          value: z.string(),
+          label: z.string(),
+        }),
+      )
+      .optional()
+      .default([]),
 
     carType: z.string().optional(),
 
-    videoUrls: z
+    videos: z
       .array(
         z.object({
-          thumbnailUrl: z.string().url().optional(),
-          url: z.string().url(),
+          link: z.string().url(),
+          thumbnailImage: imageSchema.optional(),
         }),
       )
       .optional()

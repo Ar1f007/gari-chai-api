@@ -28,16 +28,17 @@ const carSchema = new mongoose.Schema(
     description: {
       type: String,
       required: false,
+      default: '',
     },
 
     brand: {
       type: {
-        id: {
+        value: {
           type: Schema.Types.ObjectId,
           ref: 'Brand',
           required: [true, 'brand id is required'],
         },
-        name: {
+        label: {
           type: String,
           required: [true, 'brand name is required'],
         },
@@ -46,12 +47,12 @@ const carSchema = new mongoose.Schema(
 
     brandModel: {
       type: {
-        id: {
+        value: {
           type: Schema.Types.ObjectId,
           ref: 'Brand-Model',
           required: [true, 'brand model id required'],
         },
-        name: {
+        label: {
           type: String,
           required: [true, 'brand model is required'],
         },
@@ -60,12 +61,12 @@ const carSchema = new mongoose.Schema(
 
     bodyStyle: {
       type: {
-        id: {
+        value: {
           type: Schema.Types.ObjectId,
           ref: 'Car-Body-Type',
           required: [true, 'car body type is required'],
         },
-        name: {
+        label: {
           type: String,
           required: [true, 'body style name is required'],
         },
@@ -79,11 +80,14 @@ const carSchema = new mongoose.Schema(
 
     fuel: {
       typeInfo: {
-        type: {
-          type: String,
-        },
-        fullForm: {
-          type: String,
+        label: String,
+        value: {
+          type: {
+            type: String,
+          },
+          fullForm: {
+            type: String,
+          },
         },
       },
     },
@@ -102,12 +106,23 @@ const carSchema = new mongoose.Schema(
             required: [true, 'Color name is required'],
           },
           imageUrls: {
-            type: [String],
+            type: [
+              {
+                key: String,
+                url: {
+                  type: {
+                    originalUrl: String,
+                    thumbnailUrl: String,
+                  },
+                },
+              },
+            ],
             required: false,
             default: [],
           },
         },
       ],
+      default: [],
     },
 
     numOfDoors: {
@@ -154,6 +169,7 @@ const carSchema = new mongoose.Schema(
     launchedAt: {
       type: Date,
       required: [false, 'Launch date is required'],
+      default: new Date(),
     },
 
     status: {
@@ -182,12 +198,13 @@ const carSchema = new mongoose.Schema(
               {
                 name: String,
                 value: mongoose.Schema.Types.Mixed,
-                valueType: String,
+                valueType: { value: String, label: String },
               },
             ],
           },
         },
       ],
+      default: [],
     },
 
     additionalSpecifications: {
@@ -195,31 +212,48 @@ const carSchema = new mongoose.Schema(
         {
           name: String,
           value: mongoose.Schema.Types.Mixed,
-          valueType: String,
+          valueType: {
+            value: String,
+            label: String,
+          },
         },
       ],
+      default: [],
     },
     cities: {
-      type: [String],
-      default: ['all'],
+      type: [
+        {
+          value: String,
+          label: String,
+        },
+      ],
+      default: [
+        {
+          value: 'all',
+          label: 'All',
+        },
+      ],
     },
     carType: {
       type: String,
       default: 'new',
     },
-    videoUrls: {
+    videos: {
       type: [
         {
-          thumbnailUrl: {
-            type: String,
+          link: String,
+          thumbnailImage: {
+            type: {
+              originalUrl: String,
+              thumbnailUrl: {
+                type: String,
+                required: false,
+              },
+            },
             required: false,
-          },
-          url: {
-            type: String,
           },
         },
       ],
-      required: false,
       default: [],
     },
   },

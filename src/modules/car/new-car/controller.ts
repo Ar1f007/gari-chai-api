@@ -93,15 +93,33 @@ function getSortFields(sortQuery: GetCarQueryInput['query']['sort']): string {
 //************************************************************************ */
 
 export async function createCarHandler(req: Request<{}, {}, CreateNewCarInputs>, res: Response) {
-  const car = await createNewCar(req.body);
+  // check if 'all' is included in  `cities` property
+  // if not then add it, so that we can show all cars
+  const isAllIncluded = req.body.cities.find((city) => city.value === 'all');
+
+  let clonedCopy = {} as CreateNewCarInputs;
+
+  if (!isAllIncluded) {
+    clonedCopy = structuredClone(req.body);
+  }
+
+  clonedCopy.cities = [
+    {
+      value: 'all',
+      label: 'All',
+    },
+    ...req.body.cities,
+  ];
+
+  const car = await createNewCar(isAllIncluded ? req.body : clonedCopy);
 
   if (!car) {
     throw new AppError('Could not create car', StatusCodes.BAD_REQUEST);
   }
 
   // increase the car collection count in brand and model
-  updateBrandCarCollectionCount({ type: 'inc', brandId: req.body.brand.id });
-  updateBrandModelCarCollectionCount({ type: 'inc', brandModelId: req.body.brandModel.id });
+  updateBrandCarCollectionCount({ type: 'inc', brandId: req.body.brand.value });
+  updateBrandModelCarCollectionCount({ type: 'inc', brandModelId: req.body.brandModel.value });
 
   res.status(StatusCodes.CREATED).json({
     status: 'success',
@@ -110,10 +128,21 @@ export async function createCarHandler(req: Request<{}, {}, CreateNewCarInputs>,
 }
 
 export async function getCarsHandler(req: Request<{}, {}, {}, GetCarQueryInput['query']>, res: Response) {
+  const DEFAULT_PAGE_NUMBER = 1;
+  const MAX_ITEMS_LIMIT = 1000;
+  const MAX_SAFE_LIMIT = 500;
+  const DEFAULT_LIMIT = 10;
+
   const queryFilters = getQueryFilters(req.query);
 
-  const currentPage = Number(req.query.page) || 1;
-  const itemsPerPage = req.query.limit && Number(req.query.limit) > 1000 ? 500 : 10; // to ensure memory does not go out of space
+  const currentPage = (req.query.page && !isNaN(+req.query.page) && +req.query.page) || DEFAULT_PAGE_NUMBER;
+
+  const itemsPerPage =
+    req.query.limit && !isNaN(+req.query.limit)
+      ? +req.query.limit > MAX_ITEMS_LIMIT
+        ? MAX_SAFE_LIMIT // to ensure memory does not go out of space
+        : +req.query.limit
+      : DEFAULT_LIMIT;
 
   const sortFields = getSortFields(req.query.sort);
 
@@ -152,13 +181,13 @@ export async function getCarHandler(req: Request<ReadCarInput['params']>, res: R
     {
       populate: [
         {
-          path: 'brand.id',
+          path: 'brand.value',
         },
         {
-          path: 'brandModel.id',
+          path: 'brandModel.value',
         },
         {
-          path: 'bodyStyle',
+          path: 'bodyStyle.value',
         },
       ],
     },
@@ -223,8 +252,8 @@ export async function deleteCarByIdHandler(req: Request<{}, {}, DeleteCarById['b
   }
 
   // decrease the car collection count in brand and model
-  updateBrandCarCollectionCount({ type: 'dec', brandId: car.brand.id });
-  updateBrandModelCarCollectionCount({ type: 'dec', brandModelId: car.brandModel.id });
+  updateBrandCarCollectionCount({ type: 'dec', brandId: car.brand.value });
+  updateBrandModelCarCollectionCount({ type: 'dec', brandModelId: car.brandModel.value });
 
   deleteSettingItem({ contentId: car._id });
 
@@ -250,7 +279,7 @@ export async function deleteCarHandler(req: Request<DeleteCarInput['params']>, r
 
   if (deletedCar.acknowledged) {
     // decrease the car collection count in brand and model
-    updateBrandCarCollectionCount({ type: 'dec', brandId: car.brand.id });
+    updateBrandCarCollectionCount({ type: 'dec', brandId: car.brand.value });
     updateBrandModelCarCollectionCount({ type: 'dec', brandModelId: req.body.brandModel.id });
     deleteSettingItem({ contentId: car._id });
   }
