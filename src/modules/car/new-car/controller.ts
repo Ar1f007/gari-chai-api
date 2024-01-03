@@ -10,11 +10,13 @@ import {
   GetCarQueryInput,
   ReadCarInput,
   UpdateCarInput,
+  updateCarSchema,
 } from './schema';
 import AppError from '../../../utils/appError';
 import { updateBrandCarCollectionCount } from '../../brand/service';
 import { updateBrandModelCarCollectionCount } from '../../brand-model/service';
 import { deleteSettingItem } from '../../home-settings';
+import slugify from 'slugify';
 
 //************************************************************************ */
 // Helpers
@@ -211,7 +213,15 @@ export async function updateCarHandler(
   res: Response,
 ) {
   const carSlug = req.params.carSlug;
-  const update = req.body;
+
+  const parsedBody = updateCarSchema.shape.body.safeParse(req.body);
+
+  if (!parsedBody.success) {
+    return res.status(StatusCodes.NOT_FOUND).json({
+      status: 'fail',
+      message: 'Invalid Inputs',
+    });
+  }
 
   const car = await findCar({ slug: carSlug });
 
@@ -222,9 +232,34 @@ export async function updateCarHandler(
     });
   }
 
-  const updatedCar = await findAndUpdateCar({ slug: carSlug }, update, {
+  const clonedCopy = structuredClone(parsedBody.data);
+
+  clonedCopy.slug = slugify(req.body.slug, {
+    lower: true,
+    trim: true,
+  });
+
+  const updatedCar = await findAndUpdateCar({ slug: carSlug }, clonedCopy, {
     new: true,
   });
+
+  if (updatedCar) {
+    if (car.brand.value !== req.body.brand.value) {
+      // decrease the car collection count in the prev brand
+      updateBrandCarCollectionCount({ type: 'dec', brandId: car.brand.value });
+
+      // increase the car collection count in the prev brand
+      updateBrandCarCollectionCount({ type: 'inc', brandId: updatedCar.brand.value });
+    }
+
+    if (car.brandModel.value !== req.body.brandModel.value) {
+      // decrease the car collection count in the prev model
+      updateBrandModelCarCollectionCount({ type: 'dec', brandModelId: car.brand.value });
+
+      // increase the car collection count in the prev model
+      updateBrandModelCarCollectionCount({ type: 'inc', brandModelId: updatedCar.brand.value });
+    }
+  }
 
   res.status(StatusCodes.OK).json({
     status: 'success',
