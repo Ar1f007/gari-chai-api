@@ -93,7 +93,14 @@ const carSchema = new mongoose.Schema(
     },
 
     imageUrls: {
-      type: [String],
+      type: [
+        {
+          type: {
+            originalUrl: String,
+            thumbnailUrl: String,
+          },
+        },
+      ],
       required: false,
       default: [],
     },
@@ -245,10 +252,7 @@ const carSchema = new mongoose.Schema(
           thumbnailImage: {
             type: {
               originalUrl: String,
-              thumbnailUrl: {
-                type: String,
-                required: false,
-              },
+              thumbnailUrl: String,
             },
             required: false,
           },

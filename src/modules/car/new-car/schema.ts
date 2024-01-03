@@ -29,16 +29,28 @@ const payload = {
       label: z.string().min(1),
     }),
 
-    tags: z.array(selectOption).optional().default([]),
-
     bodyStyle: z.object({
       value: validMongoIdSchema,
       label: z.string().min(1),
     }),
 
+    tags: z.array(selectOption).optional().default([]),
+
+    transmission: z.string(),
+
     seatingCapacity: z.number(),
 
     numOfDoors: z.number(),
+
+    fuel: z.object({
+      typeInfo: z.object({
+        label: z.string(),
+        value: z.object({
+          type: z.string(),
+          fullForm: z.string(),
+        }),
+      }),
+    }),
 
     colors: z.array(
       z.object({
@@ -53,18 +65,6 @@ const payload = {
         ),
       }),
     ),
-
-    transmission: z.string(),
-
-    fuel: z.object({
-      typeInfo: z.object({
-        label: z.string(),
-        value: z.object({
-          type: z.string(),
-          fullForm: z.string(),
-        }),
-      }),
-    }),
 
     price: z.object({
       min: z.number().min(1, 'required'),
@@ -85,22 +85,24 @@ const payload = {
 
     additionalSpecifications: z.optional(z.array(singleSpecificationSchema)).default([]),
 
-    launchedAt: z.preprocess(
-      (arg) => {
-        if (typeof arg === 'string' || arg instanceof Date) return new Date(arg);
-      },
-      z.date({
-        required_error: 'Please select a date and time',
-        invalid_type_error: "That's not a date!",
-      }),
-    ),
-
     posterImage: z.object({
       originalUrl: z.string().url(),
       thumbnailUrl: z.string().url(),
     }),
 
-    imageUrls: z.array(z.string().url()).optional(),
+    imageUrls: z.array(imageSchema).optional(),
+
+    videos: z
+      .array(
+        z.object({
+          link: z.string().url(),
+          thumbnailImage: imageSchema.optional(),
+        }),
+      )
+      .optional()
+      .default([]),
+
+    carType: z.string().optional(),
 
     description: z.optional(
       z.string().refine((val) => {
@@ -121,17 +123,24 @@ const payload = {
       .optional()
       .default([]),
 
-    carType: z.string().optional(),
+    launchedAt: z.preprocess(
+      (arg) => {
+        if (typeof arg === 'string' || arg instanceof Date) return new Date(arg);
+      },
+      z.date({
+        required_error: 'Please select a date and time',
+        invalid_type_error: "That's not a date!",
+      }),
+    ),
+  }),
+};
 
-    videos: z
-      .array(
-        z.object({
-          link: z.string().url(),
-          thumbnailImage: imageSchema.optional(),
-        }),
-      )
-      .optional()
-      .default([]),
+const extCarPayload = {
+  body: payload.body.extend({
+    _id: validMongoIdSchema.optional(),
+    slug: z.string().min(1),
+    status: z.enum(['available', 'sold', 'reserved']),
+    soldAt: z.string().optional(),
   }),
 };
 
@@ -171,7 +180,7 @@ export const createNewCarSchema = z.object({
 });
 
 export const updateCarSchema = z.object({
-  ...payload,
+  ...extCarPayload,
   ...params,
 });
 

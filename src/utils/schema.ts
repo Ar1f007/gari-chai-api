@@ -63,59 +63,52 @@ export const carSchema = z.object({
 
   slug: z.string(),
 
-  description: z.string().optional(),
-
   brand: z.object({
-    id: z.union([z.string(), brandSchema, z.null()]),
-    name: z.string(),
+    value: z.union([z.string(), brandSchema, z.null()]),
+    label: z.string(),
   }),
 
   brandModel: z.object({
-    id: z.union([z.string(), brandModelSchema, z.null()]),
-    name: z.string(),
+    value: z.union([z.string(), brandModelSchema, z.null()]),
+    label: z.string(),
   }),
+
+  bodyStyle: z.object({
+    value: z.union([z.string(), carBodyStylesSchema, z.null()]),
+    label: z.string(),
+  }),
+
+  tags: z.array(z.object({ value: z.string(), label: z.string() })),
 
   transmission: z.string(),
 
-  bodyStyle: z.object({
-    id: z.union([z.string(), carBodyStylesSchema, z.null()]),
-    name: z.string(),
-  }),
+  numOfDoors: z.number(),
+
+  seatingCapacity: z.number(),
 
   fuel: z.object({
     typeInfo: z.object({
-      type: z.string(),
-      fullForm: z.string(),
+      value: z.object({
+        type: z.string(),
+        fullForm: z.string(),
+      }),
+      label: z.string(),
     }),
   }),
-
-  posterImage: z.object({
-    originalUrl: z.string().url(),
-    thumbnailUrl: z.string().url().optional(),
-  }),
-
-  imageUrls: z.array(z.string()).optional(),
-
-  videoUrls: z
-    .array(
-      z.object({
-        thumbnailUrl: z.string().url().optional(),
-        url: z.string().url(),
-      }),
-    )
-    .optional()
-    .default([]),
 
   colors: z
     .array(
       z.object({
         name: z.string(),
-        imageUrls: z.array(z.string().url()).optional(),
+        imageUrls: z.array(
+          z.object({
+            key: z.string(),
+            url: imageSchema,
+          }),
+        ),
       }),
     )
     .default([]),
-
-  numOfDoors: z.number(),
 
   price: z.object({
     min: z.number(),
@@ -123,26 +116,47 @@ export const carSchema = z.object({
     isNegotiable: z.boolean(),
   }),
 
-  tags: z.array(z.object({ value: z.string(), label: z.string(), _id: z.string() })).optional(),
+  specificationsByGroup: z.array(
+    z.object({
+      groupName: z.string(),
+      values: z.array(attributeSchema).default([]),
+    }),
+  ),
 
-  specificationsByGroup: z
+  additionalSpecifications: z.array(attributeSchema),
+
+  posterImage: z.object({
+    originalUrl: z.string().url(),
+    thumbnailUrl: z.string().url(),
+  }),
+
+  imageUrls: z.array(imageSchema),
+
+  videos: z
     .array(
       z.object({
-        groupName: z.string(),
-        values: z.array(attributeSchema).optional(),
+        thumbnailImage: z.optional(imageSchema),
+        link: z.string().url(),
       }),
     )
-    .optional(),
-
-  additionalSpecifications: z.array(attributeSchema).optional(),
+    .optional()
+    .default([]),
 
   carType: z.enum(['new', 'used']),
+
+  description: z.string().optional(),
+
+  cities: z.array(
+    z.object({
+      value: z.string(),
+      label: z.string(),
+    }),
+  ),
 
   launchedAt: z.string(),
   createdAt: z.string(),
   updatedAt: z.string(),
 
-  status: z.enum(['available', 'sold', 'reserved']).optional(),
+  status: z.enum(['available', 'sold', 'reserved']),
   soldAt: z.string().optional(),
-  cities: z.array(z.string()).optional(),
 });

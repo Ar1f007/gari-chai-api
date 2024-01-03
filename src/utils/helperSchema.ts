@@ -6,7 +6,7 @@ export function xCharacterLong(fieldName: string, length: number) {
 }
 
 export const imageSchema = z.object({
-  thumbnailUrl: z.string().url().optional(),
+  thumbnailUrl: z.string().url(),
   originalUrl: z.string().url(),
 });
 
