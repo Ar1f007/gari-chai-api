@@ -185,6 +185,9 @@ export async function getCarHandler(req: Request<ReadCarInput['params']>, res: R
     {
       populate: [
         {
+          path: 'vendor.value',
+        },
+        {
           path: 'brand.value',
         },
         {

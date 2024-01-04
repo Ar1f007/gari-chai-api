@@ -52,6 +52,6 @@ const vendorModelSchema = new mongoose.Schema(
   },
 );
 
-const VendorModel = mongoose.model<VendorDocument>('vendor', vendorModelSchema);
+const VendorModel = mongoose.model<VendorDocument>('Vendor', vendorModelSchema);
 
 export default VendorModel;
