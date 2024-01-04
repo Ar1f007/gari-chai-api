@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { imageSchema, phoneNumberSchema, xCharacterLong } from '../../utils/helperSchema';
 
-export const addVendorSchema = z.object({
+const payload = z.object({
   name: z.string().min(1, 'Vendor name is required').min(3, xCharacterLong('Vendor name', 3)),
 
   phone: z
@@ -28,6 +28,10 @@ export const addVendorSchema = z.object({
   address: z.optional(z.string()),
 
   image: imageSchema.optional(),
+});
+
+export const addVendorSchema = z.object({
+  body: payload,
 });
 
 export type AddVendorSchema = z.infer<typeof addVendorSchema>;

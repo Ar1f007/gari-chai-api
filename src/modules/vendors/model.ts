@@ -22,11 +22,13 @@ const vendorModelSchema = new mongoose.Schema(
     email: {
       type: String,
       required: false,
+      default: '',
     },
 
     address: {
       type: String,
       required: false,
+      default: '',
     },
 
     image: {
