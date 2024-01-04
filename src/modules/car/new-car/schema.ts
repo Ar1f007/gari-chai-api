@@ -19,6 +19,11 @@ const payload = {
   body: z.object({
     name: z.string(),
 
+    vendor: z.object({
+      value: validMongoIdSchema,
+      label: z.string().min(1),
+    }),
+
     brand: z.object({
       value: validMongoIdSchema,
       label: z.string().min(1),

@@ -31,6 +31,20 @@ const carSchema = new mongoose.Schema(
       default: '',
     },
 
+    vendor: {
+      type: {
+        value: {
+          type: Schema.Types.ObjectId,
+          ref: 'Vendor',
+          required: [true, 'Vendor id is required'],
+        },
+        label: {
+          type: String,
+          required: [true, 'Vendor name is required'],
+        },
+      },
+    },
+
     brand: {
       type: {
         value: {

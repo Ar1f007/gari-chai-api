@@ -12,6 +12,7 @@ import commentRouter from '../modules/comment/route';
 import carBodyTypeRouter from '../modules/car-body-type/route';
 import searchRouter from '../modules/search/route';
 import sliderRouter from '../modules/slider/route';
+import vendorRouter from '../modules/vendors/route';
 
 function routes(app: Express) {
   app.get('/health-check', (_: Request, res: Response) => {
@@ -20,6 +21,7 @@ function routes(app: Express) {
 
   app.use('/api/v1/users', userRouter);
   app.use('/api/v1/cars', carRouter);
+  app.use('/api/v1/vendors', vendorRouter);
   app.use('/api/v1/search', searchRouter);
   // app.use('/api/v1/used-cars', usedCarRouter);
   app.use('/api/v1/brands', brandRouter);

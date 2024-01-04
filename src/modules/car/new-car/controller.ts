@@ -17,6 +17,7 @@ import { updateBrandCarCollectionCount } from '../../brand/service';
 import { updateBrandModelCarCollectionCount } from '../../brand-model/service';
 import { deleteSettingItem } from '../../home-settings';
 import slugify from 'slugify';
+import { updateVendorCarCollectionCount } from '../../vendors/service';
 
 //************************************************************************ */
 // Helpers
@@ -119,9 +120,10 @@ export async function createCarHandler(req: Request<{}, {}, CreateNewCarInputs>,
     throw new AppError('Could not create car', StatusCodes.BAD_REQUEST);
   }
 
-  // increase the car collection count in brand and model
+  // increase the car collection count in brand and model & vendor
   updateBrandCarCollectionCount({ type: 'inc', brandId: req.body.brand.value });
   updateBrandModelCarCollectionCount({ type: 'inc', brandModelId: req.body.brandModel.value });
+  updateVendorCarCollectionCount({ type: 'inc', vendorId: req.body.vendor.value });
 
   res.status(StatusCodes.CREATED).json({
     status: 'success',
@@ -182,6 +184,9 @@ export async function getCarHandler(req: Request<ReadCarInput['params']>, res: R
     { slug: carSlug },
     {
       populate: [
+        {
+          path: 'vendor.value',
+        },
         {
           path: 'brand.value',
         },
@@ -248,7 +253,7 @@ export async function updateCarHandler(
       // decrease the car collection count in the prev brand
       updateBrandCarCollectionCount({ type: 'dec', brandId: car.brand.value });
 
-      // increase the car collection count in the prev brand
+      // increase the car collection count in the new brand collection
       updateBrandCarCollectionCount({ type: 'inc', brandId: updatedCar.brand.value });
     }
 
@@ -256,8 +261,16 @@ export async function updateCarHandler(
       // decrease the car collection count in the prev model
       updateBrandModelCarCollectionCount({ type: 'dec', brandModelId: car.brand.value });
 
-      // increase the car collection count in the prev model
+      // increase the car collection count in the new brand model collection
       updateBrandModelCarCollectionCount({ type: 'inc', brandModelId: updatedCar.brand.value });
+    }
+
+    if (car.vendor.value !== req.body.vendor.value) {
+      // decrease the car collection count in the prev model
+      updateVendorCarCollectionCount({ type: 'dec', vendorId: car.brand.value });
+
+      // increase the car collection count in the new vendor model collection
+      updateVendorCarCollectionCount({ type: 'inc', vendorId: updatedCar.brand.value });
     }
   }
 
@@ -315,7 +328,8 @@ export async function deleteCarHandler(req: Request<DeleteCarInput['params']>, r
   if (deletedCar.acknowledged) {
     // decrease the car collection count in brand and model
     updateBrandCarCollectionCount({ type: 'dec', brandId: car.brand.value });
-    updateBrandModelCarCollectionCount({ type: 'dec', brandModelId: req.body.brandModel.id });
+    updateBrandModelCarCollectionCount({ type: 'dec', brandModelId: car.brandModel.value });
+    updateVendorCarCollectionCount({ type: 'dec', vendorId: car.vendor.value });
     deleteSettingItem({ contentId: car._id });
   }
 
