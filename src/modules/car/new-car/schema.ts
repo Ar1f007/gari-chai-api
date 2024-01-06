@@ -175,7 +175,10 @@ const query = {
         invalid_type_error: 'launchedBeforeOrEqual Requires a date string',
       })
       .optional(),
-    launchStatus: z.enum(['past', 'future']).default('past').optional(),
+    launchedAt: z
+      .union([z.enum(['past', 'future']), z.literal('past.future').or(z.literal('future.past'))])
+      .default('past')
+      .optional(),
     sort: sortSchema.optional(),
   }),
 };
