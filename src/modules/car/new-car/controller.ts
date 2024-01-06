@@ -22,6 +22,27 @@ import { updateVendorCarCollectionCount } from '../../vendors/service';
 //************************************************************************ */
 // Helpers
 //************************************************************************ */
+
+/**
+ * Extracts launch status information from the query parameter.
+ *
+ * @description
+ * The function interprets the provided query parameter to determine the launch status.
+ * Possible values include: 'past', 'future', 'past.future', 'future.past', or undefined.
+ *
+ * @param query - The query parameter representing launch status.
+ * @returns
+ * - If the query is undefined, returns the default value 'past'.
+ * - If the query is a single value ('past' or 'future'), returns the same value.
+ * - If the query is a combination ('past.future' or 'future.past'), returns an array of two values.
+ */
+function getLaunchStatus(query: GetCarQueryInput['query']['launchedAt']) {
+  if (!query) return 'past';
+
+  if (!query.includes('.')) return query;
+
+  return query.split('.');
+}
 function getQueryFilters(query: GetCarQueryInput['query']): Record<string, any> {
   const filters: Record<string, any> = {};
 
@@ -47,11 +68,14 @@ function getQueryFilters(query: GetCarQueryInput['query']): Record<string, any> 
 
   // determine which cars to show
   // is it "past" or cars which is not launched yet
-  const launchStatus = query.launchStatus || 'past';
+  const launchStatus = getLaunchStatus(query.launchedAt);
 
   const launchedDate = dayjs(query.launchedDate).toDate() || new Date();
 
-  if (launchStatus === 'past') {
+  if (Array.isArray(launchStatus)) {
+    // since it is an array, means we are wanting all cars irrespective of
+    // future or past, so do nothing, it will give us all the docs
+  } else if (launchStatus === 'past') {
     filters['launchedAt'] = { $lte: launchedDate };
   } else {
     filters['launchedAt'] = { $gte: launchedDate };
