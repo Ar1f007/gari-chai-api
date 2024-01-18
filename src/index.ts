@@ -6,16 +6,24 @@ import configureExpressApp from './config/configureExpressApp';
 
 handleUncaughtException();
 
-const app = configureExpressApp();
+async function startServer() {
+  const app = configureExpressApp();
 
-const PORT = envVariables.PORT;
+  const PORT = envVariables.PORT;
 
-const server = app.listen(PORT, async () => {
-  logger.info('listening on port ' + PORT);
+  try {
+    await connect();
+    const server = app.listen(PORT, () => {
+      logger.info('listening on port ' + PORT);
+    });
 
-  await connect();
-});
+    handleUnhandledRejection(server);
+    handleSIGINT(server);
+    handleSIGTERM(server);
+  } catch (error) {
+    logger.error('Error connecting to the database:', error);
+    process.exit(1);
+  }
+}
 
-handleUnhandledRejection(server);
-handleSIGINT(server);
-handleSIGTERM(server);
+startServer();
