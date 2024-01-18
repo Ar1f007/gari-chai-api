@@ -54,7 +54,7 @@ export async function createNewUserHandler(req: Request<{}, {}, CreateUserInputs
   attachCookiesToResponse(res, {
     id: doc._id,
     name: doc.name,
-    phoneNumber: doc.phoneNumber,
+    // phoneNumber: doc.phoneNumber,
     role: doc.role,
   });
 
@@ -92,7 +92,7 @@ export async function loginUserHandler(req: Request<{}, {}, LoginUserInputs>, re
   attachCookiesToResponse(res, {
     id: user._id,
     name: user.name,
-    phoneNumber: user.phoneNumber,
+    // phoneNumber: user.phoneNumber,
     role: user.role,
   });
 

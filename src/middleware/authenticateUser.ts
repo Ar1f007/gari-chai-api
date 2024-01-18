@@ -18,7 +18,7 @@ export const authenticateUser = (req: AuthenticatedRequest, res: Response, next:
 
   try {
     const data = isTokenValid(token);
-    req.user = data as TReqUser;
+    req.user = data;
 
     next();
   } catch (error) {
