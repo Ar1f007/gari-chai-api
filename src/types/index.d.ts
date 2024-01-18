@@ -6,7 +6,7 @@ export type TReqUser = {
   id: string;
   name: string;
   role: string[];
-  phoneNumber: string;
+  // phoneNumber: string;
 };
 
 type ReviewWithStat = ReviewDocument & {
