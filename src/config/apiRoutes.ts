@@ -6,13 +6,15 @@ import { carRouter } from '../modules/car/new-car';
 import { brandRouter } from '../modules/brand/route';
 import { homeSettingRouter } from '../modules/home-settings';
 import { brandModelRouter } from '../modules/brand-model/route';
-import userRouter from '../modules/user/route';
+// import userRouter from '../modules/user/route';
 import reviewRouter from '../modules/review/route';
 import commentRouter from '../modules/comment/route';
 import carBodyTypeRouter from '../modules/car-body-type/route';
 import searchRouter from '../modules/search/route';
 import sliderRouter from '../modules/slider/route';
 import vendorRouter from '../modules/vendors/route';
+import '../config/passport';
+import userRouter from '../modules/user/route';
 
 function routes(app: Express) {
   app.get('/health-check', (_: Request, res: Response) => {

@@ -1,79 +1,54 @@
-import mongoose from 'mongoose';
+import mongoose, { InferSchemaType } from 'mongoose';
 import bcrypt from 'bcrypt';
 import crypto from 'crypto';
-
-import { CreateUserInputs } from './schema';
-
-export interface UserDocument extends CreateUserInputs, mongoose.Document {
-  createdAt: Date;
-  updatedAt: Date;
-
-  role: string[];
-  image: string;
-
-  verificationCode: string | undefined;
-  verificationCodeExpires: Date | undefined;
-
-  passwordChangedAt: Date;
-  passwordResetCode: string;
-  passwordResetExpires: Date | undefined;
-
-  isVerified: boolean;
-  isAccountActive: boolean;
-
-  generateAccountVerificationCode(): Promise<number>;
-  createPasswordResetCode(): Promise<string>;
-  // eslint-disable-next-line no-unused-vars
-  comparePassword(enteredPassword: string): Promise<boolean>;
-}
 
 const SALT_ROUNDS = 10;
 const TEN_MINUTES_IN_MS = 10 * 60 * 1000;
 
 const userSchema = new mongoose.Schema(
   {
-    name: {
-      type: String,
-      required: true,
+    firstName: String,
+    lastName: String,
+    local: {
+      email: {
+        type: String,
+        unique: false,
+        required: false,
+      },
+      phone: {
+        type: String,
+        unique: false,
+        required: false,
+      },
+      password: {
+        type: String,
+        required: false,
+      },
     },
-
-    password: {
-      type: String,
-      required: true,
-    },
-
-    phoneNumber: {
-      type: String,
-      unique: true,
-      trim: true,
-      required: true,
-    },
-
-    emails: {
-      type: [String],
-      required: false,
-      default: [],
-    },
-
-    image: {
-      type: String,
-      required: false,
+    social: {
+      providers: [
+        {
+          name: String,
+          id: String,
+          token: String,
+          email: String,
+          username: String,
+        },
+      ],
     },
 
     role: {
       type: [String],
+      enum: ['user', 'admin', 'super-admin', 'moderator', 'editor', 'support'],
       default: ['user'],
     },
-
     address: {
       type: String,
     },
-
     isVerified: {
       type: Boolean,
       default: false,
     },
-
     verificationCode: {
       type: String,
     },
@@ -90,29 +65,72 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+
+    profilePicture: String,
+    language: String,
+    notificationPreferences: {
+      email: Boolean,
+      inApp: Boolean,
+      sms: Boolean,
+    },
+    twoFactorAuth: {
+      enabled: Boolean,
+      secret: String,
+      recoveryCodes: [String],
+    },
+    lastLogin: {
+      timestamp: Date,
+      ipAddress: String,
+    },
+    activityLog: [
+      {
+        timestamp: Date,
+        action: String,
+        details: String,
+      },
+    ],
+    accountDeactivationReason: String,
+
+    metaData: {
+      type: mongoose.Schema.Types.Mixed,
+      default: {},
+      validate: {
+        validator: function (v: Record<string, any>) {
+          const sizeInBytes = Buffer.from(JSON.stringify(v)).length;
+          return sizeInBytes <= 8192; // 8 KB limit
+        },
+        message: 'Metadata size exceeds the maximum limit of 8 KB.',
+      },
+    },
   },
   {
     timestamps: true,
   },
 );
+
 // Hash user password
 userSchema.pre('save', async function (next) {
   // Only run this function if password was actually modified
-  if (!this.isModified('password')) return next();
+
+  if (!this.isModified('local.password')) return next();
+  if (!this.local || !this.local.password) return next();
 
   const salt = await bcrypt.genSalt(SALT_ROUNDS);
-  this.password = await bcrypt.hash(this.password, salt);
+  this.local.password = await bcrypt.hash(this.local.password, salt);
 
   // set default image using name if one is not provided
-  if (!this.image && this.name) {
-    this.image = `https://eu.ui-avatars.com/api/?name=${encodeURIComponent(this.name)}&size=150`;
+  const username = this?.firstName + ' ' + this?.lastName;
+  const name = username.length > 1 ? username : 'user';
+
+  if (!this.profilePicture) {
+    this.profilePicture = `https://eu.ui-avatars.com/api/?name=${encodeURIComponent(name)}&size=150`;
   }
 
   next();
 });
 
-userSchema.methods.comparePassword = async function (enteredPassword: string) {
-  return await bcrypt.compare(enteredPassword, this.password);
+userSchema.methods.isValidPassword = async function (enteredPassword: string) {
+  return await bcrypt.compare(enteredPassword, this.local.password);
 };
 
 userSchema.methods.generateAccountVerificationCode = async function () {
@@ -133,10 +151,17 @@ userSchema.methods.createPasswordResetCode = async function () {
 
   this.passwordResetToken = crypto.createHash('sha256').update(code).digest('hex');
 
-  this.passwordResetExpires = Date.now() + 10 * 60 * 1000; // 10 min
+  this.passwordResetExpires = Date.now() + TEN_MINUTES_IN_MS; // 10 min
 
   return code;
 };
+
+export type UserDocument = InferSchemaType<typeof userSchema> & {
+  generateAccountVerificationCode(): Promise<number>;
+  createPasswordResetCode(): Promise<string>;
+  // eslint-disable-next-line no-unused-vars
+  isValidPassword(enteredPassword: string): Promise<boolean>;
+} & mongoose.Document;
 
 const User = mongoose.model<UserDocument>('User', userSchema);
 

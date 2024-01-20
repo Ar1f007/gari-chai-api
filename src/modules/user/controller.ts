@@ -1,135 +1,216 @@
-import { Response, Request } from 'express';
-import bcrypt from 'bcrypt';
-
+import User, { UserDocument } from './model';
+import passport from 'passport';
+import { NextFunction, Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
-import { omit } from 'lodash';
-
-import { createNewUser, findUser, deleteUser, findAndUpdateUser } from './service';
-import AppError from '../../utils/appError';
-import { CreateUserInputs, LoginUserInputs, SendOTPInputs, VerifyOTPInputs } from './schema';
-import { sendOTP } from '../../utils/sendOTP';
 import { attachCookiesToResponse } from '../../utils/attachCookiesToResponse';
-import { AuthenticatedRequest } from '../../middleware/authenticateUser';
+import { omit } from 'lodash';
 import { removeCookie } from '../../utils/removeCookie';
+import { findAndUpdateUser, findUser } from './services';
+import AppError from '../../utils/appError';
+import bcrypt from 'bcrypt';
+import { SendOTPInputs, VerifyOTPInputs } from './schema';
+import { sendOTP } from '../../utils/sendOTP';
 
-export async function createNewUserHandler(req: Request<{}, {}, CreateUserInputs>, res: Response) {
-  const { phoneNumber } = req.body;
+export async function signupWithEmailHandler(req: Request, res: Response) {
+  let newUser = new User({
+    local: {
+      email: req.body.email,
+      password: req.body.password,
+    },
+    firstName: req.body.firstName,
+    lastName: req.body.lastName,
+  });
 
-  // check if user already exist with the same phone number
-  const userExists = await findUser({ phoneNumber });
+  const existingUser = await User.findOne({ 'local.email': req.body.email });
 
-  if (userExists) {
-    throw new AppError(
-      'A user with this phone number already exists, please login to continue',
-      StatusCodes.BAD_REQUEST,
-    );
-  }
-
-  const doc = await createNewUser(req.body);
-
-  if (!doc) {
-    throw new AppError('Could not create account, try again later', StatusCodes.BAD_REQUEST);
-  }
-
-  const code = await doc.generateAccountVerificationCode();
-
-  await doc.save();
-
-  try {
-    await sendOTP({
-      phoneNumber: doc.phoneNumber,
-      code,
-    });
-  } catch (e) {
-    deleteUser({ phoneNumber });
-
-    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+  if (existingUser) {
+    return res.status(422).json({
       status: 'fail',
-      message: 'Something went wrong, please try again',
+      message: 'Email has already been registered with us',
     });
   }
 
-  const userDoc = doc.toJSON();
+  const user = await newUser.save();
 
   attachCookiesToResponse(res, {
-    id: doc._id,
-    name: doc.name,
-    // phoneNumber: doc.phoneNumber,
-    role: doc.role,
+    data: {
+      id: user._id,
+      email: user.local!.email,
+      name: user.firstName + ' ' + user.lastName,
+      role: user.role,
+    },
   });
 
-  const sanitizedUserDoc = omit(userDoc, ['password', 'verificationCode', 'verificationCodeExpires']);
-
-  res.status(StatusCodes.CREATED).json({
-    status: 'success',
-    data: sanitizedUserDoc,
-    message: 'Please provide the OTP we sent to your phone',
-  });
-}
-
-export async function loginUserHandler(req: Request<{}, {}, LoginUserInputs>, res: Response) {
-  const { phoneNumber, password } = req.body;
-
-  const user = await findUser({ phoneNumber }, { lean: false });
-
-  if (!user) {
-    throw new AppError('Invalid credentials', StatusCodes.BAD_REQUEST);
-  }
-
-  const isPasswordValid = await user.comparePassword(password);
-
-  if (!isPasswordValid) {
-    throw new AppError('Invalid credentials', StatusCodes.BAD_REQUEST);
-  }
-
-  if (!user.isAccountActive) {
-    user.isAccountActive = true;
-    user.save();
-  }
-
-  const userDoc = user.toJSON();
-
-  attachCookiesToResponse(res, {
-    id: user._id,
-    name: user.name,
-    // phoneNumber: user.phoneNumber,
-    role: user.role,
-  });
-
-  const sanitizedUserDoc = omit(userDoc, ['password', 'verificationCode', 'verificationCodeExpires']);
-
-  res.status(StatusCodes.OK).json({
-    status: 'success',
-    data: sanitizedUserDoc,
-  });
-}
-
-export async function getMeHandler(req: AuthenticatedRequest, res: Response) {
-  const user = await findUser({ _id: req.user?.id });
-
-  if (!user) {
-    return res.status(StatusCodes.BAD_REQUEST).json({
-      status: 'success',
-      data: null,
-    });
-  }
-
-  const userData = {
-    _id: user._id,
-    name: user.name,
-    image: user.image,
-    phoneNumber: user.phoneNumber,
-    emails: user.emails,
-    role: user.role,
-    isVerified: user.isVerified,
-    isAccountActive: user.isAccountActive,
-    createdAt: user.createdAt,
-    updatedAt: user.updatedAt,
-  };
+  const sanitizedUserDoc = omit(user.toJSON(), [
+    'local.password',
+    'verificationCode',
+    'verificationCodeExpires',
+    'twoFactorAuth',
+    'activityLog',
+  ]);
 
   return res.status(StatusCodes.OK).json({
     status: 'success',
-    data: userData,
+    data: sanitizedUserDoc,
+    message: '',
+  });
+}
+
+export async function loginWithEmail(req: Request, res: Response, next: NextFunction) {
+  passport.authenticate('local.email', { session: false }, (err: any, user: UserDocument, info: any) => {
+    if (err || !user) {
+      return res.status(StatusCodes.UNPROCESSABLE_ENTITY).json({
+        status: 'fail',
+        message: info?.message || 'Authentication failed',
+      });
+    }
+
+    req.login(user, { session: false }, (err) => {
+      if (err) {
+        console.log('LOGIN ERROR ', err);
+        return res.status(StatusCodes.UNPROCESSABLE_ENTITY).json({
+          status: 'fail',
+          message: 'Invalid credentials',
+        });
+      }
+
+      attachCookiesToResponse(res, {
+        data: {
+          id: user._id,
+          email: user.local!.email,
+          name: user.firstName + ' ' + user.lastName,
+          role: user.role,
+        },
+      });
+
+      const sanitizedUserDoc = omit(user.toJSON(), [
+        'local.password',
+        'verificationCode',
+        'verificationCodeExpires',
+        'twoFactorAuth',
+        'activityLog',
+      ]);
+
+      res.status(StatusCodes.OK).json({
+        status: 'success',
+        data: sanitizedUserDoc,
+      });
+    });
+  })(req, res, next);
+}
+
+export async function signupWithPhoneHandler(req: Request, res: Response) {
+  let newUser = new User({
+    local: {
+      phone: req.body.phone,
+      password: req.body.password,
+    },
+    firstName: req.body.firstName,
+    lastName: req.body.lastName,
+  });
+
+  const existingUser = await User.findOne({ 'local.phone': req.body.phone });
+
+  if (existingUser) {
+    return res.status(422).json({
+      status: 'fail',
+      message: 'Phone number is already registered with us. Please login to continue',
+    });
+  }
+
+  const user = await newUser.save();
+
+  attachCookiesToResponse(res, {
+    data: {
+      id: user._id,
+      email: user.local!.email,
+      name: user.firstName + ' ' + user.lastName,
+      role: user.role,
+    },
+  });
+
+  const sanitizedUserDoc = omit(user.toJSON(), [
+    'local.password',
+    'verificationCode',
+    'verificationCodeExpires',
+    'twoFactorAuth',
+    'activityLog',
+  ]);
+
+  return res.status(StatusCodes.OK).json({
+    status: 'success',
+    data: sanitizedUserDoc,
+    message: '',
+  });
+}
+
+export async function loginWithPhoneHandler(req: Request, res: Response, next: NextFunction) {
+  passport.authenticate('local.phone', { session: false }, (err: any, user: UserDocument, info: any) => {
+    if (err || !user) {
+      return res.status(StatusCodes.UNPROCESSABLE_ENTITY).json({
+        status: 'fail',
+        message: info?.message || 'Authentication failed',
+      });
+    }
+
+    req.login(user, { session: false }, (err) => {
+      if (err) {
+        console.log('LOGIN ERROR ', err);
+        return res.status(StatusCodes.UNPROCESSABLE_ENTITY).json({
+          status: 'fail',
+          message: 'Invalid credentials',
+        });
+      }
+
+      attachCookiesToResponse(res, {
+        data: {
+          id: user._id,
+          email: user.local!.email,
+          name: user.firstName + ' ' + user.lastName,
+          role: user.role,
+        },
+      });
+
+      const sanitizedUserDoc = omit(user.toJSON(), [
+        'local.password',
+        'verificationCode',
+        'verificationCodeExpires',
+        'twoFactorAuth',
+        'activityLog',
+      ]);
+
+      res.status(StatusCodes.OK).json({
+        status: 'success',
+        data: sanitizedUserDoc,
+      });
+    });
+  })(req, res, next);
+}
+
+export async function logoutUserHandler(req: Request, res: Response) {
+  const { cookieName } = req.body;
+
+  removeCookie(cookieName, res);
+
+  res.status(StatusCodes.OK).json({
+    status: 'success',
+    message: 'Logout successful',
+  });
+}
+
+export async function getProfile(req: Request, res: Response) {
+  const user = req.user as UserDocument;
+
+  const sanitizedUser = omit(user.toJSON(), [
+    'local.password',
+    'verificationCode',
+    'verificationCodeExpires',
+    'twoFactorAuth',
+  ]);
+
+  res.status(StatusCodes.OK).json({
+    status: 'success',
+    data: sanitizedUser,
   });
 }
 
@@ -206,16 +287,5 @@ export async function verifyOTPHandler(req: Request<{}, {}, VerifyOTPInputs>, re
   res.status(StatusCodes.BAD_REQUEST).json({
     status: 'error',
     message: 'Invalid code',
-  });
-}
-
-export async function logoutUserHandler(req: Request, res: Response) {
-  const { cookieName } = req.body;
-
-  removeCookie(cookieName, res);
-
-  res.status(StatusCodes.OK).json({
-    status: 'success',
-    message: 'Logout successful',
   });
 }
