@@ -91,6 +91,31 @@ const userSchema = new mongoose.Schema(
     ],
     accountDeactivationReason: String,
 
+    isBanned: {
+      type: Boolean,
+      default: false,
+    },
+
+    bannedBy: {
+      type: String,
+    },
+
+    banDate: {
+      type: Date,
+    },
+
+    banExpiry: {
+      type: Date,
+    },
+
+    banReason: {
+      type: String,
+    },
+
+    banNotes: {
+      type: String,
+    },
+
     metaData: {
       type: mongoose.Schema.Types.Mixed,
       default: {},
