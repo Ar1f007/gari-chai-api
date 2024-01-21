@@ -13,13 +13,13 @@ import { loginWithEmailSchema, loginWithPhoneSchema, signupWithEmailSchema, sign
 
 const userRouter = express.Router();
 
-userRouter.post('/email-signup', validateResource(signupWithEmailSchema), signupWithEmailHandler);
+userRouter.post('/signup/email', validateResource(signupWithEmailSchema), signupWithEmailHandler);
 
-userRouter.post('/email-login', validateResource(loginWithEmailSchema), loginWithEmail);
+userRouter.post('/login/email', validateResource(loginWithEmailSchema), loginWithEmail);
 
-userRouter.post('/phone-signup', validateResource(signupWithPhoneSchema), signupWithPhoneHandler);
+userRouter.post('/signup/phone', validateResource(signupWithPhoneSchema), signupWithPhoneHandler);
 
-userRouter.post('/phone-login', validateResource(loginWithPhoneSchema), loginWithPhoneHandler);
+userRouter.post('/login/phone', validateResource(loginWithPhoneSchema), loginWithPhoneHandler);
 
 userRouter.get('/profile', authenticated, getProfile);
 
