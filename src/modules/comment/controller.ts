@@ -4,6 +4,7 @@ import { StatusCodes } from 'http-status-codes';
 import { createComment, findComment, findComments } from './service';
 import AppError from '../../utils/appError';
 import { ZodError } from 'zod';
+import { UserDocument } from '../user/model';
 
 export async function createCommentHandler(req: Request<{}, {}, CreateCommentInputs>, res: Response) {
   const { isChild, car, content, user, parentId } = req.body;
@@ -90,7 +91,7 @@ export async function editCommentContentHandler(
   req: Request<UpdateCommentInputs['params'], {}, UpdateCommentInputs['body']>,
   res: Response,
 ) {
-  const currentUserId = req.user?.id;
+  const currentUserId = (req.user as UserDocument).id;
 
   const comment = await findComment({ _id: req.params.id }, { lean: false });
 
@@ -120,14 +121,16 @@ export async function editCommentContentHandler(
 }
 
 export async function deleteCommentHandler(req: Request<UpdateCommentInputs['params'], {}, {}>, res: Response) {
-  if (!req?.user?.id) {
+  const user = req.user as UserDocument;
+
+  if (!user.id) {
     return res.status(StatusCodes.UNAUTHORIZED).json({
       status: 'fail',
       message: 'Please login to continue',
     });
   }
 
-  const currentUserId = req.user.id;
+  const currentUserId = user.id;
 
   const comment = await findComment({ _id: req.params.id }, { lean: false });
 

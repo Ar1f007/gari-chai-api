@@ -1,135 +1,195 @@
-import { Response, Request } from 'express';
-import bcrypt from 'bcrypt';
-
+import User, { UserDocument } from './model';
+import passport from 'passport';
+import { NextFunction, Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
-import { omit } from 'lodash';
-
-import { createNewUser, findUser, deleteUser, findAndUpdateUser } from './service';
-import AppError from '../../utils/appError';
-import { CreateUserInputs, LoginUserInputs, SendOTPInputs, VerifyOTPInputs } from './schema';
-import { sendOTP } from '../../utils/sendOTP';
 import { attachCookiesToResponse } from '../../utils/attachCookiesToResponse';
-import { AuthenticatedRequest } from '../../middleware/authenticateUser';
+import { omit } from 'lodash';
 import { removeCookie } from '../../utils/removeCookie';
+import { findAndUpdateUser, findUser } from './services';
+import AppError from '../../utils/appError';
+import bcrypt from 'bcrypt';
+import { SendOTPInputs, VerifyOTPInputs } from './schema';
+import { sendOTP } from '../../utils/sendOTP';
 
-export async function createNewUserHandler(req: Request<{}, {}, CreateUserInputs>, res: Response) {
-  const { phoneNumber } = req.body;
-
-  // check if user already exist with the same phone number
-  const userExists = await findUser({ phoneNumber });
-
-  if (userExists) {
-    throw new AppError(
-      'A user with this phone number already exists, please login to continue',
-      StatusCodes.BAD_REQUEST,
-    );
-  }
-
-  const doc = await createNewUser(req.body);
-
-  if (!doc) {
-    throw new AppError('Could not create account, try again later', StatusCodes.BAD_REQUEST);
-  }
-
-  const code = await doc.generateAccountVerificationCode();
-
-  await doc.save();
-
-  try {
-    await sendOTP({
-      phoneNumber: doc.phoneNumber,
-      code,
-    });
-  } catch (e) {
-    deleteUser({ phoneNumber });
-
-    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-      status: 'fail',
-      message: 'Something went wrong, please try again',
+async function checkAndUpdateBanStatus(user: UserDocument) {
+  if (user.isBanned && user.banExpiry && user.banExpiry <= new Date()) {
+    // If the user is banned and the ban has expired, lift the ban
+    await User.findByIdAndUpdate(user._id, {
+      $set: {
+        isBanned: false,
+        banReason: null,
+        banExpiry: null,
+        banNotes: null,
+      },
     });
   }
-
-  const userDoc = doc.toJSON();
-
-  attachCookiesToResponse(res, {
-    id: doc._id,
-    name: doc.name,
-    // phoneNumber: doc.phoneNumber,
-    role: doc.role,
-  });
-
-  const sanitizedUserDoc = omit(userDoc, ['password', 'verificationCode', 'verificationCodeExpires']);
-
-  res.status(StatusCodes.CREATED).json({
-    status: 'success',
-    data: sanitizedUserDoc,
-    message: 'Please provide the OTP we sent to your phone',
-  });
 }
 
-export async function loginUserHandler(req: Request<{}, {}, LoginUserInputs>, res: Response) {
-  const { phoneNumber, password } = req.body;
-
-  const user = await findUser({ phoneNumber }, { lean: false });
-
-  if (!user) {
-    throw new AppError('Invalid credentials', StatusCodes.BAD_REQUEST);
-  }
-
-  const isPasswordValid = await user.comparePassword(password);
-
-  if (!isPasswordValid) {
-    throw new AppError('Invalid credentials', StatusCodes.BAD_REQUEST);
-  }
-
+async function activateAccount(user: UserDocument) {
   if (!user.isAccountActive) {
-    user.isAccountActive = true;
-    user.save();
+    await User.findByIdAndUpdate(user._id, {
+      $set: {
+        isAccountActive: true,
+      },
+    });
+
+    console.log(`Account activated for user with ID: ${user._id}`);
   }
-
-  const userDoc = user.toJSON();
-
-  attachCookiesToResponse(res, {
-    id: user._id,
-    name: user.name,
-    // phoneNumber: user.phoneNumber,
-    role: user.role,
-  });
-
-  const sanitizedUserDoc = omit(userDoc, ['password', 'verificationCode', 'verificationCodeExpires']);
-
-  res.status(StatusCodes.OK).json({
-    status: 'success',
-    data: sanitizedUserDoc,
-  });
 }
 
-export async function getMeHandler(req: AuthenticatedRequest, res: Response) {
-  const user = await findUser({ _id: req.user?.id });
+/**
+ * Handles the signup process for a user.
+ * Creates a new user object with the provided credentials and saves it to the database.
+ * If a user with the same identifier (email or phone) already exists, it returns an error response.
+ * After successfully saving the user, it attaches authentication cookies to the response and returns a success response with the sanitized user data.
+ *
+ * @param req - The request object containing the user's signup data.
+ * @param res - The response object to send the signup result.
+ * @param criteria - The criteria to search for an existing user (e.g., 'local.email' or 'local.phone').
+ * @param identifier - The identifier field (e.g., 'email' or 'phone').
+ * @returns A promise that resolves to the signup result.
+ */
+async function handleSignup(req: Request, res: Response, criteria: string, identifier: string) {
+  let newUser = new User({
+    local: {
+      [identifier]: req.body[identifier],
+      password: req.body.password,
+    },
+    firstName: req.body.firstName,
+    lastName: req.body.lastName,
+  });
 
-  if (!user) {
-    return res.status(StatusCodes.BAD_REQUEST).json({
-      status: 'success',
-      data: null,
+  const existingUser = await User.findOne({ [criteria]: req.body[identifier] });
+
+  if (existingUser) {
+    return res.status(StatusCodes.UNPROCESSABLE_ENTITY).json({
+      status: 'fail',
+      message: `${
+        identifier.charAt(0).toUpperCase() + identifier.slice(1)
+      } is already registered with us. Please login to continue`,
     });
   }
 
-  const userData = {
-    _id: user._id,
-    name: user.name,
-    image: user.image,
-    phoneNumber: user.phoneNumber,
-    emails: user.emails,
-    role: user.role,
-    isVerified: user.isVerified,
-    isAccountActive: user.isAccountActive,
-    createdAt: user.createdAt,
-    updatedAt: user.updatedAt,
-  };
+  const user = await newUser.save();
+
+  attachCookiesToResponse(res, {
+    data: {
+      id: user._id,
+      [identifier]: (user.local! as { [key: string]: string })[identifier],
+      name: user.firstName + ' ' + user.lastName,
+      role: user.role,
+    },
+  });
+
+  const sanitizedUserDoc = omit(user.toJSON(), [
+    'local.password',
+    'verificationCode',
+    'verificationCodeExpires',
+    'twoFactorAuth',
+    'activityLog',
+  ]);
 
   return res.status(StatusCodes.OK).json({
     status: 'success',
-    data: userData,
+    data: sanitizedUserDoc,
+    message: '',
+  });
+}
+
+/**
+ * Handles user login requests.
+ * @param req - The request object containing the user login information.
+ * @param res - The response object used to send the authentication result and cookies.
+ * @param next - The next function to be called in the middleware chain.
+ * @param strategy - The authentication strategy to be used (e.g., 'local.email', 'local.phone').
+ * @param identifier - The identifier used to authenticate the user (e.g., 'email', 'phone').
+ */
+async function handleLogin(req: Request, res: Response, next: NextFunction, strategy: string, identifier: string) {
+  passport.authenticate(strategy, { session: false }, async (err: any, user: UserDocument, info: any) => {
+    if (err || !user) {
+      return res.status(StatusCodes.UNPROCESSABLE_ENTITY).json({
+        status: 'fail',
+        message: info?.message || 'Authentication failed',
+      });
+    }
+
+    await checkAndUpdateBanStatus(user);
+
+    await activateAccount(user);
+
+    req.login(user, { session: false }, (err) => {
+      if (err) {
+        console.log('LOGIN ERROR ', err);
+        return res.status(StatusCodes.UNPROCESSABLE_ENTITY).json({
+          status: 'fail',
+          message: 'Invalid credentials',
+        });
+      }
+
+      attachCookiesToResponse(res, {
+        data: {
+          id: user._id,
+          [identifier]: (user.local! as { [key: string]: string })[identifier],
+          name: user.firstName + ' ' + user.lastName,
+          role: user.role,
+        },
+      });
+
+      const sanitizedUserDoc = omit(user.toJSON(), [
+        'local.password',
+        'verificationCode',
+        'verificationCodeExpires',
+        'twoFactorAuth',
+        'activityLog',
+      ]);
+
+      res.status(StatusCodes.OK).json({
+        status: 'success',
+        data: sanitizedUserDoc,
+      });
+    });
+  })(req, res, next);
+}
+export async function signupWithEmailHandler(req: Request, res: Response) {
+  await handleSignup(req, res, 'local.email', 'email');
+}
+
+export async function loginWithEmail(req: Request, res: Response, next: NextFunction) {
+  await handleLogin(req, res, next, 'local.email', 'email');
+}
+
+export async function signupWithPhoneHandler(req: Request, res: Response) {
+  await handleSignup(req, res, 'local.phone', 'phone');
+}
+
+export async function loginWithPhoneHandler(req: Request, res: Response, next: NextFunction) {
+  await handleLogin(req, res, next, 'local.phone', 'phone');
+}
+
+export async function logoutUserHandler(req: Request, res: Response) {
+  const { cookieName } = req.body;
+
+  removeCookie(cookieName, res);
+
+  res.status(StatusCodes.OK).json({
+    status: 'success',
+    message: 'Logout successful',
+  });
+}
+
+export async function getProfile(req: Request, res: Response) {
+  const user = req.user as UserDocument;
+
+  const sanitizedUser = omit(user.toJSON(), [
+    'local.password',
+    'verificationCode',
+    'verificationCodeExpires',
+    'twoFactorAuth',
+  ]);
+
+  res.status(StatusCodes.OK).json({
+    status: 'success',
+    data: sanitizedUser,
   });
 }
 
@@ -206,16 +266,5 @@ export async function verifyOTPHandler(req: Request<{}, {}, VerifyOTPInputs>, re
   res.status(StatusCodes.BAD_REQUEST).json({
     status: 'error',
     message: 'Invalid code',
-  });
-}
-
-export async function logoutUserHandler(req: Request, res: Response) {
-  const { cookieName } = req.body;
-
-  removeCookie(cookieName, res);
-
-  res.status(StatusCodes.OK).json({
-    status: 'success',
-    message: 'Logout successful',
   });
 }

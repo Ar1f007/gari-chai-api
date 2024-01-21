@@ -1,25 +1,28 @@
 import express from 'express';
-import { validateResource } from '../../middleware';
-import { createUserSchema, loginUserSchema, sendOTPSchema, verifyOTPSchema } from './schema';
 import {
-  createNewUserHandler,
-  getMeHandler,
-  loginUserHandler,
+  getProfile,
+  loginWithEmail,
+  loginWithPhoneHandler,
   logoutUserHandler,
-  sendOTPHandler,
-  verifyOTPHandler,
+  signupWithEmailHandler,
+  signupWithPhoneHandler,
 } from './controller';
-import { authenticateUser } from '../../middleware/authenticateUser';
+import '../../config/passport';
+import { authenticated, validateResource } from '../../middleware';
+import { loginWithEmailSchema, loginWithPhoneSchema, signupWithEmailSchema, signupWithPhoneSchema } from './schema';
 
 const userRouter = express.Router();
 
-userRouter.route('/').post(validateResource(createUserSchema), createNewUserHandler);
+userRouter.post('/signup/email', validateResource(signupWithEmailSchema), signupWithEmailHandler);
 
-userRouter.get('/me', authenticateUser, getMeHandler);
+userRouter.post('/login/email', validateResource(loginWithEmailSchema), loginWithEmail);
 
-userRouter.post('/login', validateResource(loginUserSchema), loginUserHandler);
+userRouter.post('/signup/phone', validateResource(signupWithPhoneSchema), signupWithPhoneHandler);
+
+userRouter.post('/login/phone', validateResource(loginWithPhoneSchema), loginWithPhoneHandler);
+
+userRouter.get('/profile', authenticated, getProfile);
+
 userRouter.post('/logout', logoutUserHandler);
-userRouter.post('/verify-otp', validateResource(verifyOTPSchema), verifyOTPHandler);
-userRouter.post('/send-otp', validateResource(sendOTPSchema), sendOTPHandler);
 
 export default userRouter;

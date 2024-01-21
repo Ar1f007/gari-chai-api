@@ -9,6 +9,7 @@ import routes from './apiRoutes';
 import AppError from '../utils/appError';
 import { globalErrorHandler } from '../middleware';
 import { corsOptions } from './corsOptions';
+import passport from 'passport';
 
 const configureExpressApp = () => {
   const app = express();
@@ -34,6 +35,7 @@ const configureExpressApp = () => {
   app.use(mongoSanitize());
 
   app.use(compression());
+  app.use(passport.initialize());
 
   // ROUTES
   routes(app);

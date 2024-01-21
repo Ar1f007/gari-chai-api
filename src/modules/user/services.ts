@@ -1,10 +1,10 @@
 import { FilterQuery, QueryOptions, UpdateQuery } from 'mongoose';
 import User, { UserDocument } from './model';
-import { CreateUserInputs } from './schema';
+// import { CreateUserInputs } from './schema';
 
-export async function createNewUser(input: CreateUserInputs) {
-  return User.create(input);
-}
+// export async function createNewUser(input: CreateUserInputs) {
+//   return User.create(input);
+// }
 
 export async function findUser(query: FilterQuery<UserDocument>, options: QueryOptions = { lean: true }) {
   return User.findOne(query, {}, options);

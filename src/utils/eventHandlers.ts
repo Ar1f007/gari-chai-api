@@ -6,6 +6,7 @@
 
 import { Server } from 'http';
 import logger from './logger';
+import { MongooseError } from 'mongoose';
 
 /**
  * Gracefully closes the server by calling its `close` method.
@@ -27,10 +28,17 @@ function closeServer(server: Server) {
  * The process is then exited with code 1.
  */
 export function handleUncaughtException() {
-  process.on('uncaughtException', (err: Error) => {
-    logger.fatal(err.name, err.message);
-    logger.fatal('Exception origin', err.stack);
-    logger.error('Uncaught Exception occurred! Shutting down...');
+  process.on('uncaughtException', (err: unknown) => {
+    const timestamp = new Date().toISOString();
+
+    if (err instanceof Error || err instanceof MongooseError) {
+      console.error(`${timestamp} - ${err.name}: ${err.message}`);
+      logger.error(`${timestamp} - ${err.name}: ${err.message}`);
+      logger.error('Exception origin', err.stack);
+    }
+
+    logger.error(`${timestamp} - Uncaught Exception occurred!`);
+
     process.exit(1);
   });
 }

@@ -37,9 +37,9 @@ function handleCastErrorDB(err: mongoose.Error.CastError) {
 }
 
 function handleDuplicateFieldsDB(err: any) {
-  const name = err.keyValue.name;
+  const name = err.keyValue.name || Object.keys(err.keyPattern)[0];
 
-  const msg = `Duplicate field value: ${name}. Please use another value!`;
+  const msg = `Value for: ${name} is already in use. Please use another value!`;
 
   return new AppError(msg, StatusCodes.BAD_REQUEST);
 }
