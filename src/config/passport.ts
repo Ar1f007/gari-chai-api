@@ -5,7 +5,7 @@ import { Strategy as LocalStrategy } from 'passport-local';
 
 import User from '../modules/user/model';
 import { envVariables } from '../utils/env';
-import { AUTH_TOKEN_NAME } from '../constants';
+import { AUTH_TOKEN_NAME, LOCAL_EMAIL_FIELD, LOCAL_PHONE_FIELD } from '../constants';
 
 const cookieExtractor = (req: Request): string | null => {
   return req && req.cookies ? req.cookies[AUTH_TOKEN_NAME] : null;
@@ -37,14 +37,14 @@ passport.use(
 );
 
 passport.use(
-  'local.email',
+  LOCAL_EMAIL_FIELD,
   new LocalStrategy(
     {
       usernameField: 'email',
     },
     async (email, password, done) => {
       try {
-        const user = await User.findOne({ 'local.email': email });
+        const user = await User.findOne({ [LOCAL_EMAIL_FIELD]: email });
 
         if (!user) {
           return done(null, false, { message: 'Invalid credentials.' });
@@ -64,14 +64,14 @@ passport.use(
 );
 
 passport.use(
-  'local.phone',
+  LOCAL_PHONE_FIELD,
   new LocalStrategy(
     {
       usernameField: 'phone',
     },
     async (phone, password, done) => {
       try {
-        const user = await User.findOne({ 'local.phone': phone });
+        const user = await User.findOne({ [LOCAL_PHONE_FIELD]: phone });
 
         if (!user) {
           return done(null, false, { message: 'Invalid credentials.' });

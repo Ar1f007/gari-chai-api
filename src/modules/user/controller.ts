@@ -10,6 +10,7 @@ import AppError from '../../utils/appError';
 import bcrypt from 'bcrypt';
 import { SendOTPInputs, VerifyOTPInputs } from './schema';
 import { sendOTP } from '../../utils/sendOTP';
+import { LOCAL_EMAIL_FIELD, LOCAL_PHONE_FIELD } from '../../constants';
 
 async function checkAndUpdateBanStatus(user: UserDocument) {
   if (user.isBanned && user.banExpiry && user.banExpiry <= new Date()) {
@@ -32,9 +33,17 @@ async function activateAccount(user: UserDocument) {
         isAccountActive: true,
       },
     });
-
-    console.log(`Account activated for user with ID: ${user._id}`);
   }
+}
+
+function sanitizeUser(user: UserDocument): Record<string, any> {
+  return omit(user.toJSON(), [
+    'local.password',
+    'verificationCode',
+    'verificationCodeExpires',
+    'twoFactorAuth',
+    'activityLog',
+  ]);
 }
 
 /**
@@ -81,17 +90,9 @@ async function handleSignup(req: Request, res: Response, criteria: string, ident
     },
   });
 
-  const sanitizedUserDoc = omit(user.toJSON(), [
-    'local.password',
-    'verificationCode',
-    'verificationCodeExpires',
-    'twoFactorAuth',
-    'activityLog',
-  ]);
-
   return res.status(StatusCodes.OK).json({
     status: 'success',
-    data: sanitizedUserDoc,
+    data: sanitizeUser(user),
     message: '',
   });
 }
@@ -119,7 +120,6 @@ async function handleLogin(req: Request, res: Response, next: NextFunction, stra
 
     req.login(user, { session: false }, (err) => {
       if (err) {
-        console.log('LOGIN ERROR ', err);
         return res.status(StatusCodes.UNPROCESSABLE_ENTITY).json({
           status: 'fail',
           message: 'Invalid credentials',
@@ -135,35 +135,27 @@ async function handleLogin(req: Request, res: Response, next: NextFunction, stra
         },
       });
 
-      const sanitizedUserDoc = omit(user.toJSON(), [
-        'local.password',
-        'verificationCode',
-        'verificationCodeExpires',
-        'twoFactorAuth',
-        'activityLog',
-      ]);
-
       res.status(StatusCodes.OK).json({
         status: 'success',
-        data: sanitizedUserDoc,
+        data: sanitizeUser(user),
       });
     });
   })(req, res, next);
 }
 export async function signupWithEmailHandler(req: Request, res: Response) {
-  await handleSignup(req, res, 'local.email', 'email');
+  await handleSignup(req, res, LOCAL_EMAIL_FIELD, 'email');
 }
 
 export async function loginWithEmail(req: Request, res: Response, next: NextFunction) {
-  await handleLogin(req, res, next, 'local.email', 'email');
+  await handleLogin(req, res, next, LOCAL_EMAIL_FIELD, 'email');
 }
 
 export async function signupWithPhoneHandler(req: Request, res: Response) {
-  await handleSignup(req, res, 'local.phone', 'phone');
+  await handleSignup(req, res, LOCAL_PHONE_FIELD, 'phone');
 }
 
 export async function loginWithPhoneHandler(req: Request, res: Response, next: NextFunction) {
-  await handleLogin(req, res, next, 'local.phone', 'phone');
+  await handleLogin(req, res, next, LOCAL_PHONE_FIELD, 'phone');
 }
 
 export async function logoutUserHandler(req: Request, res: Response) {
@@ -180,16 +172,9 @@ export async function logoutUserHandler(req: Request, res: Response) {
 export async function getProfile(req: Request, res: Response) {
   const user = req.user as UserDocument;
 
-  const sanitizedUser = omit(user.toJSON(), [
-    'local.password',
-    'verificationCode',
-    'verificationCodeExpires',
-    'twoFactorAuth',
-  ]);
-
   res.status(StatusCodes.OK).json({
     status: 'success',
-    data: sanitizedUser,
+    data: sanitizeUser(user),
   });
 }
 
@@ -254,12 +239,10 @@ export async function verifyOTPHandler(req: Request<{}, {}, VerifyOTPInputs>, re
       },
     );
 
-    const sanitizedUserDoc = omit(user, ['password', 'verificationCode', 'verificationCodeExpires']);
-
     return res.status(StatusCodes.OK).json({
       status: 'success',
       message: 'Account is verified',
-      data: sanitizedUserDoc,
+      data: sanitizeUser(user),
     });
   }
 
