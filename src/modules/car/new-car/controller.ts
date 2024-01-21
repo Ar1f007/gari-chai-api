@@ -18,6 +18,17 @@ import { updateBrandModelCarCollectionCount } from '../../brand-model/service';
 import { deleteSettingItem } from '../../home-settings';
 import slugify from 'slugify';
 import { updateVendorCarCollectionCount } from '../../vendors/service';
+import {
+  CAR_MODEL_BRAND_VALUE_KEY,
+  CAR_MODEL_LAUNCHED_AT_KEY,
+  CAR_MODEL_NAME_KEY,
+  CAR_MODEL_TAGS_VALUE_KEY,
+  POPULATE_BODY_STYLE_VALUE_PATH,
+  POPULATE_BRAND_MODEL_VALUE_PATH,
+  POPULATE_BRAND_VALUE_PATH,
+  POPULATE_VENDOR_VALUE_PATH,
+  SORT_FIELD_SEPARATOR,
+} from '../../../constants';
 
 //************************************************************************ */
 // Helpers
@@ -47,7 +58,7 @@ function getQueryFilters(query: GetCarQueryInput['query']): Record<string, any> 
   const filters: Record<string, any> = {};
 
   if (query.name) {
-    filters['name'] = { $regex: new RegExp(query.name, 'i') };
+    filters[CAR_MODEL_NAME_KEY] = { $regex: new RegExp(query.name, 'i') };
   }
 
   if (query.tags) {
@@ -59,11 +70,11 @@ function getQueryFilters(query: GetCarQueryInput['query']): Record<string, any> 
       tagValues = [query.tags];
     }
 
-    filters['tags.value'] = { $in: tagValues };
+    filters[CAR_MODEL_TAGS_VALUE_KEY] = { $in: tagValues };
   }
 
   if (query.brand) {
-    filters['brand.id'] = query.brand;
+    filters[CAR_MODEL_BRAND_VALUE_KEY] = query.brand;
   }
 
   // determine which cars to show
@@ -76,16 +87,16 @@ function getQueryFilters(query: GetCarQueryInput['query']): Record<string, any> 
     // since it is an array, means we are wanting all cars irrespective of
     // future or past, so do nothing, it will give us all the docs
   } else if (launchStatus === 'past') {
-    filters['launchedAt'] = { $lte: launchedDate };
+    filters[CAR_MODEL_LAUNCHED_AT_KEY] = { $lte: launchedDate };
   } else {
-    filters['launchedAt'] = { $gte: launchedDate };
+    filters[CAR_MODEL_LAUNCHED_AT_KEY] = { $gte: launchedDate };
   }
 
   return filters;
 }
 
 function formatSortOption(str: string): string {
-  const [column, order] = str.split(':');
+  const [column, order] = str.split(SORT_FIELD_SEPARATOR);
 
   return order === 'asc' ? column : `-${column}`;
 }
@@ -156,24 +167,29 @@ export async function createCarHandler(req: Request<{}, {}, CreateNewCarInputs>,
 }
 
 export async function getCarsHandler(req: Request<{}, {}, {}, GetCarQueryInput['query']>, res: Response) {
+  // Default values for pagination
   const DEFAULT_PAGE_NUMBER = 1;
-  const MAX_ITEMS_LIMIT = 1000;
-  const MAX_SAFE_LIMIT = 500;
-  const DEFAULT_LIMIT = 10;
+  const DEFAULT_ITEMS_PER_PAGE = 10;
 
+  // Maximum allowed values for pagination
+  const MAX_ALLOWED_ITEMS = 1000; // Maximum documents allowed to be returned
+  const MAX_SAFE_ITEMS_LIMIT = 500; // Maximum items to return if requested exceeds the limit
+
+  // Extract and process query filters
   const queryFilters = getQueryFilters(req.query);
 
-  const currentPage = (req.query.page && !isNaN(+req.query.page) && +req.query.page) || DEFAULT_PAGE_NUMBER;
+  // Parse and validate the current page number
+  const currentPage = (req.query.page && !isNaN(Number(req.query.page)) && +req.query.page) || DEFAULT_PAGE_NUMBER;
 
-  const itemsPerPage =
-    req.query.limit && !isNaN(+req.query.limit)
-      ? +req.query.limit > MAX_ITEMS_LIMIT
-        ? MAX_SAFE_LIMIT // to ensure memory does not go out of space
-        : +req.query.limit
-      : DEFAULT_LIMIT;
+  // Parse and validate items per page, considering maximum allowed items
+  const requestedItemsPerPage =
+    req.query.limit && !isNaN(Number(req.query.limit)) ? +req.query.limit : DEFAULT_ITEMS_PER_PAGE;
+  const itemsPerPage = Math.min(requestedItemsPerPage, MAX_ALLOWED_ITEMS, MAX_SAFE_ITEMS_LIMIT);
 
+  // Extract and validate sort fields
   const sortFields = getSortFields(req.query.sort);
 
+  // Retrieve total car count and paginated car data
   const [totalCarCount, foundCars] = await Promise.all([
     countCars(queryFilters),
     findCars(queryFilters, { skip: (currentPage - 1) * itemsPerPage, limit: itemsPerPage }, sortFields),
@@ -186,16 +202,17 @@ export async function getCarsHandler(req: Request<{}, {}, {}, GetCarQueryInput['
   const hasNextPage = currentPage < totalPages;
   const nextPage = hasNextPage ? currentPage + 1 : null;
 
+  // Send the response
   res.status(StatusCodes.OK).json({
     status: 'success',
     data: {
       results: foundCars,
       pagination: {
         totalItems: totalCarCount,
-        totalPages: totalPages,
-        currentPage: currentPage,
-        nextPage: nextPage,
-        hasNextPage: hasNextPage,
+        totalPages,
+        currentPage,
+        nextPage,
+        hasNextPage,
       },
     },
   });
@@ -209,16 +226,16 @@ export async function getCarHandler(req: Request<ReadCarInput['params']>, res: R
     {
       populate: [
         {
-          path: 'vendor.value',
+          path: POPULATE_VENDOR_VALUE_PATH,
         },
         {
-          path: 'brand.value',
+          path: POPULATE_BRAND_VALUE_PATH,
         },
         {
-          path: 'brandModel.value',
+          path: POPULATE_BRAND_MODEL_VALUE_PATH,
         },
         {
-          path: 'bodyStyle.value',
+          path: POPULATE_BODY_STYLE_VALUE_PATH,
         },
       ],
     },
