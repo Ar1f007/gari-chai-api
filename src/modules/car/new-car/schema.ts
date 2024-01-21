@@ -47,15 +47,19 @@ const payload = {
 
     numOfDoors: z.number(),
 
-    fuel: z.object({
-      typeInfo: z.object({
-        label: z.string(),
-        value: z.object({
-          type: z.string(),
-          fullForm: z.string(),
+    fuel: z
+      .array(
+        z.object({
+          label: z.string(),
+          value: z.object({
+            fuelType: z.string(),
+            fullForm: z.string(),
+          }),
         }),
+      )
+      .refine((data) => data.length > 0, {
+        message: 'Fuel type is not provided',
       }),
-    }),
 
     colors: z.array(
       z.object({
@@ -137,6 +141,8 @@ const payload = {
         invalid_type_error: "That's not a date!",
       }),
     ),
+
+    metaData: z.record(z.string().min(1), z.any()).optional().default({}),
   }),
 };
 

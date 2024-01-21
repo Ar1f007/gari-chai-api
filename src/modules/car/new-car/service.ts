@@ -27,7 +27,7 @@ export async function findCars(
 export async function findAndUpdateCar(
   query: FilterQuery<CarDocument>,
   update: UpdateQuery<CarDocument>,
-  options: QueryOptions = {},
+  options: QueryOptions<CarDocument> = {},
 ) {
   return Car.findOneAndUpdate(query, update, options);
 }
@@ -35,9 +35,9 @@ export async function findAndUpdateCar(
 export async function findAndUpdateManyCar(
   query: FilterQuery<CarDocument>,
   update: UpdateQuery<CarDocument>,
-  options: QueryOptions = {},
+  // options: QueryOptions<CarDocument> = {},
 ) {
-  return Car.updateMany(query, update, options);
+  return Car.updateMany(query, update);
 }
 
 export async function deleteCar(query: FilterQuery<CarDocument>) {

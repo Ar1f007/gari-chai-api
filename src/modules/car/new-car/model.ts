@@ -92,19 +92,15 @@ const carSchema = new mongoose.Schema(
       required: true,
     },
 
-    fuel: {
-      typeInfo: {
+    fuel: [
+      {
         label: String,
         value: {
-          type: {
-            type: String,
-          },
-          fullForm: {
-            type: String,
-          },
+          fuelType: String,
+          fullForm: String,
         },
       },
-    },
+    ],
 
     imageUrls: {
       type: [
@@ -273,6 +269,19 @@ const carSchema = new mongoose.Schema(
         },
       ],
       default: [],
+    },
+
+    metaData: {
+      type: mongoose.Schema.Types.Mixed,
+      default: {},
+      validate: {
+        validator: function (v: Record<string, any>) {
+          const sizeInBytes = Buffer.from(JSON.stringify(v)).length;
+          return sizeInBytes <= 8192; // 8 KB limit
+        },
+        message: 'Metadata size exceeds the maximum limit of 8 KB.',
+      },
+      required: false,
     },
   },
   {
