@@ -67,8 +67,9 @@ export async function findReviewsWithStats(carId: string): Promise<TReviewsWithS
               {
                 userInfo: {
                   _id: '$userInfo._id',
-                  name: '$userInfo.name',
-                  image: '$userInfo.photo',
+                  firstName: '$userInfo.firstName',
+                  lastName: '$userInfo.lastName',
+                  profilePicture: '$userInfo.profilePicture',
                 },
               },
             ],

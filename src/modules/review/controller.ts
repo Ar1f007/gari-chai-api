@@ -28,9 +28,6 @@ export async function createReviewHandler(req: Request<{}, {}, CreateNewReviewIn
 
 export async function getReviewsHandler(req: Request<ReadReviewsByCarInput>, res: Response) {
   const reviewsStats = await findReviewsWithStats(req.params.carId);
-
-  await findReviewsWithStats(req.params.carId);
-
   res.status(StatusCodes.OK).json({
     status: 'success',
     data: {
