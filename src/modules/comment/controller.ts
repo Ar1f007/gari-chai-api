@@ -5,6 +5,8 @@ import { createComment, findComment, findComments } from './service';
 import AppError from '../../utils/appError';
 import { ZodError } from 'zod';
 import { UserDocument } from '../user/model';
+import mongoose from 'mongoose';
+import { POPULATE_USER_BASIC_INFO } from '../../constants';
 
 export async function createCommentHandler(req: Request<{}, {}, CreateCommentInputs>, res: Response) {
   const { isChild, car, content, user, parentId } = req.body;
@@ -56,7 +58,7 @@ export async function createCommentHandler(req: Request<{}, {}, CreateCommentInp
 export async function getCommentsHandler(req: Request<GetCommentsInputs['params'], {}, {}>, res: Response) {
   const results = await findComments(
     {
-      car: req.params.id,
+      car: new mongoose.Types.ObjectId(req.params.id),
       parentId: { $exists: false },
     },
     {
@@ -65,7 +67,7 @@ export async function getCommentsHandler(req: Request<GetCommentsInputs['params'
       populate: [
         {
           path: 'user',
-          select: 'name image',
+          select: POPULATE_USER_BASIC_INFO,
         },
         {
           path: 'children',
@@ -73,7 +75,7 @@ export async function getCommentsHandler(req: Request<GetCommentsInputs['params'
           populate: [
             {
               path: 'user',
-              select: 'name image',
+              select: POPULATE_USER_BASIC_INFO,
             },
           ],
         },
