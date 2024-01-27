@@ -189,6 +189,19 @@ const query = {
       limit: z.string(),
       model: z.string(),
       name: z.string(),
+      seats: z.string().refine(
+        (val) => {
+          if (val.includes(',')) {
+            const values = val.split(',');
+            return values.every((num) => !isNaN(Number(num)));
+          }
+
+          return !isNaN(Number(val));
+        },
+        {
+          message: 'Number of seats should be of type number',
+        },
+      ),
       page: z.string(),
       query: z.string(),
       scope: z.enum(['new-car', 'used-car', 'global']),
