@@ -22,8 +22,6 @@ const searchRouter = express.Router();
 searchRouter.get('/new', validateResource(getCarQuerySchema), getCarsHandler);
 
 searchRouter.get('/', async (req: Request<{}, {}, {}, QueryParams>, res: Response) => {
-  let query: Record<string, any> = {};
-
   const conditions: Record<string, any>[] = [];
 
   if (req.query.brand) {
