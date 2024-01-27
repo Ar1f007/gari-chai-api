@@ -19,14 +19,13 @@ import { deleteSettingItem } from '../../home-settings';
 import slugify from 'slugify';
 import { updateVendorCarCollectionCount } from '../../vendors/service';
 import {
-  CAR_MODEL_BRAND_VALUE_KEY,
+  CAR_MODEL_BODY_STYLE_PATH,
+  CAR_MODEL_BRAND_MODEL_PATH,
+  CAR_MODEL_BRAND_PATH,
   CAR_MODEL_LAUNCHED_AT_KEY,
   CAR_MODEL_NAME_KEY,
-  CAR_MODEL_TAGS_VALUE_KEY,
-  POPULATE_BODY_STYLE_VALUE_PATH,
-  POPULATE_BRAND_MODEL_VALUE_PATH,
-  POPULATE_BRAND_VALUE_PATH,
-  POPULATE_VENDOR_VALUE_PATH,
+  CAR_MODEL_TAGS_PATH,
+  CAR_MODEL_VENDOR_PATH,
   SORT_FIELD_SEPARATOR,
 } from '../../../constants';
 
@@ -54,7 +53,7 @@ function getLaunchStatus(query: GetCarQueryInput['query']['launchedAt']) {
 
   return query.split('.');
 }
-function getQueryFilters(query: GetCarQueryInput['query']): Record<string, any> {
+function buildSearchFilters(query: GetCarQueryInput['query']): Record<string, any> {
   const filters: Record<string, any> = {};
 
   if (query.name) {
@@ -70,11 +69,11 @@ function getQueryFilters(query: GetCarQueryInput['query']): Record<string, any> 
       tagValues = [query.tags];
     }
 
-    filters[CAR_MODEL_TAGS_VALUE_KEY] = { $in: tagValues };
+    filters[CAR_MODEL_TAGS_PATH] = { $in: tagValues };
   }
 
   if (query.brand) {
-    filters[CAR_MODEL_BRAND_VALUE_KEY] = query.brand;
+    filters[CAR_MODEL_BRAND_PATH] = query.brand;
   }
 
   // determine which cars to show
@@ -95,7 +94,7 @@ function getQueryFilters(query: GetCarQueryInput['query']): Record<string, any> 
   return filters;
 }
 
-function formatSortOption(str: string): string {
+function formatSortField(str: string): string {
   const [column, order] = str.split(SORT_FIELD_SEPARATOR);
 
   return order === 'asc' ? column : `-${column}`;
@@ -107,7 +106,7 @@ function getSortFields(sortQuery: GetCarQueryInput['query']['sort']): string {
   if (!sortQuery) return defaultSortStr;
 
   if (typeof sortQuery === 'string') {
-    const formattedStr = formatSortOption(sortQuery);
+    const formattedStr = formatSortField(sortQuery);
 
     return formattedStr;
   }
@@ -116,7 +115,7 @@ function getSortFields(sortQuery: GetCarQueryInput['query']['sort']): string {
     const options: string[] = [];
 
     for (let i = 0; i < sortQuery.length; i++) {
-      const formattedStr = formatSortOption(sortQuery[i]);
+      const formattedStr = formatSortField(sortQuery[i]);
 
       options.push(formattedStr);
     }
@@ -176,8 +175,8 @@ export async function getCarsHandler(req: Request<{}, {}, {}, GetCarQueryInput['
   const MAX_SAFE_ITEMS_LIMIT = 500; // Maximum items to return if requested exceeds the limit
 
   // Extract and process query filters
-  const queryFilters = getQueryFilters(req.query);
-
+  const queryFilters = buildSearchFilters(req.query);
+  console.log(queryFilters);
   // Parse and validate the current page number
   const currentPage = (req.query.page && !isNaN(Number(req.query.page)) && +req.query.page) || DEFAULT_PAGE_NUMBER;
 
@@ -226,16 +225,16 @@ export async function getCarHandler(req: Request<ReadCarInput['params']>, res: R
     {
       populate: [
         {
-          path: POPULATE_VENDOR_VALUE_PATH,
+          path: CAR_MODEL_VENDOR_PATH,
         },
         {
-          path: POPULATE_BRAND_VALUE_PATH,
+          path: CAR_MODEL_BRAND_PATH,
         },
         {
-          path: POPULATE_BRAND_MODEL_VALUE_PATH,
+          path: CAR_MODEL_BRAND_MODEL_PATH,
         },
         {
-          path: POPULATE_BODY_STYLE_VALUE_PATH,
+          path: CAR_MODEL_BODY_STYLE_PATH,
         },
       ],
     },

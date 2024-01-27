@@ -170,23 +170,32 @@ const params = {
 };
 
 const query = {
-  query: z.object({
-    name: z.string().optional(),
-    brand: z.string().optional(),
-    tags: z.string().optional(),
-    page: z.string().optional(),
-    limit: z.string().optional(),
-    launchedDate: z.coerce
-      .date({
+  query: z
+    .object({
+      bodyType: z.string(),
+      brand: z.string(),
+      budget: z.string(),
+      car: z.enum(['new', 'used']),
+      city: z.string(),
+
+      launchedAt: z
+        .union([z.enum(['past', 'future']), z.literal('past.future').or(z.literal('future.past'))])
+        .default('past'),
+
+      launchedDate: z.coerce.date({
         invalid_type_error: 'launchedBeforeOrEqual Requires a date string',
-      })
-      .optional(),
-    launchedAt: z
-      .union([z.enum(['past', 'future']), z.literal('past.future').or(z.literal('future.past'))])
-      .default('past')
-      .optional(),
-    sort: sortSchema.optional(),
-  }),
+      }),
+
+      limit: z.string(),
+      model: z.string(),
+      name: z.string(),
+      page: z.string(),
+      query: z.string(),
+      scope: z.enum(['new-car', 'used-car', 'global']),
+      sort: sortSchema,
+      tags: z.string(),
+    })
+    .partial(),
 };
 
 export const createNewCarSchema = z.object({
