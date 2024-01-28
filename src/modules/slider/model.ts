@@ -47,9 +47,36 @@ const sliderSchema = new mongoose.Schema(
       type: String,
       enum: ['mobile', 'desktop'],
     },
+
+    isSponsored: {
+      type: Boolean,
+      default: false,
+    },
+
+    metadata: {
+      type: mongoose.Schema.Types.Mixed,
+      required: false,
+      default: {},
+    },
+
+    sliderStyle: {
+      type: {
+        textColor: {
+          type: String,
+          default: '',
+        },
+        bgColor: {
+          type: String,
+          default: '',
+        },
+      },
+      default: {},
+      required: false,
+    },
   },
   {
     timestamps: true,
+    strict: false,
   },
 );
 

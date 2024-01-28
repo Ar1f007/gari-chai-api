@@ -115,6 +115,18 @@ const carSchema = new mongoose.Schema(
       default: [],
     },
 
+    panoramaImages: {
+      type: [
+        {
+          originalUrl: String,
+          thumbnailUrl: String,
+          title: String,
+        },
+      ],
+      required: false,
+      default: [],
+    },
+
     colors: {
       type: [
         {
@@ -269,6 +281,11 @@ const carSchema = new mongoose.Schema(
         },
       ],
       default: [],
+    },
+
+    isVerified: {
+      type: Boolean,
+      default: false,
     },
 
     metaData: {

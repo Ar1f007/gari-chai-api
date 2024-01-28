@@ -101,6 +101,10 @@ const payload = {
 
     imageUrls: z.array(imageSchema).optional(),
 
+    panoramaImages: z.array(imageSchema.extend({ title: z.string() })).optional(),
+
+    isVerified: z.boolean().optional(),
+
     videos: z
       .array(
         z.object({
