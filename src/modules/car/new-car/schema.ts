@@ -170,23 +170,58 @@ const params = {
 };
 
 const query = {
-  query: z.object({
-    name: z.string().optional(),
-    brand: z.string().optional(),
-    tags: z.string().optional(),
-    page: z.string().optional(),
-    limit: z.string().optional(),
-    launchedDate: z.coerce
-      .date({
+  query: z
+    .object({
+      bodyType: z.string(),
+      brand: z.string(),
+      budget: z.string().refine(
+        (val) => {
+          if (!val.includes('-')) return false;
+
+          const values = val.split('-');
+
+          return values.every((num) => !isNaN(Number(num)));
+        },
+        {
+          message: "Invalid budget type, value must be separated by '-', and range value should be of type number",
+        },
+      ),
+      car: z.enum(['new', 'used']),
+      city: z.string(),
+
+      fuelType: z.string(),
+
+      launchedAt: z
+        .union([z.enum(['past', 'future']), z.literal('past.future').or(z.literal('future.past'))])
+        .default('past'),
+
+      launchedDate: z.coerce.date({
         invalid_type_error: 'launchedBeforeOrEqual Requires a date string',
-      })
-      .optional(),
-    launchedAt: z
-      .union([z.enum(['past', 'future']), z.literal('past.future').or(z.literal('future.past'))])
-      .default('past')
-      .optional(),
-    sort: sortSchema.optional(),
-  }),
+      }),
+
+      limit: z.string().refine((val) => !isNaN(Number(val)), { message: 'Page limit should be of type number' }),
+      model: z.string(),
+      name: z.string(),
+      seats: z.string().refine(
+        (val) => {
+          if (val.includes(',')) {
+            const values = val.split(',');
+            return values.every((num) => !isNaN(Number(num)));
+          }
+
+          return !isNaN(Number(val));
+        },
+        {
+          message: 'Number of seats should be of type number',
+        },
+      ),
+      page: z.string().refine((val) => !isNaN(Number(val)), { message: 'Page value should be of type number' }),
+      query: z.string(),
+      scope: z.enum(['new-car', 'used-car', 'global']),
+      sort: sortSchema,
+      tags: z.string(),
+    })
+    .partial(),
 };
 
 export const createNewCarSchema = z.object({

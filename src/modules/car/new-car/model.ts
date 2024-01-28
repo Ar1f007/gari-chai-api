@@ -303,6 +303,18 @@ carSchema.pre('save', async function (next) {
   return next();
 });
 
+carSchema.index({ 'bodyStyle.value': 1 });
+carSchema.index({ 'brand.label': 1 });
+carSchema.index({ 'brandModel.value': 1 });
+carSchema.index({ 'fuel.value.fuelType': 1 });
+carSchema.index({ 'price.min': 1, 'price.max': 1 });
+carSchema.index({ 'tags.value': 1 });
+carSchema.index({ launchedAt: 1 });
+carSchema.index({ name: 1 });
+carSchema.index({ numOfDoors: 1 });
+carSchema.index({ seatingCapacity: 1 });
+carSchema.index({ transmission: 'text' });
+
 const Car = mongoose.model<CarDocument>('Car', carSchema);
 
 export default Car;
