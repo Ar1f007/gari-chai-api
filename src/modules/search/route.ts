@@ -31,8 +31,8 @@ searchRouter.get(
       const [min, max] = (req.query.budget as string).split('-');
 
       conditions.push({
-        'price.min': { $gte: parseInt(min) },
-        'price.max': { $lte: parseInt(max) },
+        'price.min': { $gte: +min },
+        'price.max': { $lte: +max },
       });
     }
 
@@ -40,12 +40,22 @@ searchRouter.get(
       conditions.push({ name: { $regex: new RegExp(req.query.query, 'i') } });
     }
 
-    // { seats: '2,3,4,5', car: 'new' }
     if (req.query.seats) {
       const seatValues = req.query.seats.split(',').filter(Boolean).map(Number);
       conditions.push({ seatingCapacity: { $in: seatValues } });
-      // conditions.push({ seatingCapacity: $or: [] });
     }
+
+    if (req.query.fuelType) {
+      const fuelTypeValues = req.query.fuelType.split(',').filter(Boolean);
+      conditions.push({
+        fuel: {
+          $elemMatch: {
+            'value.fuelType': { $in: fuelTypeValues },
+          },
+        },
+      });
+    }
+
     // Pagination
     const page = req.query.page ? parseInt(req.query.page) || 1 : 1;
     const limit = req.query.limit ? parseInt(req.query.limit) || 10 : 10;
@@ -55,7 +65,7 @@ searchRouter.get(
     // if car type is `new` then search in Car collection
     // if the type is `used` then search in the Used car collection
 
-    if (req.query.car && req.query.car === 'new') {
+    if (req.query.car && req.query.car === 'new' && req.query.scope !== 'global') {
       const [totalResults, results] = await Promise.all([
         Car.countDocuments({ $or: conditions }),
         Car.find({ $or: conditions }).skip(skip).limit(limit),
@@ -81,7 +91,7 @@ searchRouter.get(
       });
     }
 
-    if (req.query.car && req.query.car === 'used') {
+    if (req.query.car && req.query.car === 'used' && req.query.scope !== 'global') {
       return res.status(StatusCodes.OK).json({
         status: 'success',
         data: {
