@@ -176,7 +176,6 @@ export async function getCarsHandler(req: Request<{}, {}, {}, GetCarQueryInput['
 
   // Extract and process query filters
   const queryFilters = buildSearchFilters(req.query);
-  console.log(queryFilters);
   // Parse and validate the current page number
   const currentPage = (req.query.page && !isNaN(Number(req.query.page)) && +req.query.page) || DEFAULT_PAGE_NUMBER;
 
