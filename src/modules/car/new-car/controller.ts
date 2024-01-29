@@ -217,7 +217,6 @@ export async function getCarsHandler(req: Request<{}, {}, {}, GetCarQueryInput['
 }
 
 export async function getCarHandler(req: Request<ReadCarInput['params']>, res: Response) {
-  console.log('new request', Date.now());
   const carSlug = req.params.carSlug;
 
   const car = await findCar(
