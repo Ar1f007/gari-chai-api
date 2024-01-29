@@ -7,6 +7,18 @@ export const createSliderSchema = z.object({
   showTitle: z.boolean(),
   status: z.enum(['active', 'hidden']).optional().default('active'),
   type: z.enum(['mobile', 'desktop']),
+  isSponsored: z.boolean().default(false).optional(),
+  metadata: z.record(z.string().min(1), z.any()).optional().default({}),
+  sliderStyle: z
+    .object({
+      textColor: z.string().default(''),
+      bgColor: z.string().default(''),
+    })
+    .optional()
+    .default({
+      textColor: '',
+      bgColor: '',
+    }),
 });
 
 const params = {

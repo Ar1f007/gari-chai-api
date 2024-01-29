@@ -29,6 +29,11 @@ const carBodyTypeSchema = new mongoose.Schema(
         required: false,
       },
     },
+    carCollectionCount: {
+      type: Number,
+      required: false,
+      default: 0,
+    },
   },
   {
     timestamps: true,

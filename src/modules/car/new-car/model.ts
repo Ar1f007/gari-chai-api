@@ -105,9 +105,29 @@ const carSchema = new mongoose.Schema(
     imageUrls: {
       type: [
         {
-          type: {
-            originalUrl: String,
-            thumbnailUrl: String,
+          key: String,
+          url: {
+            type: {
+              originalUrl: String,
+              thumbnailUrl: String,
+            },
+          },
+        },
+      ],
+      required: false,
+      default: [],
+    },
+
+    panoramaImages: {
+      type: [
+        {
+          key: String,
+          title: String,
+          url: {
+            type: {
+              originalUrl: String,
+              thumbnailUrl: String,
+            },
           },
         },
       ],
@@ -269,6 +289,11 @@ const carSchema = new mongoose.Schema(
         },
       ],
       default: [],
+    },
+
+    isVerified: {
+      type: Boolean,
+      default: false,
     },
 
     metaData: {

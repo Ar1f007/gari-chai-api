@@ -99,7 +99,26 @@ const payload = {
       thumbnailUrl: z.string().url(),
     }),
 
-    imageUrls: z.array(imageSchema).optional(),
+    imageUrls: z
+      .array(
+        z.object({
+          key: z.string(),
+          url: imageSchema,
+        }),
+      )
+      .optional(),
+
+    panoramaImages: z
+      .array(
+        z.object({
+          key: z.string(),
+          title: z.string(),
+          url: imageSchema,
+        }),
+      )
+      .optional(),
+
+    isVerified: z.boolean().optional(),
 
     videos: z
       .array(

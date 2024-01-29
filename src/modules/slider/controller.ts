@@ -49,6 +49,9 @@ export async function updateSliderHandler(req: Request<SliderId, {}, UpdateSlide
     status: req.body.status,
     type: req.body.type,
     link: req.body.link,
+    sliderStyle: req.body.sliderStyle || { bgColor: '', textColor: '' },
+    metadata: req.body.metadata || {},
+    isSponsored: req.body.isSponsored || false,
   };
 
   const updatedSlider = await updateSlider(slider.id, payload);
