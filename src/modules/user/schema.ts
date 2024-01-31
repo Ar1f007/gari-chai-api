@@ -6,8 +6,8 @@ import { phoneNumberSchema } from '../../utils/helperSchema';
  */
 
 const isStrongPassword = (value: string): boolean => {
-  // Strong password criteria: at least 8 characters, one lowercase letter, one uppercase letter, one digit, and one special character
-  const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#]).{8,}$/;
+  // Strong password criteria: Minimum 8 characters, at least one lowercase letter, one uppercase letter, and one digit
+  const regex = /^(?=.*[a-zA-Z])(?=.*\d).{8,}$/;
   return regex.test(value);
 };
 
@@ -19,7 +19,7 @@ export const signupUserBasicInfo = z.object({
 export const signupPasswordSchema = z.object({
   password: z.string().refine((value) => isStrongPassword(value), {
     message:
-      'Password must be at least 8 characters long and include at least one lowercase letter, one uppercase letter, one digit, and one special character (@,#,$ etc.)',
+      'Password must be at least 8 characters long and include at least one lowercase letter, one uppercase letter, one digit',
   }),
 });
 
