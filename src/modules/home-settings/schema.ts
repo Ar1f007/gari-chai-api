@@ -17,6 +17,7 @@ const homeSettingSchema = z.object({
   content: z.any(),
   tags: z.array(z.string()).optional(),
   sort: z.number().default(0),
+  metaData: z.record(z.string().min(1), z.unknown()).optional().default({}),
 });
 
 const payload = {

@@ -13,6 +13,9 @@ export interface CommentDocument extends Document {
   };
   depth: number;
   reports: number;
+  metaData?: {
+    [key: string]: unknown;
+  };
   createdAt: Date;
   updatedAt: Date;
 }
@@ -35,6 +38,18 @@ const commentSchema = new Schema(
       type: Schema.ObjectId,
       default: undefined,
       index: true,
+    },
+    metaData: {
+      type: mongoose.Schema.Types.Mixed,
+      default: {},
+      validate: {
+        validator: function (v: Record<string, unknown>) {
+          const sizeInBytes = Buffer.from(JSON.stringify(v)).length;
+          return sizeInBytes <= 8192; // 8 KB limit
+        },
+        message: 'Metadata size exceeds the maximum limit of 8 KB.',
+      },
+      required: false,
     },
   },
   {

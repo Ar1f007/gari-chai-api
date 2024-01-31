@@ -28,6 +28,8 @@ const payload = z.object({
   address: z.optional(z.string()),
 
   image: imageSchema.optional(),
+
+  metaData: z.record(z.string().min(1), z.unknown()).optional().default({}),
 });
 
 export const addVendorSchema = z.object({
