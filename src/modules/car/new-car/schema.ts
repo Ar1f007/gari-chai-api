@@ -161,7 +161,7 @@ const payload = {
       }),
     ),
 
-    metaData: z.record(z.string().min(1), z.any()).optional().default({}),
+    metaData: z.record(z.string().min(1), z.unknown()).optional().default({}),
   }),
 };
 

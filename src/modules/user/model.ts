@@ -120,7 +120,7 @@ const userSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.Mixed,
       default: {},
       validate: {
-        validator: function (v: Record<string, any>) {
+        validator: function (v: Record<string, unknown>) {
           const sizeInBytes = Buffer.from(JSON.stringify(v)).length;
           return sizeInBytes <= 8192; // 8 KB limit
         },

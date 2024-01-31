@@ -10,6 +10,7 @@ const payload = {
       .refine((val) => val >= 1 && val <= 5, { message: 'Rating should be between 1 to 5' }),
     userId: z.string().min(1, 'Required'),
     carId: z.string().min(1, 'Required'),
+    metaData: z.record(z.string().min(1), z.unknown()).optional().default({}),
   }),
 };
 

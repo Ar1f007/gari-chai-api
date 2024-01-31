@@ -19,7 +19,7 @@ export const signupUserBasicInfo = z.object({
 export const signupPasswordSchema = z.object({
   password: z.string().refine((value) => isStrongPassword(value), {
     message:
-      'Password must be at least 8 characters long and include at least one lowercase letter, one uppercase letter, one digit, and one special character',
+      'Password must be at least 8 characters long and include at least one lowercase letter, one uppercase letter, one digit, and one special character (@,#,$ etc.)',
   }),
 });
 

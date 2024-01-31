@@ -5,6 +5,9 @@ import slugify from 'slugify';
 export interface BrandDocument extends CreateNewBrandInputs, mongoose.Document {
   slug: string;
   carCollectionCount: number;
+  metaData?: {
+    [key: string]: unknown;
+  };
   createdAt: Date;
   updatedAt: Date;
 }
@@ -31,6 +34,17 @@ const brandSchema = new mongoose.Schema(
     carCollectionCount: {
       type: Number,
       default: 0,
+    },
+    metaData: {
+      type: mongoose.Schema.Types.Mixed,
+      default: {},
+      validate: {
+        validator: function (v: Record<string, unknown>) {
+          const sizeInBytes = Buffer.from(JSON.stringify(v)).length;
+          return sizeInBytes <= 8192; // 8 KB limit
+        },
+        message: 'Metadata size exceeds the maximum limit of 8 KB.',
+      },
     },
   },
   {

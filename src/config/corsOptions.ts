@@ -5,6 +5,9 @@ const whitelist = [
   'https://gari-chai-admin.vercel.app',
   'http://localhost:3000',
   'http://localhost:8080',
+  'https://www.garichaibd.com',
+  'www.garichaibd.com',
+  'garichaibd.com',
 ];
 
 export const corsOptions: CorsOptions = {
