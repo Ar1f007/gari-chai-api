@@ -188,6 +188,10 @@ export type UserDocument = InferSchemaType<typeof userSchema> & {
   isValidPassword(enteredPassword: string): Promise<boolean>;
 } & mongoose.Document;
 
+userSchema.index({ 'local.email': 1 });
+userSchema.index({ 'local.phone': 1 });
+userSchema.index({ 'social.providers.provider': 1, 'social.providers.email': 1 }, { sparse: true, unique: true });
+
 const User = mongoose.model<UserDocument>('User', userSchema);
 
 export default User;
