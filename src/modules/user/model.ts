@@ -42,6 +42,14 @@ const userSchema = new mongoose.Schema(
       enum: ['user', 'admin', 'super-admin', 'moderator', 'editor', 'support'],
       default: ['user'],
     },
+
+    additionalInfo: {
+      type: {
+        phone: String,
+        email: String,
+      },
+      required: false,
+    },
     address: {
       type: String,
     },
