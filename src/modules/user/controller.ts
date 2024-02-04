@@ -8,7 +8,7 @@ import { removeCookie } from '../../utils/removeCookie';
 import { findAndUpdateUser, findUser } from './services';
 import AppError from '../../utils/appError';
 import bcrypt from 'bcrypt';
-import { SendOTPInputs, VerifyOTPInputs } from './schema';
+import { SendOTPInputs, UpdateBasicInfo, VerifyOTPInputs } from './schema';
 import { sendOTP } from '../../utils/sendOTP';
 import { LOCAL_EMAIL_FIELD, LOCAL_PHONE_FIELD } from '../../constants';
 
@@ -250,4 +250,43 @@ export async function verifyOTPHandler(req: Request<{}, {}, VerifyOTPInputs>, re
     status: 'error',
     message: 'Invalid code',
   });
+}
+
+export async function updateBasicInfoHandler(req: Request<{}, {}, UpdateBasicInfo['body']>, res: Response) {
+  const {
+    firstName,
+    lastName,
+    additionalInfo: { email, phone },
+    address,
+  } = req.body;
+
+  const userId = (req.user as UserDocument).id;
+
+  const user = await findAndUpdateUser(
+    {
+      _id: userId,
+    },
+    {
+      firstName,
+      lastName,
+      address,
+      additionalInfo: {
+        email,
+        phone,
+      },
+    },
+    {
+      new: true,
+    },
+  );
+
+  return res.status(StatusCodes.OK).json({
+    status: user ? 'success' : 'fail',
+    data: user ? sanitizeUser(user) : null,
+    message: user ? 'Updated successfully' : 'Something went wrong, Could not update the info',
+  });
+}
+
+export async function updatePasswordHandler(req: Request, res: Response) {
+  res.status(StatusCodes.OK);
 }

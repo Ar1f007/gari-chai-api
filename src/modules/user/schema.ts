@@ -72,7 +72,50 @@ export const sendOTPSchema = z.object({
   }),
 });
 
+export const updateUserBasicInfoSchema = z.object({
+  body: signupUserBasicInfo.merge(
+    z.object({
+      additionalInfo: z.object({
+        phone: z.optional(
+          z.string().refine(
+            (val) => {
+              if (val.length > 0) {
+                return phoneNumberSchema.safeParse(val).success;
+              }
+
+              return true;
+            },
+            { message: 'Please enter a valid Bangladeshi phone number' },
+          ),
+        ),
+        email: z.string().refine(
+          (val) => {
+            if (val.length > 0) {
+              return z.string().email().safeParse(val).success;
+            } else {
+              return true;
+            }
+          },
+          {
+            message: 'Please enter a valid email address',
+          },
+        ),
+      }),
+      address: z.string().optional(),
+    }),
+  ),
+});
+
+export const changePasswordSchema = z.object({
+  body: z.object({
+    oldPassword: z.string().min(1, 'Old password is required'),
+    newPassword: signupPasswordSchema.shape.password,
+  }),
+});
+
 export type SignupWithEmailSchema = z.infer<typeof signupWithEmailSchema>;
 export type SignupWithPhoneSchema = z.infer<typeof signupWithPhoneSchema>;
 export type VerifyOTPInputs = z.infer<typeof verifyOTPSchema>['body'];
 export type SendOTPInputs = z.infer<typeof sendOTPSchema>['body'];
+export type UpdateBasicInfo = z.infer<typeof updateUserBasicInfoSchema>;
+export type ChangePasswordSchema = z.infer<typeof changePasswordSchema>;
