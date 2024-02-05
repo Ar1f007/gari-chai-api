@@ -1,9 +1,7 @@
 import mongoose, { InferSchemaType } from 'mongoose';
 import bcrypt from 'bcrypt';
 import crypto from 'crypto';
-
-const SALT_ROUNDS = 10;
-const TEN_MINUTES_IN_MS = 10 * 60 * 1000;
+import { SALT_ROUNDS, TEN_MINUTES_IN_MS } from '../../constants';
 
 const userSchema = new mongoose.Schema(
   {

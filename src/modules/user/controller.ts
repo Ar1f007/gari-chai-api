@@ -8,7 +8,7 @@ import { removeCookie } from '../../utils/removeCookie';
 import { findAndUpdateUser, findUser } from './services';
 import AppError from '../../utils/appError';
 import bcrypt from 'bcrypt';
-import { SendOTPInputs, UpdateBasicInfo, VerifyOTPInputs } from './schema';
+import { ChangePasswordSchema, SendOTPInputs, UpdateBasicInfo, VerifyOTPInputs } from './schema';
 import { sendOTP } from '../../utils/sendOTP';
 import { LOCAL_EMAIL_FIELD, LOCAL_PHONE_FIELD } from '../../constants';
 
@@ -287,6 +287,38 @@ export async function updateBasicInfoHandler(req: Request<{}, {}, UpdateBasicInf
   });
 }
 
-export async function updatePasswordHandler(req: Request, res: Response) {
-  res.status(StatusCodes.OK);
+export async function updatePasswordHandler(req: Request<{}, {}, ChangePasswordSchema['body']>, res: Response) {
+  const { newPassword, oldPassword } = req.body;
+  const userId = (req.user as UserDocument).id;
+
+  const user = await findUser(
+    {
+      _id: userId,
+    },
+    {
+      lean: false,
+    },
+  );
+
+  if (!user) throw new AppError('No user found', StatusCodes.BAD_REQUEST);
+
+  const isOldPasswordValid = await user.isValidPassword(oldPassword);
+
+  if (!isOldPasswordValid) {
+    return res.status(StatusCodes.UNPROCESSABLE_ENTITY).json({
+      status: 'fail',
+      message: 'Incorrect old password',
+    });
+  }
+
+  user.local!.password = newPassword;
+  user.passwordChangedAt = new Date();
+
+  await user.save();
+
+  res.status(StatusCodes.OK).json({
+    status: 'success',
+    message: 'Password changed successfully',
+    data: sanitizeUser(user),
+  });
 }
