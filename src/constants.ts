@@ -1,6 +1,9 @@
 export const AUTH_TOKEN_NAME = 'X_GARI_CHAI_TOKEN';
 export const API_DOMAIN = 'gari-chai.onrender.com';
 
+export const SALT_ROUNDS = 10;
+export const TEN_MINUTES_IN_MS = 10 * 60 * 1000;
+
 // QUERY PARAMS
 export const SORT_FIELD_SEPARATOR = ':';
 

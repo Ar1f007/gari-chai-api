@@ -49,6 +49,7 @@ passport.use(
         if (!user) {
           return done(null, false, { message: 'Invalid credentials.' });
         }
+
         const isPasswordValid = await user.isValidPassword(password);
 
         if (!isPasswordValid) {

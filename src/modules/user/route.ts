@@ -6,10 +6,19 @@ import {
   logoutUserHandler,
   signupWithEmailHandler,
   signupWithPhoneHandler,
+  updateBasicInfoHandler,
+  updatePasswordHandler,
 } from './controller';
 import '../../config/passport';
 import { authenticated, validateResource } from '../../middleware';
-import { loginWithEmailSchema, loginWithPhoneSchema, signupWithEmailSchema, signupWithPhoneSchema } from './schema';
+import {
+  changePasswordSchema,
+  loginWithEmailSchema,
+  loginWithPhoneSchema,
+  signupWithEmailSchema,
+  signupWithPhoneSchema,
+  updateUserBasicInfoSchema,
+} from './schema';
 
 const userRouter = express.Router();
 
@@ -24,5 +33,14 @@ userRouter.post('/login/phone', validateResource(loginWithPhoneSchema), loginWit
 userRouter.get('/profile', authenticated, getProfile);
 
 userRouter.post('/logout', logoutUserHandler);
+
+userRouter.put(
+  '/update-basic-info',
+  validateResource(updateUserBasicInfoSchema),
+  authenticated,
+  updateBasicInfoHandler,
+);
+
+userRouter.patch('/update-password', validateResource(changePasswordSchema), authenticated, updatePasswordHandler);
 
 export default userRouter;
