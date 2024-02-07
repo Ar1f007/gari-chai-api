@@ -1,5 +1,7 @@
 import express from 'express';
 import {
+  deactivateUserHandler,
+  deleteUserHandler,
   getProfile,
   loginWithEmail,
   loginWithPhoneHandler,
@@ -42,5 +44,8 @@ userRouter.put(
 );
 
 userRouter.patch('/update-password', validateResource(changePasswordSchema), authenticated, updatePasswordHandler);
+
+userRouter.delete('/', authenticated, deleteUserHandler);
+userRouter.patch('/deactivate-account', authenticated, deactivateUserHandler);
 
 export default userRouter;

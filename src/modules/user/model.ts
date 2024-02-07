@@ -95,6 +95,7 @@ const userSchema = new mongoose.Schema(
         details: String,
       },
     ],
+
     accountDeactivationReason: String,
 
     isBanned: {
