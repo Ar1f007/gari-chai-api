@@ -1,16 +1,25 @@
-import User, { UserDocument } from './model';
-import passport from 'passport';
 import { NextFunction, Request, Response } from 'express';
+import passport from 'passport';
 import { StatusCodes } from 'http-status-codes';
-import { attachCookiesToResponse } from '../../utils/attachCookiesToResponse';
+import bcrypt from 'bcrypt';
 import { omit } from 'lodash';
+
+import User, { UserDocument } from './model';
+import CommentModel from '../comment/model';
+import ReviewModel from '../review/model';
+
+// Utilities
+import { attachCookiesToResponse } from '../../utils/attachCookiesToResponse';
 import { removeCookie } from '../../utils/removeCookie';
 import { findAndUpdateUser, findUser } from './services';
 import AppError from '../../utils/appError';
-import bcrypt from 'bcrypt';
-import { ChangePasswordSchema, SendOTPInputs, UpdateBasicInfo, VerifyOTPInputs } from './schema';
 import { sendOTP } from '../../utils/sendOTP';
+
+// Constants
 import { LOCAL_EMAIL_FIELD, LOCAL_PHONE_FIELD } from '../../constants';
+
+// Schemas
+import { ChangePasswordSchema, SendOTPInputs, UpdateBasicInfo, VerifyOTPInputs } from './schema';
 
 async function checkAndUpdateBanStatus(user: UserDocument) {
   if (user.isBanned && user.banExpiry && user.banExpiry <= new Date()) {
@@ -320,5 +329,64 @@ export async function updatePasswordHandler(req: Request<{}, {}, ChangePasswordS
     status: 'success',
     message: 'Password changed successfully',
     data: sanitizeUser(user),
+  });
+}
+
+/**
+ * Handles the deletion of a user account.
+ * Removes the user from the database permanently.
+ * Requires authentication to ensure the user has the privilege to delete their account.
+ *
+ * @param req - The request object containing user authentication and deletion data.
+ * @param res - The response object used to send the deletion result.
+ * @returns A promise that resolves to the deletion result.
+ */
+export async function deleteUserHandler(req: Request, res: Response) {
+  const userId = (req.user as UserDocument).id;
+
+  try {
+    const deleteUserPromise = User.findByIdAndDelete(userId);
+    // TODO: REMOVE USER ID FROM CHILD COMMENTS ARRAY
+    const deleteCommentsPromise = CommentModel.deleteMany({ user: userId });
+    const deleteReviewsPromise = ReviewModel.deleteMany({ userId: userId });
+
+    await Promise.all([deleteUserPromise, deleteCommentsPromise, deleteReviewsPromise]);
+
+    return res.status(StatusCodes.OK).json({
+      status: 'success',
+      message: 'User deleted successfully',
+    });
+  } catch (error) {
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      status: 'fail',
+      message: 'Something went wrong while trying to delete your account.',
+    });
+  }
+}
+
+/**
+ * Handles the deactivation of a user account.
+ * Marks the user's account as inactive without deleting it.
+ * Requires authentication to ensure the user has the privilege to deactivate their account.
+ *
+ * @param req - The request object containing user authentication and deactivation data.
+ * @param res - The response object used to send the deactivation result.
+ * @returns A promise that resolves to the deactivation result.
+ */
+export async function deactivateUserHandler(req: Request, res: Response) {
+  const userId = (req.user as UserDocument).id;
+
+  await findAndUpdateUser(
+    {
+      _id: userId,
+    },
+    {
+      isAccountActive: false,
+    },
+  );
+
+  return res.status(StatusCodes.OK).json({
+    status: 'success',
+    message: 'Account deactivated successfully',
   });
 }

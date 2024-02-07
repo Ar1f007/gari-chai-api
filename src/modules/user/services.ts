@@ -13,7 +13,7 @@ export async function findUser(query: FilterQuery<UserDocument>, options: QueryO
 export async function findAndUpdateUser(
   query: FilterQuery<UserDocument>,
   update: UpdateQuery<UserDocument>,
-  options: QueryOptions,
+  options: QueryOptions = {},
 ) {
   return User.findOneAndUpdate(query, update, options);
 }
