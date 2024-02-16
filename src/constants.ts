@@ -18,6 +18,10 @@ export const CAR_MODEL_TAGS_PATH = 'tags.value';
 export const CAR_MODEL_VENDOR_PATH = 'vendor.value';
 export const CAR_MODEL_BODY_STYLE_PATH = 'bodyStyle.value';
 
+export const CAR_MODEL_BRAND_LABEL_PATH = 'brand.label';
+export const CAR_MODEL_BRAND_MODEL_LABEL_PATH = 'brandModel.label';
+export const CAR_MODEL_BODY_STYLE_LABEL_PATH = 'bodyStyle.label';
+
 // COMMENT POPULATE PATH
 export const POPULATE_USER_BASIC_INFO = 'firstName lastName profilePicture';
 

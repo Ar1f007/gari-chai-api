@@ -9,6 +9,7 @@ import AppError from '../../utils/appError';
 
 import { findSettingContents } from '../home-settings';
 import { findAndUpdateManyCar } from '../car/new-car';
+import { CAR_MODEL_BRAND_LABEL_PATH, CAR_MODEL_BRAND_PATH } from '../../constants';
 
 export async function createBrandHandler(req: Request<{}, {}, CreateNewBrandInputs>, res: Response) {
   const slugifiedValue = slugify(req.body.name, {
@@ -94,7 +95,10 @@ export async function updateBrandHandler(
 
   // update the brand name of in car documents
   if (updatedBrand) {
-    findAndUpdateManyCar({ 'brand.id': updatedBrand.id }, { 'brand.name': updatedBrand.name });
+    findAndUpdateManyCar(
+      { [CAR_MODEL_BRAND_PATH]: updatedBrand.id },
+      { [CAR_MODEL_BRAND_LABEL_PATH]: updatedBrand.name },
+    );
   }
 
   res.status(StatusCodes.OK).json({

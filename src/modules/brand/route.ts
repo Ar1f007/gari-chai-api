@@ -26,4 +26,4 @@ brandRouter.get('/all-with-popular', getAllAndPopularBrandsHandler); // used in 
 brandRouter
   .route('/:brandSlug')
   .get(validateResource(getBrandSchema), getBrandHandler)
-  .put(validateResource(updateBrandSchema), updateBrandHandler);
+  .patch(validateResource(updateBrandSchema), updateBrandHandler);

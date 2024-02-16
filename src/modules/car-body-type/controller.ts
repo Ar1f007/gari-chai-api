@@ -2,12 +2,13 @@ import { Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import slugify from 'slugify';
 
-import { CarBodyTypeCreateInputs } from './schema';
-import { createBodyType, findBodyType, findAllBodyTypes, deleteBodyType } from './service';
-import { findCar } from '../car/new-car';
+import { CarBodyTypeCreateParams, UpdateCarBodyTypeParams } from './schema';
+import { createBodyType, findBodyType, findAllBodyTypes, deleteBodyType, findAndUpdateCarBodyType } from './service';
+import { findAndUpdateManyCar, findCar } from '../car/new-car';
 import AppError from '../../utils/appError';
+import { CAR_MODEL_BODY_STYLE_LABEL_PATH, CAR_MODEL_BODY_STYLE_PATH } from '../../constants';
 
-export async function createCarBodyTypeHandler(req: Request<{}, {}, CarBodyTypeCreateInputs>, res: Response) {
+export async function createCarBodyTypeHandler(req: Request<{}, {}, CarBodyTypeCreateParams>, res: Response) {
   const slugifiedValue = slugify(req.body.name, { lower: true });
 
   const alreadyExists = await findBodyType({ slug: slugifiedValue });
@@ -40,6 +41,40 @@ export async function getAllBodyTypesHandler(req: Request, res: Response) {
   return res.status(StatusCodes.OK).json({
     status: 'success',
     data: bodyTypes,
+  });
+}
+
+export async function updateCarBodyTypeHandler(
+  req: Request<UpdateCarBodyTypeParams['params'], {}, UpdateCarBodyTypeParams['body']>,
+  res: Response,
+) {
+  const bodyTypeId = req.params.id;
+  const update = req.body;
+
+  const brand = await findBodyType({ _id: bodyTypeId });
+
+  if (!brand) {
+    return res.status(StatusCodes.NOT_FOUND).json({
+      status: 'fail',
+      message: 'No body type found',
+    });
+  }
+
+  const updatedBodyType = await findAndUpdateCarBodyType({ _id: bodyTypeId }, update, {
+    new: true,
+  });
+
+  // update the brand name of in car documents
+  if (updatedBodyType) {
+    findAndUpdateManyCar(
+      { [CAR_MODEL_BODY_STYLE_PATH]: updatedBodyType.id },
+      { [CAR_MODEL_BODY_STYLE_LABEL_PATH]: updatedBodyType.name },
+    );
+  }
+
+  res.status(StatusCodes.OK).json({
+    status: 'success',
+    data: updatedBodyType,
   });
 }
 

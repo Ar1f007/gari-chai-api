@@ -1,8 +1,8 @@
 import mongoose from 'mongoose';
 import slugify from 'slugify';
-import { CarBodyTypeCreateInputs } from './schema';
+import { CarBodyTypeCreateParams } from './schema';
 
-export interface CarBodyTypeDocument extends CarBodyTypeCreateInputs, mongoose.Document {
+export interface CarBodyTypeDocument extends CarBodyTypeCreateParams, mongoose.Document {
   slug: string;
   metaData?: {
     [key: string]: unknown;
