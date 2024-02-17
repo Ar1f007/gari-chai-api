@@ -23,4 +23,4 @@ brandModelRouter
 brandModelRouter
   .route('/:id')
   .get(validateResource(getBrandModelSchema), getModelsByBrand)
-  .put(validateResource(updateBrandModelSchema), updateBrandModelHandler);
+  .patch(validateResource(updateBrandModelSchema), updateBrandModelHandler);

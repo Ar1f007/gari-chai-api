@@ -3,11 +3,9 @@ import { validMongoIdSchema } from '../../lib/zod/commonSchemas';
 
 const payload = {
   body: z.object({
-    brandId: validMongoIdSchema,
+    brand: validMongoIdSchema,
     name: z.string().min(1),
     upcoming: z.boolean(),
-
-    brand: z.string().optional(),
   }),
 };
 

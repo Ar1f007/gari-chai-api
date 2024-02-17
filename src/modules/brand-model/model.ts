@@ -31,7 +31,7 @@ const brandModelSchema = new mongoose.Schema(
 
     brand: {
       type: Schema.Types.ObjectId,
-      ref: 'brand',
+      ref: 'Brand',
       required: true,
     },
 
