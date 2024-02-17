@@ -14,9 +14,15 @@ import slugify from 'slugify';
 import { findBrand } from '../brand/service';
 import { findAndUpdateManyCar } from '../car/new-car';
 import { BrandModelDocument } from './model';
+import {
+  CAR_MODEL_BRAND_LABEL_PATH,
+  CAR_MODEL_BRAND_MODEL_LABEL_PATH,
+  CAR_MODEL_BRAND_MODEL_PATH,
+  CAR_MODEL_BRAND_PATH,
+} from '../../constants';
 
 export async function createBrandModelHandler(req: Request<{}, {}, CreateNewBrandModelInputs>, res: Response) {
-  const brandExists = await findBrand({ _id: req.body.brandId });
+  const brandExists = await findBrand({ _id: req.body.brand });
 
   if (!brandExists) {
     return res.status(StatusCodes.BAD_REQUEST).json({
@@ -76,8 +82,11 @@ export async function getBrandModelsHandler(req: Request<{}, {}, {}, ReadBrandMo
     carCollectionCount: { $gte: req.query.get === 'all' ? 0 : 1 },
   };
 
-  const brandModels: BrandModelDocument[] = await findBrandModels(query);
+  const brandModels: BrandModelDocument[] = await findBrandModels(query, {
+    populate: 'brand',
+  });
 
+  // if "1" is present that means we want to get models separated by existing and upcoming model
   if (req.query.transform === '1') {
     const data = transformBrandModelBySection(brandModels);
 
@@ -137,11 +146,26 @@ export async function updateBrandModelHandler(
 
   const updatedBrandModel = await findAndUpdateBrandModel(query, update, {
     new: true,
+    populate: 'brand',
   });
 
   // update the brand name of car
+  // TODO
+
   if (updatedBrandModel) {
-    findAndUpdateManyCar({ 'brandModel.id': updatedBrandModel.id }, { 'brandModel.name': updatedBrandModel.name });
+    const updateOperations: Record<string, string> = {};
+
+    if (brandModel.name !== req.body.name) {
+      updateOperations[CAR_MODEL_BRAND_MODEL_LABEL_PATH] = updatedBrandModel.name;
+    }
+
+    // we have a new brand / or the car model's brand is changed to something else
+    if (brandModel.brand !== req.body.brand) {
+      updateOperations[CAR_MODEL_BRAND_LABEL_PATH] = updatedBrandModel.brand.name;
+      updateOperations[CAR_MODEL_BRAND_PATH] = updatedBrandModel.brand._id;
+    }
+
+    findAndUpdateManyCar({ [CAR_MODEL_BRAND_MODEL_PATH]: updatedBrandModel.id }, updateOperations);
   }
 
   res.status(StatusCodes.OK).json({
