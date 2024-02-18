@@ -15,6 +15,7 @@ import sliderRouter from '../modules/slider/route';
 import vendorRouter from '../modules/vendors/route';
 import '../config/passport';
 import userRouter from '../modules/user/route';
+import campaignRouter from '../modules/campaign/route';
 
 function routes(app: Express) {
   app.get('/health-check', (_: Request, res: Response) => {
@@ -34,6 +35,7 @@ function routes(app: Express) {
   app.use('/api/v1/sliders', sliderRouter);
   app.use('/api/v1/reviews', reviewRouter);
   app.use('/api/v1/comments', commentRouter);
+  app.use('/api/v1/campaigns', campaignRouter);
 }
 
 export default routes;

@@ -24,3 +24,5 @@ export const singleSpecificationSchema = z.object({
     label: z.string(),
   }),
 });
+
+export const carTypeSchema = z.enum(['new', 'used']);
