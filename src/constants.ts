@@ -22,9 +22,15 @@ export const CAR_MODEL_BRAND_LABEL_PATH = 'brand.label';
 export const CAR_MODEL_BRAND_MODEL_LABEL_PATH = 'brandModel.label';
 export const CAR_MODEL_BODY_STYLE_LABEL_PATH = 'bodyStyle.label';
 
+export const CAR_CAMPAIGN_POPULATE_NEW_CARS = 'newCars';
+export const CAR_CAMPAIGN_POPULATE_USED_CARS = 'usedCars';
+
 // COMMENT POPULATE PATH
 export const POPULATE_USER_BASIC_INFO = 'firstName lastName profilePicture';
 
 // passport config
 export const LOCAL_PHONE_FIELD = 'local.phone';
 export const LOCAL_EMAIL_FIELD = 'local.email';
+
+// Discriminators
+export const CAR_CAMPAIGN = 'CarCampaign';

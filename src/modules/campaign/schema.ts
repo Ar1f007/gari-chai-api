@@ -63,6 +63,12 @@ const carCampaignPayload = {
   }),
 };
 
+const query = {
+  query: z.object({
+    status: z.enum(['active', 'hidden']).optional(),
+  }),
+};
+
 export const createBasicCampaignSchema = z.object({
   ...payload,
 });
@@ -71,4 +77,9 @@ export const createCarCampaignSchema = z.object({
   ...carCampaignPayload,
 });
 
+export const getCampaignsSchema = z.object({
+  ...query,
+});
+
 export type CreateCarCampaignInputs = z.infer<typeof createCarCampaignSchema>['body'];
+export type GetCampaigns = z.infer<typeof getCampaignsSchema>;

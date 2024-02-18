@@ -1,4 +1,5 @@
 import mongoose, { Document, Schema, InferSchemaType } from 'mongoose';
+import { CAR_CAMPAIGN } from '../../constants';
 
 const campaignSchema = new Schema(
   {
@@ -36,6 +37,15 @@ const campaignSchema = new Schema(
         thumbnailUrl: String,
       },
       required: true,
+    },
+    sort: {
+      type: Number,
+      required: false,
+      default: 0,
+    },
+    campaignLink: {
+      type: String,
+      required: false,
     },
     metaData: {
       type: mongoose.Schema.Types.Mixed,
@@ -75,4 +85,4 @@ export type CampaignDocument = InferSchemaType<typeof campaignSchema> & Document
 export type CarCampaignDocument = InferSchemaType<typeof carCampaignSchema> & Document;
 
 export const CampaignModel = mongoose.model('Campaign', campaignSchema);
-export const CarCampaignModel = CampaignModel.discriminator('CarCampaign', carCampaignSchema);
+export const CarCampaignModel = CampaignModel.discriminator(CAR_CAMPAIGN, carCampaignSchema);
