@@ -7,7 +7,7 @@ const campaignRouter = express.Router();
 
 campaignRouter
   .route('/cars')
-  .post(authenticated, validateResource(createCarCampaignSchema), createCarCampaignHandler)
+  .post(validateResource(createCarCampaignSchema), createCarCampaignHandler)
   .get(getAllCarCampaignsHandler);
 
 export default campaignRouter;
