@@ -296,6 +296,12 @@ const carSchema = new mongoose.Schema(
       default: false,
     },
 
+    totalRatings: {
+      type: Number,
+      default: 0,
+      required: false,
+    },
+
     metaData: {
       type: mongoose.Schema.Types.Mixed,
       default: {},

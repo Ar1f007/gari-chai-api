@@ -161,6 +161,8 @@ const payload = {
       }),
     ),
 
+    totalRatings: z.number().optional(),
+
     metaData: z.record(z.string().min(1), z.unknown()).optional().default({}),
   }),
 };
