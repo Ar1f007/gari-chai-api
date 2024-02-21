@@ -47,6 +47,14 @@ const campaignSchema = new Schema(
       type: String,
       required: false,
     },
+
+    createdBy: {
+      type: mongoose.Types.ObjectId,
+      ref: 'User',
+      // TODO: MAKE IT REQUIRED
+      required: false,
+    },
+
     metaData: {
       type: mongoose.Schema.Types.Mixed,
       default: {},
@@ -68,14 +76,54 @@ const campaignSchema = new Schema(
 const carCampaignSchema = new Schema({
   newCars: [
     {
-      type: Schema.Types.ObjectId,
-      ref: 'Car',
+      car: {
+        type: Schema.Types.ObjectId,
+        ref: 'Car',
+        required: [true, 'Car id is required'],
+      },
+      campaignPrice: {
+        type: {
+          min: {
+            type: Number,
+            required: true,
+            default: 0,
+            min: 0,
+          },
+          max: {
+            type: Number,
+            required: true,
+            default: 0,
+            min: 0,
+          },
+        },
+        required: true,
+      },
     },
   ],
   usedCars: [
     {
-      type: Schema.Types.ObjectId,
-      ref: 'Used-Car',
+      car: {
+        type: Schema.Types.ObjectId,
+        ref: 'Used-Car',
+        required: [true, 'Car id is required'],
+      },
+      campaignPrice: {
+        type: {
+          min: {
+            type: Number,
+            required: true,
+            default: 0,
+            min: 0,
+          },
+          max: {
+            type: Number,
+            required: true,
+            default: 0,
+            min: 0,
+          },
+        },
+        required: true,
+      },
     },
   ],
 });

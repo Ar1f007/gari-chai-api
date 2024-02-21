@@ -180,10 +180,12 @@ const carSchema = new mongoose.Schema(
         min: {
           type: Number,
           required: true,
+          min: 0,
         },
         max: {
           type: Number,
           required: true,
+          min: 0,
         },
         isNegotiable: {
           type: Boolean,
