@@ -67,7 +67,7 @@ function sanitizeUser(user: UserDocument): Record<string, any> {
  * @param identifier - The identifier field (e.g., 'email' or 'phone').
  * @returns A promise that resolves to the signup result.
  */
-async function handleSignup(req: Request, res: Response, criteria: string, identifier: string) {
+async function handleSignup(req: Request, res: Response, criteria: string, identifier: 'phone' | 'email') {
   let newUser = new User({
     local: {
       [identifier]: req.body[identifier],
@@ -82,9 +82,9 @@ async function handleSignup(req: Request, res: Response, criteria: string, ident
   if (existingUser) {
     return res.status(StatusCodes.UNPROCESSABLE_ENTITY).json({
       status: 'fail',
-      message: `${
+      message: `This ${
         identifier.charAt(0).toUpperCase() + identifier.slice(1)
-      } is already registered with us. Please login to continue`,
+      } ${identifier == 'phone' ? 'number' : ''} is already registered with us. Please login to continue`,
     });
   }
 

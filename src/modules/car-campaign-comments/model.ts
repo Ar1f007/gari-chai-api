@@ -2,7 +2,7 @@ import mongoose, { Document, Schema, InferSchemaType } from 'mongoose';
 
 const carCampaignCommentSchema = new Schema(
   {
-    content: { type: String, required: true },
+    content: { type: Number, required: true },
     user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
     campaign: { type: Schema.Types.ObjectId, ref: 'Campaign', required: true },
     pinToTop: { type: Boolean, default: false },
@@ -35,7 +35,7 @@ const usedCarCampaignCommentSchema = new Schema({
   car: { type: Schema.Types.ObjectId, ref: 'Used-Car', required: true },
 });
 
-export const CarCampaignCommentModel = mongoose.model('Campaign', carCampaignCommentSchema);
+export const CarCampaignCommentModel = mongoose.model('Campaign-Comment', carCampaignCommentSchema);
 
 export const NewCarCampaignComment = CarCampaignCommentModel.discriminator(
   'NewCarComment',
