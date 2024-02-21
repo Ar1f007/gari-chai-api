@@ -22,8 +22,8 @@ export const CAR_MODEL_BRAND_LABEL_PATH = 'brand.label';
 export const CAR_MODEL_BRAND_MODEL_LABEL_PATH = 'brandModel.label';
 export const CAR_MODEL_BODY_STYLE_LABEL_PATH = 'bodyStyle.label';
 
-export const CAR_CAMPAIGN_POPULATE_NEW_CARS = 'newCars';
-export const CAR_CAMPAIGN_POPULATE_USED_CARS = 'usedCars';
+export const CAR_CAMPAIGN_POPULATE_NEW_CARS = 'newCars.car';
+export const CAR_CAMPAIGN_POPULATE_USED_CARS = 'usedCars.car';
 
 // COMMENT POPULATE PATH
 export const POPULATE_USER_BASIC_INFO = 'firstName lastName profilePicture';

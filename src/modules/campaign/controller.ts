@@ -11,16 +11,22 @@ export async function createCarCampaignHandler(req: Request<{}, {}, CreateCarCam
   const { newCars, usedCars } = cars.reduce(
     (acc, cur) => {
       if (cur.type == 'new') {
-        acc.newCars.push(cur.carId);
+        acc.newCars.push({
+          car: cur.carId,
+          campaignPrice: cur.campaignPrice,
+        });
       } else {
-        acc.usedCars.push(cur.carId);
+        acc.usedCars.push({
+          car: cur.carId,
+          campaignPrice: cur.campaignPrice,
+        });
       }
 
       return acc;
     },
     {
-      newCars: [] as CreateCarCampaignParams['usedCars'],
-      usedCars: [] as CreateCarCampaignParams['newCars'],
+      newCars: [] as CreateCarCampaignParams['newCars'],
+      usedCars: [] as CreateCarCampaignParams['usedCars'],
     },
   );
 

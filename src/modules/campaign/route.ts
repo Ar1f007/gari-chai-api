@@ -1,6 +1,6 @@
 import express from 'express';
 import { createCarCampaignHandler, getAllCarCampaignsHandler } from './controller';
-import { authenticated, validateResource } from '../../middleware';
+import { validateResource } from '../../middleware';
 import { createCarCampaignSchema } from './schema';
 
 const campaignRouter = express.Router();

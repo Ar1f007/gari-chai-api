@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { carTypeSchema, imageSchema } from '../../utils/helperSchema';
 import extDayjs from '../../lib/dayjs';
-import { validMongoIdSchema } from '../../lib/zod/commonSchemas';
+import { minMaxPriceSchema, validMongoIdSchema } from '../../lib/zod/commonSchemas';
 
 const payload = {
   body: z.object({
@@ -50,17 +50,58 @@ const payload = {
 };
 
 const carCampaignPayload = {
-  body: payload.body.extend({
-    cars: z
-      .array(
-        z.object({
-          carId: validMongoIdSchema,
-          type: carTypeSchema,
-          campaignPrice: z.number(),
-        }),
-      )
-      .refine((val) => val.length > 0, { message: 'Please select cars for campaign' }),
-  }),
+  body: payload.body
+    .extend({
+      cars: z
+        .array(
+          z.object({
+            carId: validMongoIdSchema,
+            type: carTypeSchema,
+            campaignPrice: minMaxPriceSchema,
+          }),
+        )
+        .refine((val) => val.length > 0, { message: 'Please select cars for campaign' }),
+    })
+    .superRefine(({ startDate, endDate }, ctx) => {
+      const date1 = extDayjs(startDate);
+      const date2 = extDayjs(endDate);
+
+      const diff = date1.diff(date2);
+
+      if (diff == 0) {
+        ctx.addIssue({
+          code: 'custom',
+          message: 'Start and End Date-Time can not be the same',
+          path: ['startDate', 'endDate'],
+          fatal: true,
+        });
+        return z.NEVER;
+      }
+
+      if (diff > 0) {
+        ctx.addIssue({
+          code: 'custom',
+          message: 'Start Date Can not be greater than end date',
+          path: ['startDate', 'endDate'],
+          fatal: true,
+        });
+        return z.NEVER;
+      }
+
+      const isStartDateInThePast = extDayjs().isBefore(date1);
+      const isEndDateInThePast = extDayjs().isBefore(date2);
+
+      if (!isStartDateInThePast || !isEndDateInThePast) {
+        ctx.addIssue({
+          code: 'custom',
+          message: 'Start or End date time can not be in the past',
+          path: ['startDate', 'endDate'],
+          fatal: true,
+        });
+
+        return z.NEVER;
+      }
+    }),
 };
 
 const query = {

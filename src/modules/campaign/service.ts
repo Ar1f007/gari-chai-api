@@ -1,11 +1,17 @@
 import { CampaignModel, CarCampaignModel } from './model';
 import { CreateCarCampaignInputs } from './schema';
-import { ValidMongoIdSchema } from '../../lib/zod/commonSchemas';
+import { TMinMaxPriceSchema, ValidMongoIdSchema } from '../../lib/zod/commonSchemas';
 import { FilterQuery, QueryOptions } from 'mongoose';
 
 export type CreateCarCampaignParams = Omit<CreateCarCampaignInputs, 'cars'> & {
-  newCars: ValidMongoIdSchema[];
-  usedCars: ValidMongoIdSchema[];
+  newCars: {
+    car: ValidMongoIdSchema;
+    campaignPrice: TMinMaxPriceSchema;
+  }[];
+  usedCars: {
+    car: ValidMongoIdSchema;
+    campaignPrice: TMinMaxPriceSchema;
+  }[];
 };
 export async function createCarCampaign(input: CreateCarCampaignParams) {
   return CarCampaignModel.create(input);
