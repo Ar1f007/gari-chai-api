@@ -1,7 +1,7 @@
 import express from 'express';
 import { validateResource } from '../../middleware';
-import { addVendorSchema } from './schema';
-import { createVendorHandler, deleteVendorHandler, getAllVendorsHandler } from './controller';
+import { addVendorSchema, updateVendorInfoSchema } from './schema';
+import { createVendorHandler, deleteVendorHandler, getAllVendorsHandler, updateVendorInfoHandler } from './controller';
 
 const vendorRouter = express.Router();
 
@@ -10,5 +10,7 @@ vendorRouter
   .post(validateResource(addVendorSchema), createVendorHandler)
   .get(getAllVendorsHandler)
   .delete(deleteVendorHandler);
+
+vendorRouter.route('/:id').patch(validateResource(updateVendorInfoSchema), updateVendorInfoHandler);
 
 export default vendorRouter;

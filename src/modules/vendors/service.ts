@@ -1,6 +1,7 @@
 import mongoose, { FilterQuery, QueryOptions } from 'mongoose';
 import VendorModel, { VendorDocument } from './model';
 import { AddVendorSchema } from './schema';
+import { UpdateQuery } from 'mongoose';
 
 export function createVendor(input: AddVendorSchema) {
   return VendorModel.create(input);
@@ -38,4 +39,12 @@ export async function updateVendorCarCollectionCount({
   );
 
   return brandModel;
+}
+
+export async function findAndUpdateVendor(
+  query: FilterQuery<VendorDocument>,
+  update: UpdateQuery<VendorDocument>,
+  options: QueryOptions,
+) {
+  return VendorModel.findOneAndUpdate(query, update, options);
 }
