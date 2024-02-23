@@ -2,8 +2,9 @@ import { z } from 'zod';
 
 const payload = {
   body: z.object({
-    title: z.string().min(10, 'title should be min 10 characters long'),
-    review: z.string().min(50, 'Review should be minimum 50 characters long'),
+    reviewType: z.string().min(1, 'Review type is required'),
+    title: z.string().min(1, 'title is required long').max(60, 'Too long (max 60 characters allowed)'),
+    review: z.string().min(1, 'review content is required'),
     rating: z
       .number()
       .min(1, 'Required')
