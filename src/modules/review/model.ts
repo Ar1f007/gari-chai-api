@@ -8,6 +8,8 @@ export interface ReviewDocument extends CreateNewReviewInputs, mongoose.Document
 
 const reviewSchema = new mongoose.Schema(
   {
+    reviewType: String,
+
     title: {
       type: String,
       required: true,
