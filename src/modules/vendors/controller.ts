@@ -1,8 +1,8 @@
 import { Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
 
-import { AddVendorSchema } from './schema';
-import { createVendor, deleteVendor, findAllVendors, findVendor } from './service';
+import { AddVendorSchema, UpdateVendorInfoParams } from './schema';
+import { createVendor, deleteVendor, findAllVendors, findAndUpdateVendor, findVendor } from './service';
 import AppError from '../../utils/appError';
 
 export async function createVendorHandler(req: Request<{}, {}, AddVendorSchema>, res: Response) {
@@ -27,6 +27,31 @@ export async function getAllVendorsHandler(req: Request, res: Response) {
   return res.status(StatusCodes.OK).json({
     status: 'success',
     data: vendors,
+  });
+}
+
+export async function updateVendorInfoHandler(
+  req: Request<UpdateVendorInfoParams['params'], {}, UpdateVendorInfoParams['body']>,
+  res: Response,
+) {
+  const vendorId = req.params.id;
+
+  const updateInfo = req.body;
+
+  const vendor = await findAndUpdateVendor({ _id: vendorId }, updateInfo, {
+    new: true,
+  });
+
+  if (!vendor) {
+    return res.status(StatusCodes.NOT_FOUND).json({
+      status: 'fail',
+      message: 'No Vendor was found',
+    });
+  }
+
+  res.status(StatusCodes.OK).json({
+    status: 'success',
+    data: vendor,
   });
 }
 
