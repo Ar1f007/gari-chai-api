@@ -6,6 +6,8 @@ const whitelist = [
   'http://localhost:3000',
   'http://localhost:8080',
   'https://www.garichaibd.com',
+  'admin.garichaibd.com',
+  'https://admin.garichaibd.com',
   'www.garichaibd.com',
   'garichaibd.com',
 ];

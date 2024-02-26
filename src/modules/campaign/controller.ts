@@ -65,6 +65,8 @@ export async function getAllCarCampaignsHandler(req: Request<{}, {}, {}, GetCamp
 
   queryFilters['__t'] = CAR_CAMPAIGN;
 
+  queryFilters['endDate'] = { $gte: new Date() };
+
   const campaigns = await findCampaigns(queryFilters, {
     populate: [
       {
