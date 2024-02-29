@@ -23,6 +23,15 @@ const params = {
   }),
 };
 
+const query = {
+  query: z
+    .object({
+      page: z.string().refine((val) => !isNaN(Number(val)), { message: 'Page value should be of type number' }),
+      limit: z.string().refine((val) => !isNaN(Number(val)), { message: 'Page limit should be of type number' }),
+    })
+    .partial(),
+};
+
 export const createReviewSchema = z.object({
   ...payload,
 });
@@ -31,5 +40,10 @@ export const getReviewsByCarIdSchema = z.object({
   ...params,
 });
 
+export const getReviewsQuerySchema = z.object({
+  ...query,
+});
+
 export type CreateNewReviewInputs = z.infer<typeof createReviewSchema>['body'];
 export type ReadReviewsByCarInput = z.infer<typeof getReviewsByCarIdSchema>['params'];
+export type GetReviewQueryInputs = z.infer<typeof getReviewsQuerySchema>;
