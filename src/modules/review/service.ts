@@ -91,3 +91,8 @@ export async function findReviewsWithStats(carId: string): Promise<TReviewsWithS
 
   return results[0];
 }
+
+// New method for counting documents
+export async function countReviews(query: FilterQuery<ReviewDocument>) {
+  return ReviewModel.countDocuments(query);
+}
