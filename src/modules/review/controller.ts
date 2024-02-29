@@ -2,6 +2,8 @@ import { Request, Response } from 'express';
 import {
   countReviews,
   createNewReview,
+  findAndUpdateReview,
+  findReview,
   findReviews,
   //  deleteReview, findAndUpdateReview, findReview,
   findReviewsWithStats,
@@ -10,6 +12,8 @@ import {
   CreateNewReviewInputs,
   GetReviewQueryInputs,
   ReadReviewsByCarInput,
+  UpdateReviewInputs,
+  updateReviewSchema,
   // DeleteReviewInput, ReadReviewInput, UpdateReviewInput
 } from './schema';
 import { StatusCodes } from 'http-status-codes';
@@ -89,5 +93,35 @@ export async function getAllCarReviewsHandler(req: Request<{}, {}, {}, GetReview
         hasNextPage,
       },
     },
+  });
+}
+
+export async function updateReviewHandler(
+  req: Request<UpdateReviewInputs['params'], {}, UpdateReviewInputs['body']>,
+  res: Response,
+) {
+  const parsedBody = updateReviewSchema.shape.body.parse(req.body);
+
+  const review = await findAndUpdateReview(
+    {
+      _id: req.params.id,
+    },
+    parsedBody,
+    {
+      new: true,
+    },
+  );
+
+  if (!review) {
+    return res.status(StatusCodes.NOT_FOUND).json({
+      status: 'fail',
+      message: 'The review you are trying to update no longer exist',
+    });
+  }
+
+  res.status(StatusCodes.OK).json({
+    status: 'success',
+    data: review,
+    message: 'Review updated successfully',
   });
 }

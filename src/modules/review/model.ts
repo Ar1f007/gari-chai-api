@@ -49,6 +49,15 @@ const reviewSchema = new mongoose.Schema(
         type: String,
       },
     ],
+    status: {
+      type: ['approved', 'discard', 'pending'],
+      default: 'pending',
+    },
+    discardReason: {
+      type: String,
+      required: false,
+      default: '',
+    },
     metaData: {
       type: mongoose.Schema.Types.Mixed,
       default: {},
