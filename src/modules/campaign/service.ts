@@ -1,7 +1,7 @@
-import { CampaignModel, CarCampaignModel } from './model';
+import { CampaignDocument, CampaignModel, CarCampaignModel } from './model';
 import { CreateCarCampaignInputs } from './schema';
 import { TMinMaxPriceSchema, ValidMongoIdSchema } from '../../lib/zod/commonSchemas';
-import { FilterQuery, QueryOptions } from 'mongoose';
+import { FilterQuery, QueryOptions, UpdateQuery } from 'mongoose';
 
 export type CreateCarCampaignParams = Omit<CreateCarCampaignInputs, 'cars'> & {
   newCars: {
@@ -17,6 +17,14 @@ export async function createCarCampaign(input: CreateCarCampaignParams) {
   return CarCampaignModel.create(input);
 }
 
+export async function findAndUpdateCarCampaign(
+  query: FilterQuery<CampaignDocument>,
+  update: UpdateQuery<CampaignDocument>,
+  options: QueryOptions,
+) {
+  return CampaignModel.findOneAndUpdate(query, update, options);
+}
+
 export async function findCampaigns<T>(
   query: FilterQuery<T> = {},
   options: QueryOptions = { lean: true },
@@ -25,4 +33,8 @@ export async function findCampaigns<T>(
   const results = await CampaignModel.find(query, {}, options).sort(sortOptions);
 
   return results;
+}
+
+export async function deleteCarCampaign(query: FilterQuery<CampaignDocument>) {
+  return CampaignModel.deleteOne(query);
 }
