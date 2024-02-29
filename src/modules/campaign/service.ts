@@ -34,3 +34,7 @@ export async function findCampaigns<T>(
 
   return results;
 }
+
+export async function deleteCarCampaign(query: FilterQuery<CampaignDocument>) {
+  return CampaignModel.deleteOne(query);
+}

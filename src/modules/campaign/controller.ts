@@ -1,6 +1,12 @@
 import { Request, Response } from 'express';
-import { CreateCarCampaignInputs, GetCampaigns, UpdateCarCampaignInputs } from './schema';
-import { CreateCarCampaignParams, createCarCampaign, findAndUpdateCarCampaign, findCampaigns } from './service';
+import { CreateCarCampaignInputs, DeleteCarCampaignInputs, GetCampaigns, UpdateCarCampaignInputs } from './schema';
+import {
+  CreateCarCampaignParams,
+  createCarCampaign,
+  deleteCarCampaign,
+  findAndUpdateCarCampaign,
+  findCampaigns,
+} from './service';
 import { StatusCodes } from 'http-status-codes';
 import AppError from '../../utils/appError';
 import { CAR_CAMPAIGN, CAR_CAMPAIGN_POPULATE_NEW_CARS } from '../../constants';
@@ -53,6 +59,34 @@ export async function createCarCampaignHandler(req: Request<{}, {}, CreateCarCam
     status: 'success',
     data: campaign,
     message: 'Campaign created successfully',
+  });
+}
+
+export async function getAllCarCampaignsHandler(req: Request<{}, {}, {}, GetCampaigns['query']>, res: Response) {
+  const queryFilters: Record<string, any> = {};
+
+  if (req.query.status) {
+    queryFilters['isActive'] = req.query.status == 'active' ? true : req.query.status == 'hidden' ? false : true;
+  }
+
+  queryFilters['__t'] = CAR_CAMPAIGN;
+
+  queryFilters['endDate'] = { $gte: new Date() };
+
+  const campaigns = await findCampaigns(queryFilters, {
+    populate: [
+      {
+        path: CAR_CAMPAIGN_POPULATE_NEW_CARS,
+      },
+      // {
+      // path: 'usedCars',
+      // },
+    ],
+  });
+
+  res.status(StatusCodes.OK).json({
+    status: 'success',
+    data: campaigns,
   });
 }
 
@@ -121,30 +155,17 @@ export async function updateCarCampaignHandler(
   });
 }
 
-export async function getAllCarCampaignsHandler(req: Request<{}, {}, {}, GetCampaigns['query']>, res: Response) {
-  const queryFilters: Record<string, any> = {};
+export async function deleteCarCampaignHandler(req: Request<DeleteCarCampaignInputs>, res: Response) {
+  const campaignId = req.params.id;
 
-  if (req.query.status) {
-    queryFilters['isActive'] = req.query.status == 'active' ? true : req.query.status == 'hidden' ? false : true;
+  const campaign = await deleteCarCampaign({ _id: campaignId });
+
+  if (!campaign) {
+    throw new AppError('No campaign was found', StatusCodes.BAD_REQUEST);
   }
-
-  queryFilters['__t'] = CAR_CAMPAIGN;
-
-  queryFilters['endDate'] = { $gte: new Date() };
-
-  const campaigns = await findCampaigns(queryFilters, {
-    populate: [
-      {
-        path: CAR_CAMPAIGN_POPULATE_NEW_CARS,
-      },
-      // {
-      // path: 'usedCars',
-      // },
-    ],
-  });
 
   res.status(StatusCodes.OK).json({
     status: 'success',
-    data: campaigns,
+    message: 'Campaign was deleted',
   });
 }

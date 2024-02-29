@@ -129,10 +129,15 @@ export const updateCarCampaignSchema = z.object({
   ...carCampaignPayload,
 });
 
+export const deleteCarCampaignSchema = z.object({
+  ...params,
+});
+
 export const getCampaignsSchema = z.object({
   ...query,
 });
 
 export type CreateCarCampaignInputs = z.infer<typeof createCarCampaignSchema>['body'];
-export type UpdateCarCampaignInputs = z.infer<typeof updateCarCampaignSchema>;
 export type GetCampaigns = z.infer<typeof getCampaignsSchema>;
+export type UpdateCarCampaignInputs = z.infer<typeof updateCarCampaignSchema>;
+export type DeleteCarCampaignInputs = z.infer<typeof deleteCarCampaignSchema>['params'];

@@ -1,7 +1,12 @@
 import express from 'express';
-import { createCarCampaignHandler, getAllCarCampaignsHandler, updateCarCampaignHandler } from './controller';
+import {
+  createCarCampaignHandler,
+  deleteCarCampaignHandler,
+  getAllCarCampaignsHandler,
+  updateCarCampaignHandler,
+} from './controller';
 import { validateResource } from '../../middleware';
-import { createCarCampaignSchema } from './schema';
+import { createCarCampaignSchema, deleteCarCampaignSchema } from './schema';
 
 const campaignRouter = express.Router();
 
@@ -10,6 +15,9 @@ campaignRouter
   .post(validateResource(createCarCampaignSchema), createCarCampaignHandler)
   .get(getAllCarCampaignsHandler);
 
-campaignRouter.route('/cars/:id').patch(validateResource(createCarCampaignSchema), updateCarCampaignHandler);
+campaignRouter
+  .route('/cars/:id')
+  .patch(validateResource(createCarCampaignSchema), updateCarCampaignHandler)
+  .delete(validateResource(deleteCarCampaignSchema), deleteCarCampaignHandler);
 
 export default campaignRouter;
