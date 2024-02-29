@@ -1,5 +1,5 @@
 import express from 'express';
-import { createCarCampaignHandler, getAllCarCampaignsHandler } from './controller';
+import { createCarCampaignHandler, getAllCarCampaignsHandler, updateCarCampaignHandler } from './controller';
 import { validateResource } from '../../middleware';
 import { createCarCampaignSchema } from './schema';
 
@@ -9,5 +9,7 @@ campaignRouter
   .route('/cars')
   .post(validateResource(createCarCampaignSchema), createCarCampaignHandler)
   .get(getAllCarCampaignsHandler);
+
+campaignRouter.route('/cars/:id').patch(validateResource(createCarCampaignSchema), updateCarCampaignHandler);
 
 export default campaignRouter;

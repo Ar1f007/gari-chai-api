@@ -104,6 +104,12 @@ const carCampaignPayload = {
     }),
 };
 
+const params = {
+  params: z.object({
+    id: validMongoIdSchema,
+  }),
+};
+
 const query = {
   query: z.object({
     status: z.enum(['active', 'hidden']).optional(),
@@ -118,9 +124,15 @@ export const createCarCampaignSchema = z.object({
   ...carCampaignPayload,
 });
 
+export const updateCarCampaignSchema = z.object({
+  ...params,
+  ...carCampaignPayload,
+});
+
 export const getCampaignsSchema = z.object({
   ...query,
 });
 
 export type CreateCarCampaignInputs = z.infer<typeof createCarCampaignSchema>['body'];
+export type UpdateCarCampaignInputs = z.infer<typeof updateCarCampaignSchema>;
 export type GetCampaigns = z.infer<typeof getCampaignsSchema>;
