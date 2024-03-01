@@ -30,6 +30,15 @@ const query = {
     .object({
       page: z.string().refine((val) => !isNaN(Number(val)), { message: 'Page value should be of type number' }),
       limit: z.string().refine((val) => !isNaN(Number(val)), { message: 'Page limit should be of type number' }),
+      status: z.string().refine(
+        (status) => {
+          const pattern = /^(pending|approved|discard)(\.(pending|approved|discard))*$/;
+          return pattern.test(status);
+        },
+        {
+          message: 'Invalid status parameter',
+        },
+      ),
     })
     .partial(),
 };

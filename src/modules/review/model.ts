@@ -50,7 +50,8 @@ const reviewSchema = new mongoose.Schema(
       },
     ],
     status: {
-      type: ['approved', 'discard', 'pending'],
+      type: String,
+      enum: ['approved', 'discard', 'pending'],
       default: 'pending',
     },
     discardReason: {

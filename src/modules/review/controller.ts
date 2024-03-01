@@ -1,20 +1,11 @@
 import { Request, Response } from 'express';
-import {
-  countReviews,
-  createNewReview,
-  findAndUpdateReview,
-  findReview,
-  findReviews,
-  //  deleteReview, findAndUpdateReview, findReview,
-  findReviewsWithStats,
-} from './service';
+import { countReviews, createNewReview, findAndUpdateReview, findReviews, findReviewsWithStats } from './service';
 import {
   CreateNewReviewInputs,
   GetReviewQueryInputs,
   ReadReviewsByCarInput,
   UpdateReviewInputs,
   updateReviewSchema,
-  // DeleteReviewInput, ReadReviewInput, UpdateReviewInput
 } from './schema';
 import { StatusCodes } from 'http-status-codes';
 import AppError from '../../utils/appError';
@@ -64,13 +55,24 @@ export async function getAllCarReviewsHandler(req: Request<{}, {}, {}, GetReview
     req.query.limit && !isNaN(Number(req.query.limit)) ? +req.query.limit : DEFAULT_ITEMS_PER_PAGE;
   const itemsPerPage = Math.min(requestedItemsPerPage, MAX_ALLOWED_ITEMS, MAX_SAFE_ITEMS_LIMIT);
 
+  const queryFilters: Record<string, any> = {};
+
+  if (req.query.status) {
+    if (!req.query.status.includes('.')) {
+      queryFilters['status'] = req.query.status;
+    } else {
+      const statusValues = req.query.status.split('.');
+      queryFilters['$or'] = statusValues.map((status) => ({ status }));
+    }
+  }
+
   // Extract and validate sort fields
   // const sortFields = getSortFields(req.query.sort);
 
   // Retrieve total car count and paginated car data
   const [totalReviewsCount, foundReviews] = await Promise.all([
-    countReviews({}),
-    findReviews({}, { skip: (currentPage - 1) * itemsPerPage, limit: itemsPerPage }),
+    countReviews(queryFilters),
+    findReviews(queryFilters, { skip: (currentPage - 1) * itemsPerPage, limit: itemsPerPage, sort: '-createdAt' }),
   ]);
 
   // Calculate total pages
