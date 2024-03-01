@@ -1,16 +1,11 @@
 import { Request, Response } from 'express';
-import {
-  countReviews,
-  createNewReview,
-  findReviews,
-  //  deleteReview, findAndUpdateReview, findReview,
-  findReviewsWithStats,
-} from './service';
+import { countReviews, createNewReview, findAndUpdateReview, findReviews, findReviewsWithStats } from './service';
 import {
   CreateNewReviewInputs,
   GetReviewQueryInputs,
   ReadReviewsByCarInput,
-  // DeleteReviewInput, ReadReviewInput, UpdateReviewInput
+  UpdateReviewInputs,
+  updateReviewSchema,
 } from './schema';
 import { StatusCodes } from 'http-status-codes';
 import AppError from '../../utils/appError';
@@ -60,13 +55,24 @@ export async function getAllCarReviewsHandler(req: Request<{}, {}, {}, GetReview
     req.query.limit && !isNaN(Number(req.query.limit)) ? +req.query.limit : DEFAULT_ITEMS_PER_PAGE;
   const itemsPerPage = Math.min(requestedItemsPerPage, MAX_ALLOWED_ITEMS, MAX_SAFE_ITEMS_LIMIT);
 
+  const queryFilters: Record<string, any> = {};
+
+  if (req.query.status) {
+    if (!req.query.status.includes('.')) {
+      queryFilters['status'] = req.query.status;
+    } else {
+      const statusValues = req.query.status.split('.');
+      queryFilters['$or'] = statusValues.map((status) => ({ status }));
+    }
+  }
+
   // Extract and validate sort fields
   // const sortFields = getSortFields(req.query.sort);
 
   // Retrieve total car count and paginated car data
   const [totalReviewsCount, foundReviews] = await Promise.all([
-    countReviews({}),
-    findReviews({}, { skip: (currentPage - 1) * itemsPerPage, limit: itemsPerPage }),
+    countReviews(queryFilters),
+    findReviews(queryFilters, { skip: (currentPage - 1) * itemsPerPage, limit: itemsPerPage, sort: '-createdAt' }),
   ]);
 
   // Calculate total pages
@@ -89,5 +95,35 @@ export async function getAllCarReviewsHandler(req: Request<{}, {}, {}, GetReview
         hasNextPage,
       },
     },
+  });
+}
+
+export async function updateReviewHandler(
+  req: Request<UpdateReviewInputs['params'], {}, UpdateReviewInputs['body']>,
+  res: Response,
+) {
+  const parsedBody = updateReviewSchema.shape.body.parse(req.body);
+
+  const review = await findAndUpdateReview(
+    {
+      _id: req.params.id,
+    },
+    parsedBody,
+    {
+      new: true,
+    },
+  );
+
+  if (!review) {
+    return res.status(StatusCodes.NOT_FOUND).json({
+      status: 'fail',
+      message: 'The review you are trying to update no longer exist',
+    });
+  }
+
+  res.status(StatusCodes.OK).json({
+    status: 'success',
+    data: review,
+    message: 'Review updated successfully',
   });
 }

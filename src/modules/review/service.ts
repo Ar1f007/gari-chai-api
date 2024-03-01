@@ -40,7 +40,7 @@ export async function deleteReview(query: FilterQuery<ReviewDocument>) {
 
 export async function findReviewsWithStats(carId: string): Promise<TReviewsWithStats> {
   const pipeline: mongoose.PipelineStage[] = [
-    { $match: { carId: new mongoose.Types.ObjectId(carId) } },
+    { $match: { carId: new mongoose.Types.ObjectId(carId), status: 'approved' } },
     { $sort: { createdAt: -1 } },
     {
       $lookup: {
