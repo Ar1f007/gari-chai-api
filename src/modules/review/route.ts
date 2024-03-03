@@ -1,7 +1,14 @@
 import express from 'express';
-import { validateResource } from '../../middleware';
+import { authenticated, validateResource } from '../../middleware';
 import { createReviewSchema, getReviewsByCarIdSchema, updateReviewSchema } from './schema';
-import { createReviewHandler, getAllCarReviewsHandler, getReviewsHandler, updateReviewHandler } from './controller';
+import {
+  createReviewHandler,
+  deleteUserReviewsHandler,
+  getAllCarReviewsHandler,
+  getReviewsHandler,
+  getUserReviewsHandler,
+  updateReviewHandler,
+} from './controller';
 
 const reviewRouter = express.Router();
 
@@ -9,7 +16,12 @@ reviewRouter.route('/').post(validateResource(createReviewSchema), createReviewH
 
 reviewRouter.route('/cars').get(getAllCarReviewsHandler);
 
-reviewRouter.route('/:carId').get(validateResource(getReviewsByCarIdSchema), getReviewsHandler);
+reviewRouter.route('/users/:id').get(authenticated, getUserReviewsHandler);
+
+reviewRouter
+  .route('/:id')
+  .get(validateResource(getReviewsByCarIdSchema), getReviewsHandler)
+  .delete(authenticated, deleteUserReviewsHandler);
 
 reviewRouter.route('/update/:id').patch(validateResource(updateReviewSchema), updateReviewHandler);
 
