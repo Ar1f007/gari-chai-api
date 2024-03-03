@@ -12,9 +12,9 @@ import {
 
 const reviewRouter = express.Router();
 
-reviewRouter.route('/').post(validateResource(createReviewSchema), createReviewHandler);
+reviewRouter.route('/').post(authenticated, validateResource(createReviewSchema), createReviewHandler);
 
-reviewRouter.route('/cars').get(getAllCarReviewsHandler);
+reviewRouter.route('/cars').get(authenticated, getAllCarReviewsHandler);
 
 reviewRouter.route('/users/:id').get(authenticated, getUserReviewsHandler);
 
@@ -23,6 +23,6 @@ reviewRouter
   .get(validateResource(getReviewsByCarIdSchema), getReviewsHandler)
   .delete(authenticated, deleteUserReviewsHandler);
 
-reviewRouter.route('/update/:id').patch(validateResource(updateReviewSchema), updateReviewHandler);
+reviewRouter.route('/update/:id').patch(authenticated, validateResource(updateReviewSchema), updateReviewHandler);
 
 export default reviewRouter;

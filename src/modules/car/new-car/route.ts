@@ -16,18 +16,18 @@ import {
   getCarSchema,
   updateCarSchema,
 } from './schema';
-import { validateResource } from '../../../middleware';
+import { authenticated, validateResource } from '../../../middleware';
 
 export const carRouter = express.Router();
 
 carRouter
   .route('/')
   .get(validateResource(getCarQuerySchema), getCarsHandler)
-  .post(validateResource(createNewCarSchema), createCarHandler)
-  .delete(validateResource(deleteCarByIdSchema), deleteCarByIdHandler);
+  .post(authenticated, validateResource(createNewCarSchema), createCarHandler)
+  .delete(authenticated, validateResource(deleteCarByIdSchema), deleteCarByIdHandler);
 
 carRouter
   .route('/:carSlug')
   .get(validateResource(getCarSchema), getCarHandler)
-  .put(validateResource(updateCarSchema), updateCarHandler)
-  .delete(validateResource(deleteCarSchema), deleteCarHandler);
+  .put(authenticated, validateResource(updateCarSchema), updateCarHandler)
+  .delete(authenticated, validateResource(deleteCarSchema), deleteCarHandler);

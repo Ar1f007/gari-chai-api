@@ -1,6 +1,7 @@
 import { faker } from '@faker-js/faker';
 import Car from '../modules/car/new-car/model';
 import connect from '../utils/connect';
+import { envVariables } from '../utils/env';
 
 const brandAndModel = [
   {
@@ -166,6 +167,8 @@ function generateData() {
   return data;
 }
 async function seedCars() {
+  if (envVariables.NODE_ENV !== 'development') return;
+
   console.log('⏳ Running seed...');
 
   const start = Date.now();

@@ -3,6 +3,7 @@ import {
   deactivateUserHandler,
   deleteUserHandler,
   getProfile,
+  getUsersHandler,
   loginWithEmail,
   loginWithPhoneHandler,
   logoutUserHandler,
@@ -23,6 +24,8 @@ import {
 } from './schema';
 
 const userRouter = express.Router();
+
+userRouter.route('/').get(authenticated, getUsersHandler).delete(authenticated, deleteUserHandler);
 
 userRouter.post('/signup/email', validateResource(signupWithEmailSchema), signupWithEmailHandler);
 
@@ -45,7 +48,6 @@ userRouter.put(
 
 userRouter.patch('/update-password', validateResource(changePasswordSchema), authenticated, updatePasswordHandler);
 
-userRouter.delete('/', authenticated, deleteUserHandler);
 userRouter.patch('/deactivate-account', authenticated, deactivateUserHandler);
 
 export default userRouter;

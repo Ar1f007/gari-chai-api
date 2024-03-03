@@ -1,5 +1,5 @@
 import express from 'express';
-import { validateResource } from '../../middleware';
+import { authenticated, validateResource } from '../../middleware';
 import { carBodyTypeCreateSchema, updateBodyTypeSchema } from './schema';
 import {
   createCarBodyTypeHandler,
@@ -12,11 +12,11 @@ const carBodyTypeRouter = express.Router();
 
 carBodyTypeRouter
   .route('/')
-  .post(validateResource(carBodyTypeCreateSchema), createCarBodyTypeHandler)
+  .post(authenticated, validateResource(carBodyTypeCreateSchema), createCarBodyTypeHandler)
   .get(getAllBodyTypesHandler)
 
-  .delete(deleteBodyTypeHandler);
+  .delete(authenticated, deleteBodyTypeHandler);
 
-carBodyTypeRouter.route('/:id').patch(validateResource(updateBodyTypeSchema), updateCarBodyTypeHandler);
+carBodyTypeRouter.route('/:id').patch(authenticated, validateResource(updateBodyTypeSchema), updateCarBodyTypeHandler);
 
 export default carBodyTypeRouter;

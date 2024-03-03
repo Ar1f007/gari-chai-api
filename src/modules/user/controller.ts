@@ -11,7 +11,7 @@ import ReviewModel from '../review/model';
 // Utilities
 import { attachCookiesToResponse } from '../../utils/attachCookiesToResponse';
 import { removeCookie } from '../../utils/removeCookie';
-import { findAndUpdateUser, findUser } from './services';
+import { countUsers, findAndUpdateUser, findUser, findUsers } from './services';
 import AppError from '../../utils/appError';
 import { sendOTP } from '../../utils/sendOTP';
 
@@ -388,5 +388,57 @@ export async function deactivateUserHandler(req: Request, res: Response) {
   return res.status(StatusCodes.OK).json({
     status: 'success',
     message: 'Account deactivated successfully',
+  });
+}
+
+export async function getUsersHandler(req: Request, res: Response) {
+  // Default values for pagination
+  const DEFAULT_PAGE_NUMBER = 1;
+  const DEFAULT_ITEMS_PER_PAGE = 10;
+
+  // Maximum allowed values for pagination
+  const MAX_ALLOWED_ITEMS = 1000; // Maximum documents allowed to be returned
+  const MAX_SAFE_ITEMS_LIMIT = 500; // Maximum items to return if requested exceeds the limit
+
+  // Extract and process query filters
+  const queryFilters = {};
+
+  // Parse and validate the current page number
+  const currentPage = (req.query.page && !isNaN(Number(req.query.page)) && +req.query.page) || DEFAULT_PAGE_NUMBER;
+
+  // Parse and validate items per page, considering maximum allowed items
+  const requestedItemsPerPage =
+    req.query.limit && !isNaN(Number(req.query.limit)) ? +req.query.limit : DEFAULT_ITEMS_PER_PAGE;
+  const itemsPerPage = Math.min(requestedItemsPerPage, MAX_ALLOWED_ITEMS, MAX_SAFE_ITEMS_LIMIT);
+
+  // Extract and validate sort fields
+  const sortFields = '-createdAt';
+
+  // Retrieve total car count and paginated car data
+  const [totalUsersCount, foundUsers] = await Promise.all([
+    countUsers(queryFilters),
+    findUsers(queryFilters, { skip: (currentPage - 1) * itemsPerPage, limit: itemsPerPage }, sortFields),
+  ]);
+
+  // Calculate total pages
+  const totalPages = Math.ceil(totalUsersCount / itemsPerPage);
+
+  // Determine if there is a next page
+  const hasNextPage = currentPage < totalPages;
+  const nextPage = hasNextPage ? currentPage + 1 : null;
+
+  // Send the response
+  res.status(StatusCodes.OK).json({
+    status: 'success',
+    data: {
+      results: foundUsers,
+      pagination: {
+        totalItems: totalUsersCount,
+        totalPages,
+        currentPage,
+        nextPage,
+        hasNextPage,
+      },
+    },
   });
 }

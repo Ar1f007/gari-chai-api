@@ -1,5 +1,5 @@
 import express from 'express';
-import { validateResource } from '../../middleware';
+import { authenticated, validateResource } from '../../middleware';
 import {
   createNewHomeSettingsSchema,
   deleteHomeSettingItemSchema,
@@ -19,13 +19,13 @@ export const homeSettingRouter = express.Router();
 
 homeSettingRouter
   .route('/')
-  .post(validateResource(createNewHomeSettingsSchema), createHomeSettingHandler)
+  .post(authenticated, validateResource(createNewHomeSettingsSchema), createHomeSettingHandler)
   .get(validateResource(getHomeSettingsQuerySchema), getHomeSettingsHandler);
 
-homeSettingRouter.route('/popular-brands').post(createMultipleHomeSettingsHandler);
+homeSettingRouter.route('/popular-brands').post(authenticated, createMultipleHomeSettingsHandler);
 
 homeSettingRouter
   .route('/:sectionName')
   .get(validateResource(getHomeSettingSchema), homeSettingBySlugHandler)
-  .put(validateResource(updateHomeSettingItemSchema), homeSettingItemUpdateHandler)
-  .delete(validateResource(deleteHomeSettingItemSchema), deleteSettingItemHandler);
+  .put(authenticated, validateResource(updateHomeSettingItemSchema), homeSettingItemUpdateHandler)
+  .delete(authenticated, validateResource(deleteHomeSettingItemSchema), deleteSettingItemHandler);

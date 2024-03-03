@@ -10,6 +10,16 @@ export async function findUser(query: FilterQuery<UserDocument>, options: QueryO
   return User.findOne(query, {}, options);
 }
 
+export async function findUsers(
+  query: FilterQuery<UserDocument> = {},
+  options: QueryOptions = { lean: true },
+  sortOptions: string = '-createdAt',
+) {
+  const results = await User.find(query, {}, options).sort(sortOptions);
+
+  return results;
+}
+
 export async function findAndUpdateUser(
   query: FilterQuery<UserDocument>,
   update: UpdateQuery<UserDocument>,
@@ -20,4 +30,8 @@ export async function findAndUpdateUser(
 
 export async function deleteUser(query: FilterQuery<UserDocument>) {
   return User.deleteOne(query);
+}
+
+export async function countUsers(query: FilterQuery<UserDocument>) {
+  return User.countDocuments(query);
 }
