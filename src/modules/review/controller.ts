@@ -1,5 +1,12 @@
 import { Request, Response } from 'express';
-import { countReviews, createNewReview, findAndUpdateReview, findReviews, findReviewsWithStats } from './service';
+import {
+  countReviews,
+  createNewReview,
+  deleteReview,
+  findAndUpdateReview,
+  findReviews,
+  findReviewsWithStats,
+} from './service';
 import {
   CreateNewReviewInputs,
   GetReviewQueryInputs,
@@ -29,7 +36,7 @@ export async function createReviewHandler(req: Request<{}, {}, CreateNewReviewIn
 }
 
 export async function getReviewsHandler(req: Request<ReadReviewsByCarInput>, res: Response) {
-  const reviewsStats = await findReviewsWithStats(req.params.carId);
+  const reviewsStats = await findReviewsWithStats(req.params.id);
   res.status(StatusCodes.OK).json({
     status: 'success',
     data: {
@@ -125,5 +132,29 @@ export async function updateReviewHandler(
     status: 'success',
     data: review,
     message: 'Review updated successfully',
+  });
+}
+
+export async function getUserReviewsHandler(req: Request<ReadReviewsByCarInput>, res: Response) {
+  const userId = req.params.id;
+
+  const userReviews = await findReviews({ userId }, { populate: 'userId' });
+
+  res.status(StatusCodes.OK).json({
+    status: 'success',
+    message: 'successfully',
+    data: userReviews,
+  });
+}
+
+export async function deleteUserReviewsHandler(req: Request<ReadReviewsByCarInput>, res: Response) {
+  const reviewId = req.params.id;
+
+  await deleteReview({ _id: reviewId });
+
+  res.status(StatusCodes.OK).json({
+    status: 'success',
+    message: 'Review deleted successfully',
+    data: null,
   });
 }

@@ -19,7 +19,7 @@ const payload = {
 
 const params = {
   params: z.object({
-    carId: z.string({
+    id: z.string({
       required_error: 'car id is required',
     }),
   }),
