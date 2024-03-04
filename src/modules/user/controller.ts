@@ -16,10 +16,10 @@ import AppError from '../../utils/appError';
 import { sendOTP } from '../../utils/sendOTP';
 
 // Constants
-import { LOCAL_EMAIL_FIELD, LOCAL_PHONE_FIELD } from '../../constants';
+import { LOCAL_EMAIL_FIELD, LOCAL_PHONE_FIELD, SORT_FIELD_SEPARATOR } from '../../constants';
 
 // Schemas
-import { ChangePasswordSchema, SendOTPInputs, UpdateBasicInfo, VerifyOTPInputs } from './schema';
+import { ChangePasswordSchema, GetUsersQueryParams, SendOTPInputs, UpdateBasicInfo, VerifyOTPInputs } from './schema';
 
 async function checkAndUpdateBanStatus(user: UserDocument) {
   if (user.isBanned && user.banExpiry && user.banExpiry <= new Date()) {
@@ -53,6 +53,52 @@ function sanitizeUser(user: UserDocument): Record<string, any> {
     'twoFactorAuth',
     'activityLog',
   ]);
+}
+
+function buildSearchFilters(query: GetUsersQueryParams['query']): Record<string, any> {
+  const filters: Record<string, any> = {};
+
+  if (query.firstName) {
+    filters['firstName'] = { $regex: new RegExp(query.firstName, 'i') };
+  }
+
+  if (query.lastName) {
+    filters['lastName'] = { $regex: new RegExp(query.lastName, 'i') };
+  }
+
+  return filters;
+}
+
+function formatSortField(str: string): string {
+  const [column, order] = str.split(SORT_FIELD_SEPARATOR);
+
+  return order === 'asc' ? column : `-${column}`;
+}
+
+function getSortFields(sortQuery: GetUsersQueryParams['query']['sort']): string {
+  let defaultSortStr = '-launchedAt'; // by default latest "launched at" first
+
+  if (!sortQuery) return defaultSortStr;
+
+  if (typeof sortQuery === 'string') {
+    const formattedStr = formatSortField(sortQuery);
+
+    return formattedStr;
+  }
+
+  if (Array.isArray(sortQuery)) {
+    const options: string[] = [];
+
+    for (let i = 0; i < sortQuery.length; i++) {
+      const formattedStr = formatSortField(sortQuery[i]);
+
+      options.push(formattedStr);
+    }
+
+    return options.join(' ');
+  }
+
+  return defaultSortStr;
 }
 
 /**
@@ -391,7 +437,7 @@ export async function deactivateUserHandler(req: Request, res: Response) {
   });
 }
 
-export async function getUsersHandler(req: Request, res: Response) {
+export async function getUsersHandler(req: Request<{}, {}, {}, GetUsersQueryParams['query']>, res: Response) {
   // Default values for pagination
   const DEFAULT_PAGE_NUMBER = 1;
   const DEFAULT_ITEMS_PER_PAGE = 10;
@@ -401,7 +447,7 @@ export async function getUsersHandler(req: Request, res: Response) {
   const MAX_SAFE_ITEMS_LIMIT = 500; // Maximum items to return if requested exceeds the limit
 
   // Extract and process query filters
-  const queryFilters = {};
+  const queryFilters = buildSearchFilters(req.query);
 
   // Parse and validate the current page number
   const currentPage = (req.query.page && !isNaN(Number(req.query.page)) && +req.query.page) || DEFAULT_PAGE_NUMBER;
@@ -412,7 +458,7 @@ export async function getUsersHandler(req: Request, res: Response) {
   const itemsPerPage = Math.min(requestedItemsPerPage, MAX_ALLOWED_ITEMS, MAX_SAFE_ITEMS_LIMIT);
 
   // Extract and validate sort fields
-  const sortFields = '-createdAt';
+  const sortFields = getSortFields(req.query.sort);
 
   // Retrieve total car count and paginated car data
   const [totalUsersCount, foundUsers] = await Promise.all([
