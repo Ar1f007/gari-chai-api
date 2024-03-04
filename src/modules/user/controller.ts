@@ -3,6 +3,7 @@ import passport from 'passport';
 import { StatusCodes } from 'http-status-codes';
 import bcrypt from 'bcrypt';
 import { omit } from 'lodash';
+import crypto from 'crypto';
 
 import User, { UserDocument } from './model';
 import CommentModel from '../comment/model';
@@ -19,7 +20,16 @@ import { sendOTP } from '../../utils/sendOTP';
 import { LOCAL_EMAIL_FIELD, LOCAL_PHONE_FIELD, SORT_FIELD_SEPARATOR } from '../../constants';
 
 // Schemas
-import { ChangePasswordSchema, GetUsersQueryParams, SendOTPInputs, UpdateBasicInfo, VerifyOTPInputs } from './schema';
+import {
+  ChangePasswordSchema,
+  ResetPasswordRequestPayload,
+  GetUsersQueryParams,
+  SendOTPInputs,
+  UpdateBasicInfo,
+  VerifyOTPInputs,
+  ResetPasswordPayload,
+} from './schema';
+import { sendEmail } from '../../utils/sendEmail';
 
 async function checkAndUpdateBanStatus(user: UserDocument) {
   if (user.isBanned && user.banExpiry && user.banExpiry <= new Date()) {
@@ -486,5 +496,57 @@ export async function getUsersHandler(req: Request<{}, {}, {}, GetUsersQueryPara
         hasNextPage,
       },
     },
+  });
+}
+
+export async function createPasswordResetCodeHandler(
+  req: Request<{}, {}, ResetPasswordRequestPayload['body']>,
+  res: Response,
+) {
+  const user = await findUser({
+    [`local${[req.body.type]}`]: req.body.requestedFrom,
+  });
+
+  if (!user) {
+    throw new AppError('No User was found', StatusCodes.BAD_REQUEST);
+  }
+
+  const code = await user.createPasswordResetCode();
+
+  await user.save();
+
+  await sendEmail({
+    code,
+    email: req.body.sendCodeTo,
+  });
+
+  res.status(StatusCodes.OK).json({
+    status: 'success',
+    message: 'A code was sent to your email',
+  });
+}
+
+export async function resetPasswordHandler(req: Request<{}, {}, ResetPasswordPayload['body']>, res: Response) {
+  const { code, password } = req.body;
+
+  const hashedCode = crypto.createHash('sha256').update(code).digest('hex');
+
+  const user = await findUser({
+    passwordResetCode: hashedCode,
+    passwordResetExpires: { $gt: Date.now() },
+  });
+
+  if (!user) {
+    throw new AppError('Code is invalid or has expired', StatusCodes.BAD_REQUEST);
+  }
+
+  user.local!.password = password;
+  user.passwordResetCode = undefined;
+  user.passwordResetExpires = undefined;
+  (user.passwordChangedAt = new Date()), await user.save();
+
+  res.status(StatusCodes.OK).json({
+    status: 'success',
+    message: 'Password reset successful',
   });
 }

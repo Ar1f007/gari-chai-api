@@ -132,6 +132,21 @@ export const getUsersQuerySchema = z.object({
   ...query,
 });
 
+export const resetPasswordRequestSchema = z.object({
+  body: z.object({
+    sendCodeTo: z.string(),
+    requestedFrom: z.string(),
+    type: z.enum(['email', 'phone']),
+  }),
+});
+
+export const resetPasswordSchema = z.object({
+  body: z.object({
+    code: z.string(),
+    password: z.string(),
+  }),
+});
+
 export type SignupWithEmailSchema = z.infer<typeof signupWithEmailSchema>;
 export type SignupWithPhoneSchema = z.infer<typeof signupWithPhoneSchema>;
 export type VerifyOTPInputs = z.infer<typeof verifyOTPSchema>['body'];
@@ -139,3 +154,5 @@ export type SendOTPInputs = z.infer<typeof sendOTPSchema>['body'];
 export type UpdateBasicInfo = z.infer<typeof updateUserBasicInfoSchema>;
 export type ChangePasswordSchema = z.infer<typeof changePasswordSchema>;
 export type GetUsersQueryParams = z.infer<typeof getUsersQuerySchema>;
+export type ResetPasswordRequestPayload = z.infer<typeof resetPasswordRequestSchema>;
+export type ResetPasswordPayload = z.infer<typeof resetPasswordSchema>;
