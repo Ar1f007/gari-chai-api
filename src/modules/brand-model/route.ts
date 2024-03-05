@@ -10,17 +10,17 @@ import {
 
 import { createBrandModelSchema, getBrandModelSchema, updateBrandModelSchema } from './schema';
 
-import { validateResource } from '../../middleware';
+import { authenticated, validateResource } from '../../middleware';
 
 export const brandModelRouter = express.Router();
 
 brandModelRouter
   .route('/')
   .get(getBrandModelsHandler)
-  .post(validateResource(createBrandModelSchema), createBrandModelHandler)
-  .delete(deleteBrandModelHandler);
+  .post(authenticated, validateResource(createBrandModelSchema), createBrandModelHandler)
+  .delete(authenticated, deleteBrandModelHandler);
 
 brandModelRouter
   .route('/:id')
   .get(validateResource(getBrandModelSchema), getModelsByBrand)
-  .patch(validateResource(updateBrandModelSchema), updateBrandModelHandler);
+  .patch(authenticated, validateResource(updateBrandModelSchema), updateBrandModelHandler);

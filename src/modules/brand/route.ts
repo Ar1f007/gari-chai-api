@@ -11,19 +11,19 @@ import {
 
 import { createBrandSchema, getBrandSchema, updateBrandSchema } from './schema';
 
-import { validateResource } from '../../middleware';
+import { authenticated, validateResource } from '../../middleware';
 
 export const brandRouter = express.Router();
 
 brandRouter
   .route('/')
   .get(getBrandsHandler)
-  .post(validateResource(createBrandSchema), createBrandHandler)
-  .delete(deleteBrandHandler);
+  .post(authenticated, validateResource(createBrandSchema), createBrandHandler)
+  .delete(authenticated, deleteBrandHandler);
 
-brandRouter.get('/all-with-popular', getAllAndPopularBrandsHandler); // used in search box
+brandRouter.get('/all-with-popular', getAllAndPopularBrandsHandler); // used in search box in the ui
 
 brandRouter
   .route('/:brandSlug')
   .get(validateResource(getBrandSchema), getBrandHandler)
-  .patch(validateResource(updateBrandSchema), updateBrandHandler);
+  .patch(authenticated, validateResource(updateBrandSchema), updateBrandHandler);

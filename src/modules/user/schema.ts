@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { phoneNumberSchema } from '../../utils/helperSchema';
+import { phoneNumberSchema, sortSchema } from '../../utils/helperSchema';
 
 /**
  * SIGNUP SCHEMA
@@ -113,9 +113,46 @@ export const changePasswordSchema = z.object({
   }),
 });
 
+const query = {
+  query: z
+    .object({
+      page: z.string().refine((val) => !isNaN(Number(val)), { message: 'Page value should be of type number' }),
+      limit: z.string().refine((val) => !isNaN(Number(val)), { message: 'Page limit should be of type number' }),
+      firstName: z.string(),
+      lastName: z.string(),
+      createdAt: z.string(),
+      isBanned: z.string(),
+      isAccountActive: z.string(),
+      sort: sortSchema,
+    })
+    .partial(),
+};
+
+export const getUsersQuerySchema = z.object({
+  ...query,
+});
+
+export const resetPasswordRequestSchema = z.object({
+  body: z.object({
+    sendCodeTo: z.string(),
+    requestedFrom: z.string(),
+    type: z.enum(['email', 'phone']),
+  }),
+});
+
+export const resetPasswordSchema = z.object({
+  body: z.object({
+    code: z.string(),
+    password: z.string(),
+  }),
+});
+
 export type SignupWithEmailSchema = z.infer<typeof signupWithEmailSchema>;
 export type SignupWithPhoneSchema = z.infer<typeof signupWithPhoneSchema>;
 export type VerifyOTPInputs = z.infer<typeof verifyOTPSchema>['body'];
 export type SendOTPInputs = z.infer<typeof sendOTPSchema>['body'];
 export type UpdateBasicInfo = z.infer<typeof updateUserBasicInfoSchema>;
 export type ChangePasswordSchema = z.infer<typeof changePasswordSchema>;
+export type GetUsersQueryParams = z.infer<typeof getUsersQuerySchema>;
+export type ResetPasswordRequestPayload = z.infer<typeof resetPasswordRequestSchema>;
+export type ResetPasswordPayload = z.infer<typeof resetPasswordSchema>;

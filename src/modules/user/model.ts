@@ -181,7 +181,7 @@ userSchema.methods.generateAccountVerificationCode = async function () {
 userSchema.methods.createPasswordResetCode = async function () {
   const code = crypto.randomBytes(3).toString('hex');
 
-  this.passwordResetToken = crypto.createHash('sha256').update(code).digest('hex');
+  this.passwordResetCode = crypto.createHash('sha256').update(code).digest('hex');
 
   this.passwordResetExpires = Date.now() + TEN_MINUTES_IN_MS; // 10 min
 

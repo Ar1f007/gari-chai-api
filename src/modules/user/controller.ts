@@ -3,6 +3,7 @@ import passport from 'passport';
 import { StatusCodes } from 'http-status-codes';
 import bcrypt from 'bcrypt';
 import { omit } from 'lodash';
+import crypto from 'crypto';
 
 import User, { UserDocument } from './model';
 import CommentModel from '../comment/model';
@@ -11,15 +12,24 @@ import ReviewModel from '../review/model';
 // Utilities
 import { attachCookiesToResponse } from '../../utils/attachCookiesToResponse';
 import { removeCookie } from '../../utils/removeCookie';
-import { findAndUpdateUser, findUser } from './services';
+import { countUsers, findAndUpdateUser, findUser, findUsers } from './services';
 import AppError from '../../utils/appError';
 import { sendOTP } from '../../utils/sendOTP';
 
 // Constants
-import { LOCAL_EMAIL_FIELD, LOCAL_PHONE_FIELD } from '../../constants';
+import { LOCAL_EMAIL_FIELD, LOCAL_PHONE_FIELD, SORT_FIELD_SEPARATOR } from '../../constants';
 
 // Schemas
-import { ChangePasswordSchema, SendOTPInputs, UpdateBasicInfo, VerifyOTPInputs } from './schema';
+import {
+  ChangePasswordSchema,
+  ResetPasswordRequestPayload,
+  GetUsersQueryParams,
+  SendOTPInputs,
+  UpdateBasicInfo,
+  VerifyOTPInputs,
+  ResetPasswordPayload,
+} from './schema';
+import { sendEmail } from '../../utils/sendEmail';
 
 async function checkAndUpdateBanStatus(user: UserDocument) {
   if (user.isBanned && user.banExpiry && user.banExpiry <= new Date()) {
@@ -53,6 +63,52 @@ function sanitizeUser(user: UserDocument): Record<string, any> {
     'twoFactorAuth',
     'activityLog',
   ]);
+}
+
+function buildSearchFilters(query: GetUsersQueryParams['query']): Record<string, any> {
+  const filters: Record<string, any> = {};
+
+  if (query.firstName) {
+    filters['firstName'] = { $regex: new RegExp(query.firstName, 'i') };
+  }
+
+  if (query.lastName) {
+    filters['lastName'] = { $regex: new RegExp(query.lastName, 'i') };
+  }
+
+  return filters;
+}
+
+function formatSortField(str: string): string {
+  const [column, order] = str.split(SORT_FIELD_SEPARATOR);
+
+  return order === 'asc' ? column : `-${column}`;
+}
+
+function getSortFields(sortQuery: GetUsersQueryParams['query']['sort']): string {
+  let defaultSortStr = '-launchedAt'; // by default latest "launched at" first
+
+  if (!sortQuery) return defaultSortStr;
+
+  if (typeof sortQuery === 'string') {
+    const formattedStr = formatSortField(sortQuery);
+
+    return formattedStr;
+  }
+
+  if (Array.isArray(sortQuery)) {
+    const options: string[] = [];
+
+    for (let i = 0; i < sortQuery.length; i++) {
+      const formattedStr = formatSortField(sortQuery[i]);
+
+      options.push(formattedStr);
+    }
+
+    return options.join(' ');
+  }
+
+  return defaultSortStr;
 }
 
 /**
@@ -388,5 +444,121 @@ export async function deactivateUserHandler(req: Request, res: Response) {
   return res.status(StatusCodes.OK).json({
     status: 'success',
     message: 'Account deactivated successfully',
+  });
+}
+
+export async function getUsersHandler(req: Request<{}, {}, {}, GetUsersQueryParams['query']>, res: Response) {
+  // Default values for pagination
+  const DEFAULT_PAGE_NUMBER = 1;
+  const DEFAULT_ITEMS_PER_PAGE = 10;
+
+  // Maximum allowed values for pagination
+  const MAX_ALLOWED_ITEMS = 1000; // Maximum documents allowed to be returned
+  const MAX_SAFE_ITEMS_LIMIT = 500; // Maximum items to return if requested exceeds the limit
+
+  // Extract and process query filters
+  const queryFilters = buildSearchFilters(req.query);
+
+  // Parse and validate the current page number
+  const currentPage = (req.query.page && !isNaN(Number(req.query.page)) && +req.query.page) || DEFAULT_PAGE_NUMBER;
+
+  // Parse and validate items per page, considering maximum allowed items
+  const requestedItemsPerPage =
+    req.query.limit && !isNaN(Number(req.query.limit)) ? +req.query.limit : DEFAULT_ITEMS_PER_PAGE;
+  const itemsPerPage = Math.min(requestedItemsPerPage, MAX_ALLOWED_ITEMS, MAX_SAFE_ITEMS_LIMIT);
+
+  // Extract and validate sort fields
+  const sortFields = getSortFields(req.query.sort);
+
+  // Retrieve total car count and paginated car data
+  const [totalUsersCount, foundUsers] = await Promise.all([
+    countUsers(queryFilters),
+    findUsers(queryFilters, { skip: (currentPage - 1) * itemsPerPage, limit: itemsPerPage }, sortFields),
+  ]);
+
+  // Calculate total pages
+  const totalPages = Math.ceil(totalUsersCount / itemsPerPage);
+
+  // Determine if there is a next page
+  const hasNextPage = currentPage < totalPages;
+  const nextPage = hasNextPage ? currentPage + 1 : null;
+
+  // Send the response
+  res.status(StatusCodes.OK).json({
+    status: 'success',
+    data: {
+      results: foundUsers,
+      pagination: {
+        totalItems: totalUsersCount,
+        totalPages,
+        currentPage,
+        nextPage,
+        hasNextPage,
+      },
+    },
+  });
+}
+
+export async function createPasswordResetCodeHandler(
+  req: Request<{}, {}, ResetPasswordRequestPayload['body']>,
+  res: Response,
+) {
+  const user = await findUser(
+    {
+      [`local.${[req.body.type]}`]: req.body.requestedFrom,
+    },
+    {
+      lean: false,
+    },
+  );
+
+  if (!user) {
+    throw new AppError('No User was found', StatusCodes.BAD_REQUEST);
+  }
+
+  const code = await user.createPasswordResetCode();
+
+  await user.save();
+
+  await sendEmail({
+    code,
+    email: req.body.sendCodeTo,
+  });
+
+  res.status(StatusCodes.OK).json({
+    status: 'success',
+    message: 'A code was sent to your email',
+  });
+}
+
+export async function resetPasswordHandler(req: Request<{}, {}, ResetPasswordPayload['body']>, res: Response) {
+  const { code, password } = req.body;
+
+  const hashedCode = crypto.createHash('sha256').update(code).digest('hex');
+
+  const user = await findUser(
+    {
+      passwordResetCode: hashedCode,
+      passwordResetExpires: { $gt: Date.now() },
+    },
+    {
+      lean: false,
+    },
+  );
+
+  if (!user) {
+    throw new AppError('Code is invalid or has expired', StatusCodes.BAD_REQUEST);
+  }
+
+  user.local!.password = password;
+  user.passwordResetCode = undefined;
+  user.passwordResetExpires = undefined;
+  user.passwordChangedAt = new Date();
+
+  await user.save();
+
+  res.status(StatusCodes.OK).json({
+    status: 'success',
+    message: 'Password reset successful',
   });
 }

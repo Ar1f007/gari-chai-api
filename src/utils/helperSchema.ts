@@ -26,3 +26,9 @@ export const singleSpecificationSchema = z.object({
 });
 
 export const carTypeSchema = z.enum(['new', 'used']);
+
+const refinedSort = z.string().refine((str) => str.includes(':'), {
+  message: "Sort query must contain a colon (':')",
+});
+
+export const sortSchema = z.union([refinedSort, z.array(refinedSort)]);

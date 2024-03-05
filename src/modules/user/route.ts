@@ -1,11 +1,14 @@
 import express from 'express';
 import {
+  createPasswordResetCodeHandler,
   deactivateUserHandler,
   deleteUserHandler,
   getProfile,
+  getUsersHandler,
   loginWithEmail,
   loginWithPhoneHandler,
   logoutUserHandler,
+  resetPasswordHandler,
   signupWithEmailHandler,
   signupWithPhoneHandler,
   updateBasicInfoHandler,
@@ -15,14 +18,18 @@ import '../../config/passport';
 import { authenticated, validateResource } from '../../middleware';
 import {
   changePasswordSchema,
+  resetPasswordRequestSchema,
   loginWithEmailSchema,
   loginWithPhoneSchema,
   signupWithEmailSchema,
   signupWithPhoneSchema,
   updateUserBasicInfoSchema,
+  resetPasswordSchema,
 } from './schema';
 
 const userRouter = express.Router();
+
+userRouter.route('/').get(authenticated, getUsersHandler).delete(authenticated, deleteUserHandler);
 
 userRouter.post('/signup/email', validateResource(signupWithEmailSchema), signupWithEmailHandler);
 
@@ -45,7 +52,10 @@ userRouter.put(
 
 userRouter.patch('/update-password', validateResource(changePasswordSchema), authenticated, updatePasswordHandler);
 
-userRouter.delete('/', authenticated, deleteUserHandler);
 userRouter.patch('/deactivate-account', authenticated, deactivateUserHandler);
+
+userRouter.post('/reset-password-code', validateResource(resetPasswordRequestSchema), createPasswordResetCodeHandler);
+
+userRouter.post('/reset-password', validateResource(resetPasswordSchema), resetPasswordHandler);
 
 export default userRouter;

@@ -174,7 +174,7 @@ export async function updateBrandModelHandler(
   });
 }
 
-export async function deleteBrandModelHandler(req: Request<DeleteBrandModelInput['params']>, res: Response) {
+export async function deleteBrandModelHandler(req: Request<{}, DeleteBrandModelInput['params']>, res: Response) {
   const { id } = req.body;
 
   if (!id) {

@@ -1,6 +1,12 @@
 import { z } from 'zod';
 import { validMongoIdSchema } from '../../../lib/zod/commonSchemas';
-import { imageSchema, numberOrNull, singleSpecificationSchema, xCharacterLong } from '../../../utils/helperSchema';
+import {
+  imageSchema,
+  numberOrNull,
+  singleSpecificationSchema,
+  sortSchema,
+  xCharacterLong,
+} from '../../../utils/helperSchema';
 
 export const selectOption = z.object({
   value: z.string(),
@@ -175,12 +181,6 @@ const extCarPayload = {
     soldAt: z.string().optional(),
   }),
 };
-
-const refinedSort = z.string().refine((str) => str.includes(':'), {
-  message: "Sort query must contain a colon (':')",
-});
-
-export const sortSchema = z.union([refinedSort, z.array(refinedSort)]);
 
 const params = {
   params: z.object({
