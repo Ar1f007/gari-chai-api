@@ -54,7 +54,7 @@ userRouter.patch('/update-password', validateResource(changePasswordSchema), aut
 
 userRouter.patch('/deactivate-account', authenticated, deactivateUserHandler);
 
-userRouter.post('/password-reset-code', validateResource(resetPasswordRequestSchema), createPasswordResetCodeHandler);
+userRouter.post('/reset-password-code', validateResource(resetPasswordRequestSchema), createPasswordResetCodeHandler);
 
 userRouter.post('/reset-password', validateResource(resetPasswordSchema), resetPasswordHandler);
 

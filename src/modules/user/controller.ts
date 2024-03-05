@@ -503,9 +503,14 @@ export async function createPasswordResetCodeHandler(
   req: Request<{}, {}, ResetPasswordRequestPayload['body']>,
   res: Response,
 ) {
-  const user = await findUser({
-    [`local${[req.body.type]}`]: req.body.requestedFrom,
-  });
+  const user = await findUser(
+    {
+      [`local.${[req.body.type]}`]: req.body.requestedFrom,
+    },
+    {
+      lean: false,
+    },
+  );
 
   if (!user) {
     throw new AppError('No User was found', StatusCodes.BAD_REQUEST);
@@ -531,10 +536,15 @@ export async function resetPasswordHandler(req: Request<{}, {}, ResetPasswordPay
 
   const hashedCode = crypto.createHash('sha256').update(code).digest('hex');
 
-  const user = await findUser({
-    passwordResetCode: hashedCode,
-    passwordResetExpires: { $gt: Date.now() },
-  });
+  const user = await findUser(
+    {
+      passwordResetCode: hashedCode,
+      passwordResetExpires: { $gt: Date.now() },
+    },
+    {
+      lean: false,
+    },
+  );
 
   if (!user) {
     throw new AppError('Code is invalid or has expired', StatusCodes.BAD_REQUEST);
@@ -543,7 +553,9 @@ export async function resetPasswordHandler(req: Request<{}, {}, ResetPasswordPay
   user.local!.password = password;
   user.passwordResetCode = undefined;
   user.passwordResetExpires = undefined;
-  (user.passwordChangedAt = new Date()), await user.save();
+  user.passwordChangedAt = new Date();
+
+  await user.save();
 
   res.status(StatusCodes.OK).json({
     status: 'success',

@@ -12,6 +12,8 @@ const envSchema = z.object({
   JWT_SECRET_KEY: z.string(),
   JWT_LIFETIME: z.string(),
   SENDGRID_API_KEY: z.string(),
+  APP_PASSWORD: z.string(),
+  APP_EMAIL: z.string(),
 });
 
 export const parsedEnv = envSchema.safeParse(process.env);
