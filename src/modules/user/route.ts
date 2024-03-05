@@ -29,7 +29,7 @@ import {
 
 const userRouter = express.Router();
 
-userRouter.route('/').get(authenticated, getUsersHandler).delete(authenticated, deleteUserHandler);
+userRouter.route('/').get(getUsersHandler).delete(authenticated, deleteUserHandler);
 
 userRouter.post('/signup/email', validateResource(signupWithEmailSchema), signupWithEmailHandler);
 

@@ -14,7 +14,7 @@ const reviewRouter = express.Router();
 
 reviewRouter.route('/').post(authenticated, validateResource(createReviewSchema), createReviewHandler);
 
-reviewRouter.route('/cars').get(authenticated, getAllCarReviewsHandler);
+reviewRouter.route('/cars').get(getAllCarReviewsHandler);
 
 reviewRouter.route('/users/:id').get(authenticated, getUserReviewsHandler);
 
