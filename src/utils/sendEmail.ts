@@ -1,4 +1,6 @@
 // import sgMail from '@sendgrid/mail';
+import { StatusCodes } from 'http-status-codes';
+import AppError from './appError';
 import { envVariables } from './env';
 
 import nodemailer, { Transporter } from 'nodemailer';
@@ -30,7 +32,6 @@ export async function sendEmail({ code, email }: SendEmailParams) {
 
   let message = `Your password reset code: <strong>${code}</strong>. Verify within 10 minutes`;
 
-  console.log(envVariables.APP_EMAIL, envVariables.APP_PASSWORD);
   const mailOptions = {
     from: envVariables.APP_EMAIL,
     to: email,
@@ -38,11 +39,11 @@ export async function sendEmail({ code, email }: SendEmailParams) {
     html: message,
   };
 
-  transporter.sendMail(mailOptions, function (error, info) {
+  transporter.sendMail(mailOptions, function (error) {
     if (error) {
-      console.log(error);
+      throw new AppError('Something went wrong while sending email', StatusCodes.INTERNAL_SERVER_ERROR);
     } else {
-      console.log('Email sent: ' + info.response);
+      //
     }
   });
 
