@@ -6,7 +6,6 @@ import { UserDocument } from '../modules/user/model';
 export const authenticated = async (req: Request, res: Response, next: NextFunction) => {
   passport.authenticate('jwt', { session: false }, (error: any, user: UserDocument) => {
     if (error) {
-      console.error('Error verifying jwt:', error);
       return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ status: 'fail', message: 'Authentication failed' });
     }
     if (!user) {
