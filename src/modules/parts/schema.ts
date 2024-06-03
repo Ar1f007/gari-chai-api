@@ -53,6 +53,14 @@ const params = {
   }),
 };
 
+const slugParams = {
+  params: z.object({
+    slug: z.string({
+      required_error: 'slug is required',
+    }),
+  }),
+};
+
 export const createCarPartSchema = z.object({
   ...payload,
 });
@@ -65,6 +73,11 @@ export const deleteCarPartSchema = z.object({
   ...params,
 });
 
+export const readCarPartSchema = z.object({
+  ...slugParams,
+});
+
 export type CreateCarPartInputs = z.infer<typeof createCarPartSchema>['body'];
 export type GetCarPartsQueryInput = z.infer<typeof getCarPartQuerySchema>;
+export type ReadCarPartInput = z.infer<typeof readCarPartSchema>;
 export type DeleteCarPartInput = z.infer<typeof deleteCarPartSchema>;

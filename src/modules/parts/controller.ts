@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import slugify from 'slugify';
-import { CreateCarPartInputs, DeleteCarPartInput, GetCarPartsQueryInput } from './schema';
+import { CreateCarPartInputs, DeleteCarPartInput, GetCarPartsQueryInput, ReadCarPartInput } from './schema';
 import { countCarParts, createNewCarPart, deleteCarPart, findCarPart, findCarParts } from './service';
 import { StatusCodes } from 'http-status-codes';
 import AppError from '../../utils/appError';
@@ -48,6 +48,8 @@ function getSortFields(sortQuery: GetCarPartsQueryInput['query']['sort']): strin
 
   return defaultSortStr;
 }
+
+// ==================================================================================================
 
 export async function createCarPartHandler(req: Request<{}, {}, CreateCarPartInputs>, res: Response) {
   const slugifiedValue = slugify(req.body.name, { lower: true });
@@ -123,6 +125,24 @@ export async function getCarPartsHandler(req: Request<{}, {}, {}, GetCarPartsQue
         hasNextPage,
       },
     },
+  });
+}
+
+export async function getCarPartHandler(req: Request<ReadCarPartInput['params']>, res: Response) {
+  const slug = req.params.slug;
+
+  const carPart = await findCarPart({ slug });
+
+  if (!carPart) {
+    return res.status(StatusCodes.NOT_FOUND).json({
+      status: 'fail',
+      message: 'Car part was not found',
+    });
+  }
+
+  res.status(StatusCodes.OK).json({
+    status: 'success',
+    data: carPart,
   });
 }
 

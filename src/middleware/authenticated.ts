@@ -8,6 +8,7 @@ export const authenticated = async (req: Request, res: Response, next: NextFunct
     if (error) {
       return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ status: 'fail', message: 'Authentication failed' });
     }
+
     if (!user) {
       return res
         .status(StatusCodes.FORBIDDEN)
