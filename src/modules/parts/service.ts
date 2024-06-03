@@ -1,4 +1,4 @@
-import { FilterQuery, ProjectionType, QueryOptions, UpdateQuery } from 'mongoose';
+import { FilterQuery, QueryOptions, UpdateQuery } from 'mongoose';
 
 import { CarPartDocument, CarPartModel } from './model';
 import { CreateCarPartInputs } from './schema';
@@ -15,10 +15,11 @@ export async function findCarPart(query: FilterQuery<CarPartDocument>, options: 
 
 export async function findCarParts(
   query: FilterQuery<CarPartDocument> = {},
-  projections: ProjectionType<CarPartDocument> = {},
+  // projections: ProjectionType<CarPartDocument> = {},
   options: QueryOptions = { lean: true },
+  sortOptions: string = '-createdAt',
 ) {
-  const results = await CarPartModel.find(query, projections, options);
+  const results = await CarPartModel.find(query, {}, options).sort(sortOptions);
 
   return results;
 }
@@ -33,4 +34,8 @@ export async function findAndUpdateCarPart(
 
 export async function deleteCarPart(query: FilterQuery<CarPartDocument>) {
   return CarPartModel.deleteOne(query);
+}
+
+export async function countCarParts(query: FilterQuery<CarPartDocument>) {
+  return CarPartModel.countDocuments(query);
 }
