@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { imageSchema, sortSchema } from '../../utils/helperSchema';
+import { validMongoIdSchema } from '../../lib/zod/commonSchemas';
 
 const payload = {
   body: z.object({
@@ -46,6 +47,12 @@ const query = {
   }),
 };
 
+const params = {
+  params: z.object({
+    id: validMongoIdSchema,
+  }),
+};
+
 export const createCarPartSchema = z.object({
   ...payload,
 });
@@ -54,5 +61,10 @@ export const getCarPartQuerySchema = z.object({
   ...query,
 });
 
+export const deleteCarPartSchema = z.object({
+  ...params,
+});
+
 export type CreateCarPartInputs = z.infer<typeof createCarPartSchema>['body'];
 export type GetCarPartsQueryInput = z.infer<typeof getCarPartQuerySchema>;
+export type DeleteCarPartInput = z.infer<typeof deleteCarPartSchema>;

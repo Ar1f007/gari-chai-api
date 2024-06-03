@@ -1,10 +1,11 @@
 import { Request, Response } from 'express';
 import slugify from 'slugify';
-import { CreateCarPartInputs, GetCarPartsQueryInput } from './schema';
-import { countCarParts, createNewCarPart, findCarPart, findCarParts } from './service';
+import { CreateCarPartInputs, DeleteCarPartInput, GetCarPartsQueryInput } from './schema';
+import { countCarParts, createNewCarPart, deleteCarPart, findCarPart, findCarParts } from './service';
 import { StatusCodes } from 'http-status-codes';
 import AppError from '../../utils/appError';
 import { CAR_PARTS_NAME_KEY, SORT_FIELD_SEPARATOR } from '../../constants';
+import { deleteSettingItem } from '../home-settings';
 
 function buildSearchFilters(query: GetCarPartsQueryInput['query']): Record<string, any> {
   const filters: Record<string, any> = {};
@@ -122,5 +123,29 @@ export async function getCarPartsHandler(req: Request<{}, {}, {}, GetCarPartsQue
         hasNextPage,
       },
     },
+  });
+}
+
+export async function deleteCarPartHandler(req: Request<DeleteCarPartInput['params']>, res: Response) {
+  const _id = req.params.id;
+
+  const carPart = await findCarPart({ _id });
+
+  if (!carPart) {
+    return res.status(StatusCodes.NOT_FOUND).json({
+      status: 'fail',
+      message: 'No car part was found',
+    });
+  }
+
+  const deletedPart = await deleteCarPart({ _id });
+
+  if (deletedPart.acknowledged) {
+    deleteSettingItem({ contentId: carPart._id });
+  }
+
+  res.status(StatusCodes.OK).json({
+    status: 'success',
+    message: 'Car Part was deleted',
   });
 }
