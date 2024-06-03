@@ -1,8 +1,12 @@
 import mongoose, { InferSchemaType } from 'mongoose';
+import slugify from 'slugify';
 
 const carPartSchema = new mongoose.Schema(
   {
-    name: String,
+    name: {
+      type: String,
+      required: true,
+    },
 
     slug: {
       type: String,
@@ -10,7 +14,10 @@ const carPartSchema = new mongoose.Schema(
       unique: true,
     },
 
-    price: Number,
+    price: {
+      type: Number,
+      required: true,
+    },
 
     discount: {
       type: Number,
@@ -18,9 +25,15 @@ const carPartSchema = new mongoose.Schema(
       default: 0,
     },
 
-    stock: Number,
+    stock: {
+      type: Number,
+      required: true,
+    },
 
-    status: Boolean,
+    status: {
+      type: Boolean,
+      required: true,
+    },
 
     warranty: {
       type: String,
@@ -101,5 +114,17 @@ const carPartSchema = new mongoose.Schema(
 );
 
 export type CarPartDocument = InferSchemaType<typeof carPartSchema> & mongoose.Document;
+
+carPartSchema.pre('save', async function (next) {
+  let carPart = this as CarPartDocument;
+
+  const slug = slugify(carPart.name, {
+    lower: true,
+  });
+
+  carPart.slug = slug;
+
+  return next();
+});
 
 export const CarPartModel = mongoose.model<CarPartDocument>('Car-Part', carPartSchema);

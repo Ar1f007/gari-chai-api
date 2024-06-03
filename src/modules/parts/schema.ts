@@ -4,8 +4,8 @@ import { imageSchema } from '../../utils/helperSchema';
 const payload = {
   body: z.object({
     name: z.string().min(1, 'Name is required'),
-    price: z.number().min(1, 'Price is required').positive(),
-    stock: z.number().min(1, 'Stock amount is required').positive(),
+    price: z.number().nonnegative(),
+    stock: z.number().nonnegative(),
     status: z.boolean(),
     warranty: z.string().optional(),
     manufacturer: z.string().optional(),
