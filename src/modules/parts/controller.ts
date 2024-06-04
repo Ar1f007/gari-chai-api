@@ -1,7 +1,14 @@
 import { Request, Response } from 'express';
 import slugify from 'slugify';
 import { CreateCarPartInputs, DeleteCarPartInput, GetCarPartsQueryInput, ReadCarPartInput } from './schema';
-import { countCarParts, createNewCarPart, deleteCarPart, findCarPart, findCarParts } from './service';
+import {
+  countCarParts,
+  createNewCarPart,
+  deleteCarPart,
+  findAndUpdateCarPart,
+  findCarPart,
+  findCarParts,
+} from './service';
 import { StatusCodes } from 'http-status-codes';
 import AppError from '../../utils/appError';
 import { CAR_PARTS_NAME_KEY, SORT_FIELD_SEPARATOR } from '../../constants';
@@ -59,20 +66,20 @@ export async function createCarPartHandler(req: Request<{}, {}, CreateCarPartInp
   if (carPartWithSameSlugExist) {
     return res.status(StatusCodes.BAD_REQUEST).json({
       status: 'fail',
-      message: 'A car part with the same name already exists!',
+      message: 'An item with the same name already exists!',
     });
   }
 
   const carPart = await createNewCarPart(req.body);
 
   if (!carPart) {
-    throw new AppError('Could not create car part', StatusCodes.BAD_REQUEST);
+    throw new AppError('Could not create item', StatusCodes.BAD_REQUEST);
   }
 
   res.status(StatusCodes.CREATED).json({
     status: 'success',
     data: carPart,
-    message: 'Car part created successfully',
+    message: 'Item created successfully',
   });
 }
 
@@ -136,13 +143,35 @@ export async function getCarPartHandler(req: Request<ReadCarPartInput['params']>
   if (!carPart) {
     return res.status(StatusCodes.NOT_FOUND).json({
       status: 'fail',
-      message: 'Car part was not found',
+      message: 'Item was not found',
     });
   }
 
   res.status(StatusCodes.OK).json({
     status: 'success',
     data: carPart,
+  });
+}
+
+export async function updateCarPartHandler(req: Request<{}, {}>, res: Response) {
+  const { _id } = req.body;
+
+  const carPart = await findCarPart({ _id });
+
+  if (!carPart) {
+    return res.status(StatusCodes.NOT_FOUND).json({
+      status: 'fail',
+      message: 'Item was not found',
+    });
+  }
+
+  const updatedCarPart = await findAndUpdateCarPart({ _id }, req.body, {
+    new: true,
+  });
+
+  res.status(StatusCodes.OK).json({
+    status: 'success',
+    data: updatedCarPart,
   });
 }
 
@@ -166,6 +195,6 @@ export async function deleteCarPartHandler(req: Request<DeleteCarPartInput['para
 
   res.status(StatusCodes.OK).json({
     status: 'success',
-    message: 'Car Part was deleted',
+    message: 'Item was deleted',
   });
 }
