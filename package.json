@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "rimraf dist && node --max-old-space-size=4096 ./node_modules/.bin/tsc",
+    "build": "rimraf dist && tsc",
     "preserve": "npm run build",
     "serve": "nodemon src/index.ts",
     "prestart": "npm run build",
