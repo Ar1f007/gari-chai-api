@@ -19,9 +19,6 @@
     "skipLibCheck": true,
 
     "typeRoots": ["@types", "./node_modules/@types"],
-
-    "incremental": true,
-    "tsBuildInfoFile": "./.tsbuildinfo",
   },
 
   "include": ["./src/**/*.ts"],
