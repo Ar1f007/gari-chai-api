@@ -9,7 +9,6 @@
     "build": "pnpm run clean && pnpm run compile",
     "preserve": "npm run build",
     "serve": "nodemon src/index.ts",
-    "prestart": "npm run build",
     "start": "cross-env NODE_ENV=production node dist/index.js",
     "lint": "eslint src/**/*.ts",
     "format": "eslint src/**/*.ts --fix",
