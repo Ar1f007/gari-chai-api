@@ -9,7 +9,7 @@ handleUncaughtException();
 async function startServer() {
   const app = configureExpressApp();
 
-  const PORT = envVariables.PORT;
+  const PORT = envVariables.PORT || 8000;
 
   try {
     await connect();
