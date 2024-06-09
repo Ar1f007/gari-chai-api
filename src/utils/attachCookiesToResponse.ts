@@ -12,7 +12,9 @@ export const attachCookiesToResponse = (res: Response, user: any) => {
   res.cookie(AUTH_TOKEN_NAME, token, {
     httpOnly: true,
     expires: new Date(Date.now() + SEVEN_DAYS),
-    secure: envVariables.NODE_ENV === 'production' ? true : false,
+    secure: envVariables.NODE_ENV === 'production',
     sameSite: envVariables.NODE_ENV === 'production' ? 'none' : 'lax',
   });
+
+  return token;
 };

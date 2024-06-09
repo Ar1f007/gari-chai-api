@@ -24,6 +24,8 @@ homeSettingRouter
 
 homeSettingRouter.route('/popular-brands').post(authenticated, createMultipleHomeSettingsHandler);
 
+homeSettingRouter.route('/car-parts').post(authenticated, createMultipleHomeSettingsHandler);
+
 homeSettingRouter
   .route('/:sectionName')
   .get(validateResource(getHomeSettingSchema), homeSettingBySlugHandler)

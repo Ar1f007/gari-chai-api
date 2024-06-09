@@ -6,6 +6,8 @@ import { carRouter } from '../modules/car/new-car';
 import { brandRouter } from '../modules/brand/route';
 import { homeSettingRouter } from '../modules/home-settings';
 import { brandModelRouter } from '../modules/brand-model/route';
+import { carPartRouter } from '../modules/parts/route';
+
 // import userRouter from '../modules/user/route';
 import reviewRouter from '../modules/review/route';
 import commentRouter from '../modules/comment/route';
@@ -31,6 +33,7 @@ function routes(app: Express) {
   app.use('/api/v1/brands', brandRouter);
   app.use('/api/v1/models', brandModelRouter);
   app.use('/api/v1/car-body-types', carBodyTypeRouter);
+  app.use('/api/v1/car-parts', carPartRouter);
 
   app.use('/api/v1/home-settings', homeSettingRouter);
   app.use('/api/v1/sliders', sliderRouter);

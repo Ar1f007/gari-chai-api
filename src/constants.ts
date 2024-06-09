@@ -34,3 +34,6 @@ export const LOCAL_EMAIL_FIELD = 'local.email';
 
 // Discriminators
 export const CAR_CAMPAIGN = 'CarCampaign';
+
+// Car Parts
+export const CAR_PARTS_NAME_KEY = 'name';

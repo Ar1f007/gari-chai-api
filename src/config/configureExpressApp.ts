@@ -14,7 +14,11 @@ import passport from 'passport';
 const configureExpressApp = () => {
   const app = express();
 
+  app.use(cookieParser());
+
   app.use(cors(corsOptions));
+
+  app.use(express.json());
 
   // Set security HTTP headers
   app.use(helmet());
@@ -29,12 +33,11 @@ const configureExpressApp = () => {
   // app.use('/api', limiter);
 
   app.use(express.urlencoded({ extended: true }));
-  app.use(express.json());
-  app.use(cookieParser());
 
   app.use(mongoSanitize());
 
   app.use(compression());
+
   app.use(passport.initialize());
 
   // ROUTES
@@ -46,6 +49,7 @@ const configureExpressApp = () => {
   });
 
   app.use(globalErrorHandler);
+
   return app;
 };
 export default configureExpressApp;
