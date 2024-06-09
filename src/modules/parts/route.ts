@@ -13,7 +13,7 @@ export const carPartRouter = express.Router();
 
 carPartRouter
   .route('/')
-  .get(authenticated, getCarPartsHandler)
+  .get(getCarPartsHandler)
   .post(authenticated, validateResource(createCarPartSchema), createCarPartHandler)
   .patch(authenticated, updateCarPartHandler);
 

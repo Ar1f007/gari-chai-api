@@ -9,6 +9,7 @@ const sectionNameEnum = z.enum([
   'upcoming-cars',
   'services',
   'popular-brands',
+  'car-parts',
 ]);
 
 const homeSettingSchema = z.object({

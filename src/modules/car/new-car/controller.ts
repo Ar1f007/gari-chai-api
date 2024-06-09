@@ -15,7 +15,7 @@ import {
 import AppError from '../../../utils/appError';
 import { updateBrandCarCollectionCount } from '../../brand/service';
 import { updateBrandModelCarCollectionCount } from '../../brand-model/service';
-import { deleteSettingItem } from '../../home-settings';
+import { deleteSettingItem, updateHomeSettingContentData } from '../../home-settings';
 import slugify from 'slugify';
 import { updateVendorCarCollectionCount } from '../../vendors/service';
 import {
@@ -311,6 +311,8 @@ export async function updateCarHandler(
       // increase the car collection count in the new vendor model collection
       updateVendorCarCollectionCount({ type: 'inc', vendorId: updatedCar.brand.value });
     }
+
+    updateHomeSettingContentData({ content: updatedCar });
   }
 
   res.status(StatusCodes.OK).json({
