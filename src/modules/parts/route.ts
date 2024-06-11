@@ -17,6 +17,6 @@ carPartRouter
   .post(authenticated, validateResource(createCarPartSchema), createCarPartHandler)
   .patch(authenticated, updateCarPartHandler);
 
-carPartRouter.get('/:slug', authenticated, validateResource(readCarPartSchema), getCarPartHandler);
+carPartRouter.get('/:slug', validateResource(readCarPartSchema), getCarPartHandler);
 
 carPartRouter.route('/:id').delete(authenticated, validateResource(deleteCarPartSchema), deleteCarPartHandler);
