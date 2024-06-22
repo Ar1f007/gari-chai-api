@@ -1,8 +1,8 @@
 import { envVariables } from './utils/env';
-import connect from './utils/connect';
-import logger from './utils/logger';
 import { handleSIGINT, handleSIGTERM, handleUncaughtException, handleUnhandledRejection } from './utils/eventHandlers';
 import configureExpressApp from './config/configureExpressApp';
+import connect from './utils/connect';
+import logger from './utils/logger';
 
 handleUncaughtException();
 
