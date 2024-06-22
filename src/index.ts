@@ -1,8 +1,8 @@
 import { envVariables } from './utils/env';
-import connect from './utils/connect';
-import logger from './utils/logger';
 import { handleSIGINT, handleSIGTERM, handleUncaughtException, handleUnhandledRejection } from './utils/eventHandlers';
 import configureExpressApp from './config/configureExpressApp';
+import connect from './utils/connect';
+import logger from './utils/logger';
 
 handleUncaughtException();
 
@@ -13,6 +13,7 @@ async function startServer() {
 
   try {
     await connect();
+
     const server = app.listen(PORT, () => {
       logger.info('listening on port ' + PORT);
     });
