@@ -68,10 +68,10 @@ const carCampaignPayload = {
 
       const diff = date1.diff(date2);
 
-      if (diff == 0) {
+      if (diff === 0) {
         ctx.addIssue({
           code: 'custom',
-          message: 'Start and End Date-Time can not be the same',
+          message: 'The start and end date-time must be different. Please ensure they are not set to the same value.',
           path: ['startDate', 'endDate'],
           fatal: true,
         });
@@ -81,26 +81,26 @@ const carCampaignPayload = {
       if (diff > 0) {
         ctx.addIssue({
           code: 'custom',
-          message: 'Start Date Can not be greater than end date',
+          message: 'The start date-time must occur before the end date-time. Please adjust the dates accordingly.',
           path: ['startDate', 'endDate'],
           fatal: true,
         });
         return z.NEVER;
       }
 
-      const isStartDateInThePast = extDayjs().isBefore(date1);
-      const isEndDateInThePast = extDayjs().isBefore(date2);
+      // const isStartDateInThePast = extDayjs().isBefore(date1);
+      // const isEndDateInThePast = extDayjs().isBefore(date2);
 
-      if (!isStartDateInThePast || !isEndDateInThePast) {
-        ctx.addIssue({
-          code: 'custom',
-          message: 'Start or End date time can not be in the past',
-          path: ['startDate', 'endDate'],
-          fatal: true,
-        });
+      // if (!isStartDateInThePast || !isEndDateInThePast) {
+      //   ctx.addIssue({
+      //     code: 'custom',
+      //     message: 'Start or End date time can not be in the past',
+      //     path: ['startDate', 'endDate'],
+      //     fatal: true,
+      //   });
 
-        return z.NEVER;
-      }
+      //   return z.NEVER;
+      // }
     }),
 };
 
