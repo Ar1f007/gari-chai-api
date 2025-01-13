@@ -65,13 +65,15 @@ export async function createCarCampaignHandler(req: Request<{}, {}, CreateCarCam
 export async function getAllCarCampaignsHandler(req: Request<{}, {}, {}, GetCampaigns['query']>, res: Response) {
   const queryFilters: Record<string, any> = {};
 
-  if (req.query.status) {
-    queryFilters['isActive'] = req.query.status == 'active' ? true : req.query.status == 'hidden' ? false : true;
+  if (!req.query.includeAll) {
+    if (req.query.status) {
+      queryFilters['isActive'] = req.query.status == 'active' ? true : req.query.status == 'hidden' ? false : true;
+    }
+
+    queryFilters['__t'] = CAR_CAMPAIGN;
+
+    queryFilters['endDate'] = { $gte: new Date() };
   }
-
-  queryFilters['__t'] = CAR_CAMPAIGN;
-
-  queryFilters['endDate'] = { $gte: new Date() };
 
   const campaigns = await findCampaigns(queryFilters, {
     populate: [

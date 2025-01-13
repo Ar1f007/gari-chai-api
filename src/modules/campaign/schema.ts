@@ -113,6 +113,7 @@ const params = {
 const query = {
   query: z.object({
     status: z.enum(['active', 'hidden']).optional(),
+    includeAll: z.boolean().default(false),
   }),
 };
 
