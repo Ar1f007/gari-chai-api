@@ -6,7 +6,8 @@
   "scripts": {
     "clean": "rimraf dist",
     "compile": "tsc",
-    "build": "pnpm install --frozen-lockfile && pnpm run clean && pnpm run compile",
+    "heroku-prebuild": "npm install -g pnpm@9.15.4",
+    "build": "corepack enable && pnpm install --frozen-lockfile && pnpm run clean && pnpm run compile",
     "serve": "nodemon src/index.ts",
     "start": "cross-env NODE_ENV=production node dist/index.js",
     "lint": "eslint src/**/*.ts",
@@ -74,7 +75,7 @@
   },
   "engineStrict": true,
   "engines": {
-    "node": ">=20.0.0"
+    "node": "21.0.0"
   },
   "packageManager": "pnpm@9.15.4"
 }
